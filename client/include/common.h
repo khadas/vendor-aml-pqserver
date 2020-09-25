@@ -391,4 +391,11 @@ typedef struct source_input_param_s {
     int trans_fmt;
 } source_input_param_t;
 
+typedef struct tvin_cutwin_s {
+    unsigned short hs;
+    unsigned short he;
+    unsigned short vs;
+    unsigned short ve;
+} tvin_cutwin_t;
+
 #endif

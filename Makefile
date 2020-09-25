@@ -7,20 +7,10 @@ LOCAL_PATH = $(shell pwd)
 LDFLAGS += -lstdc++ -lpthread -lz -ldl -lrt -L$(STAGING_DIR)/usr/lib
 CFLAGS += -Wall -Wno-unknown-pragmas -Wno-format \
           -O3 -fexceptions -fnon-call-exceptions -D_GNU_SOURCE -I$(STAGING_DIR)/usr/include
-IPC_DEFINES = -DTV_DBUS=1 -DTV_BINDER=2
-CFLAGS += $(IPC_DEFINES)
 
 LIBBINDER_LDFLAGS = -lbinder -llog
-LIBDBUS_LDFLAGS = -ldbus-1
-CFLAGS += -DTV_IPC_TYPE=$(TV_IPC_TYPE)
 
-ifeq ($(TV_IPC_TYPE),TV_DBUS)
-LDFLAGS += $(LIBDBUS_LDFLAGS)
-CFLAGS += -I$(STAGING_DIR)/usr/include/dbus-1.0 \
-		  -I$(STAGING_DIR)/usr/lib/dbus-1.0/include
-else
 LDFLAGS += $(LIBBINDER_LDFLAGS)
-endif
 
 ################################################################################
 # libpq.so - src files

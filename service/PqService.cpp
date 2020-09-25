@@ -90,6 +90,11 @@ int PqService::SetCmd(pq_moudle_param_t param)
         || ((moudleId >= PQ_FACTORY_CMD_START) || (moudleId <= PQ_FACTORY_CMD_MAX))) {
         int paramData[32] = {0};
         int i = 0;
+        source_input_param_t source_input_param;
+        tvin_cutwin_t overscanParam;
+        memset(&overscanParam, 0, sizeof(source_input_param_t));
+        memset(&overscanParam, 0, sizeof(tvin_cutwin_t));
+
         for (i = 0; i < param.paramLength; i++) {
             paramData[i] = param.paramBuf[i];
         }
@@ -141,31 +146,85 @@ int PqService::SetCmd(pq_moudle_param_t param)
             ret = mpPQcontrol->SetColorBaseMode((vpp_color_basemode_t)paramData[0], paramData[1]);
             break;
         case PQ_SET_SOURCE_CHANNEL:
-            source_input_param_t source_input_param;
             source_input_param.source_input = (tv_source_input_t)paramData[0];
-            source_input_param.sig_fmt = (tvin_sig_fmt_t)paramData[1];
-            source_input_param.trans_fmt = (tvin_trans_fmt_t)paramData[2];
+            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
+            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
 
             ret = mpPQcontrol->SetCurrentSourceInputInfo(source_input_param);
             break;
-
         //Factory cmd
+        case PQ_FACTORY_RESET_PICTURE_MODE:
+            ret = mpPQcontrol->FactoryResetPQMode();
+            break;
+        case PQ_FACTORY_RESET_COLOR_TEMPERATURE_MODE:
+            ret = mpPQcontrol->FactoryResetColorTemp();
+            break;
+        case PQ_FACTORY_SET_COLOR_TEMPERATURE_MODE:
+            ret = mpPQcontrol->SetColorTemperature(paramData[0], paramData[1]);
+            break;
+        case PQ_FACTORY_SET_BRIGHTNESS:
+            source_input_param.source_input = (tv_source_input_t)paramData[0];
+            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
+            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+
+            ret = mpPQcontrol->FactorySetPQMode_Brightness(source_input_param, paramData[3], paramData[4]);
+            break;
+        case PQ_FACTORY_SET_CONTRAST:
+            source_input_param.source_input = (tv_source_input_t)paramData[0];
+            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
+            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+
+            ret = mpPQcontrol->FactorySetPQMode_Contrast(source_input_param, paramData[3], paramData[4]);
+            break;
+        case PQ_FACTORY_SET_SATUATION:
+            source_input_param.source_input = (tv_source_input_t)paramData[0];
+            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
+            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+
+            ret = mpPQcontrol->FactorySetPQMode_Saturation(source_input_param, paramData[3], paramData[4]);
+            break;
+        case PQ_FACTORY_SET_HUE:
+            source_input_param.source_input = (tv_source_input_t)paramData[0];
+            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
+            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+
+            ret = mpPQcontrol->FactorySetPQMode_Hue(source_input_param, paramData[3], paramData[4]);
+            break;
+        case PQ_FACTORY_SET_SHARPNESS:
+            source_input_param.source_input = (tv_source_input_t)paramData[0];
+            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
+            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+
+            ret = mpPQcontrol->FactorySetPQMode_Sharpness(source_input_param, paramData[3], paramData[4]);
+            break;
+        case PQ_FACTORY_SET_OVERSCAN:
+            source_input_param.source_input = (tv_source_input_t)paramData[0];
+            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
+            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+
+            overscanParam.he = (unsigned short)paramData[3];
+            overscanParam.hs = (unsigned short)paramData[4];
+            overscanParam.ve = (unsigned short)paramData[5];
+            overscanParam.vs = (unsigned short)paramData[6];
+
+            ret = mpPQcontrol->FactorySetOverscanParam(source_input_param, overscanParam);
+            break;
         case PQ_FACTORY_SET_WB_RED_GAIN:
             ret = mpPQcontrol->FactorySetColorTemp_Rgain(paramData[0], paramData[1], paramData[2]);
             break;
-        case PQ_FACTORY_SET_WB_GREE_GAIN:
+        case PQ_FACTORY_SET_WB_GREEN_GAIN:
             ret = mpPQcontrol->FactorySetColorTemp_Ggain(paramData[0], paramData[1], paramData[2]);
             break;
         case PQ_FACTORY_SET_WB_BLUE_GAIN:
             ret = mpPQcontrol->FactorySetColorTemp_Bgain(paramData[0], paramData[1], paramData[2]);
             break;
-        case PQ_FACTORY_SET_WB_RED_POSTOFFSET:
+        case PQ_FACTORY_SET_WB_RED_OFFSET:
             ret = mpPQcontrol->FactorySetColorTemp_Roffset(paramData[0], paramData[1], paramData[2]);
             break;
-        case PQ_FACTORY_SET_WB_GREE_POSTOFFSET:
+        case PQ_FACTORY_SET_WB_GREEN_OFFSET:
             ret = mpPQcontrol->FactorySetColorTemp_Goffset(paramData[0], paramData[1], paramData[2]);
             break;
-        case PQ_FACTORY_SET_WB_BLUE_POSTOFFSET:
+        case PQ_FACTORY_SET_WB_BLUE_OFFSET:
             ret = mpPQcontrol->FactorySetColorTemp_Boffset(paramData[0], paramData[1], paramData[2]);
             break;
         case PQ_FACTORY_SET_RGB_PATTERN:
@@ -195,6 +254,11 @@ char* PqService::GetCmd(pq_moudle_param_t param)
         || ((moudleId >= PQ_FACTORY_CMD_START) || (moudleId <= PQ_FACTORY_CMD_MAX))) {
         int paramData[32] = {0};
         int i = 0;
+        source_input_param_t source_input_param;
+        tvin_cutwin_t overscanParam;
+        memset(&overscanParam, 0, sizeof(source_input_param_t));
+        memset(&overscanParam, 0, sizeof(tvin_cutwin_t));
+
         for (i = 0; i < param.paramLength; i++) {
             paramData[i] = param.paramBuf[i];
         }
@@ -246,28 +310,68 @@ char* PqService::GetCmd(pq_moudle_param_t param)
             ret = mpPQcontrol->GetColorBaseMode();
             break;
         case PQ_GET_SOURCE_CHANNEL:
-            source_input_param_t source_param;
-            source_param = mpPQcontrol->GetCurrentSourceInputInfo();
-            sprintf(mRetBuf, "%d.%d.%d", source_param.source_input, source_param.sig_fmt, source_param.trans_fmt);
+            source_input_param = mpPQcontrol->GetCurrentSourceInputInfo();
+            sprintf(mRetBuf, "%d.%d.%d", source_input_param.source_input, source_input_param.sig_fmt, source_input_param.trans_fmt);
+            break;
+        //Factory cmd
+        case PQ_FACTORY_GET_COLOR_TEMPERATURE_MODE:
+            ret = mpPQcontrol->GetColorTemperature();
+            break;
+        case PQ_FACTORY_GET_BRIGHTNESS:
+            source_input_param.source_input = (tv_source_input_t)paramData[0];
+            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
+            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+            ret = mpPQcontrol->FactoryGetPQMode_Brightness(source_input_param, paramData[3]);
+            break;
+        case PQ_FACTORY_GET_CONTRAST:
+            source_input_param.source_input = (tv_source_input_t)paramData[0];
+            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
+            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+            ret = mpPQcontrol->FactoryGetPQMode_Contrast(source_input_param, paramData[3]);
             break;
 
-        //Factory cmd
+        case PQ_FACTORY_GET_SATUATION:
+            source_input_param.source_input = (tv_source_input_t)paramData[0];
+            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
+            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+            ret = mpPQcontrol->FactoryGetPQMode_Saturation(source_input_param, paramData[3]);
+            break;
+        case PQ_FACTORY_GET_HUE:
+            source_input_param.source_input = (tv_source_input_t)paramData[0];
+            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
+            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+            ret = mpPQcontrol->FactoryGetPQMode_Hue(source_input_param, paramData[3]);
+            break;
+        case PQ_FACTORY_GET_SHARPNESS:
+            source_input_param.source_input = (tv_source_input_t)paramData[0];
+            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
+            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+            ret = mpPQcontrol->FactoryGetPQMode_Sharpness(source_input_param, paramData[3]);
+            break;
+        case PQ_FACTORY_GET_OVERSCAN:
+            source_input_param.source_input = (tv_source_input_t)paramData[0];
+            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
+            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+
+            overscanParam = mpPQcontrol->FactoryGetOverscanParam(source_input_param);
+            sprintf(mRetBuf, "%d.%d.%d.d", overscanParam.he, overscanParam.hs, overscanParam.ve, overscanParam.vs);
+            break;
         case PQ_FACTORY_GET_WB_RED_GAIN:
             ret = mpPQcontrol->FactoryGetColorTemp_Rgain(paramData[0], paramData[1]);
             break;
-        case PQ_FACTORY_GET_WB_GREE_GAIN:
+        case PQ_FACTORY_GET_WB_GREEN_GAIN:
             ret = mpPQcontrol->FactoryGetColorTemp_Ggain(paramData[0], paramData[1]);
             break;
         case PQ_FACTORY_GET_WB_BLUE_GAIN:
             ret = mpPQcontrol->FactoryGetColorTemp_Bgain(paramData[0], paramData[1]);
             break;
-        case PQ_FACTORY_GET_WB_RED_POSTOFFSET:
+        case PQ_FACTORY_GET_WB_RED_OFFSET:
             ret = mpPQcontrol->FactoryGetColorTemp_Roffset(paramData[0], paramData[1]);
             break;
-        case PQ_FACTORY_GET_WB_GREE_POSTOFFSET:
+        case PQ_FACTORY_GET_WB_GREEN_OFFSET:
             ret = mpPQcontrol->FactoryGetColorTemp_Goffset(paramData[0], paramData[1]);
             break;
-        case PQ_FACTORY_GET_WB_BLUE_POSTOFFSET:
+        case PQ_FACTORY_GET_WB_BLUE_OFFSET:
             ret = mpPQcontrol->FactoryGetColorTemp_Boffset(paramData[0], paramData[1]);
             break;
         case PQ_FACTORY_GET_RGB_PATTERN:
@@ -285,7 +389,8 @@ char* PqService::GetCmd(pq_moudle_param_t param)
         ret = -1;
     }
 
-    if (moudleId != PQ_GET_SOURCE_CHANNEL) {
+    if ((moudleId != PQ_GET_SOURCE_CHANNEL)
+        || (moudleId != PQ_FACTORY_GET_OVERSCAN)) {
         sprintf(mRetBuf, "%d", ret);
     }
 

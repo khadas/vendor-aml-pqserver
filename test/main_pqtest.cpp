@@ -183,6 +183,123 @@ public:
             LOGD("%s: curent source info: source_input:%d sig_fmt:%d trans_fmt:%d.\n",
                 __FUNCTION__, source_param.source_input, source_param.sig_fmt, source_param.trans_fmt);
             break;
+        case PQ_FACTORY_RESET_PICTURE_MODE:
+            ret = mpPqClient->FactoryResetPQMode();
+            break;
+        case PQ_FACTORY_RESET_COLOR_TEMPERATURE_MODE:
+            ret = mpPqClient->FactoryResetColorTemp();
+            break;
+        case PQ_FACTORY_SET_COLOR_TEMPERATURE_MODE:
+            ret = mpPqClient->FactoryWhiteBalanceSetColorTemperature(setValue[0], setValue[1], setValue[2], setValue[3], setValue[4]);
+            break;
+        case PQ_FACTORY_GET_COLOR_TEMPERATURE_MODE:
+            ret = mpPqClient->FactoryWhiteBalanceGetColorTemperature();
+            LOGD("%s: curent colortempture mode is %d.\n", __FUNCTION__, ret);
+            break;
+        case PQ_FACTORY_SET_BRIGHTNESS:
+            ret = mpPqClient->FactorySetPQMode_Brightness(setValue[0], setValue[1], setValue[2], setValue[3], setValue[4]);
+            break;
+        case PQ_FACTORY_GET_BRIGHTNESS:
+            ret = mpPqClient->FactoryGetPQMode_Brightness(setValue[0], setValue[1], setValue[2], setValue[3]);
+            LOGD("%s: curent brightness mode is %d.\n", __FUNCTION__, ret);
+            break;
+        case PQ_FACTORY_SET_CONTRAST:
+            ret = mpPqClient->FactorySetPQMode_Contrast(setValue[0], setValue[1], setValue[2], setValue[3], setValue[4]);
+            break;
+        case PQ_FACTORY_GET_CONTRAST:
+            ret = mpPqClient->FactoryGetPQMode_Contrast(setValue[0], setValue[1], setValue[2], setValue[3]);
+            LOGD("%s: curent contrast mode is %d.\n", __FUNCTION__, ret);
+            break;
+        case PQ_FACTORY_SET_SATUATION:
+            ret = mpPqClient->FactorySetPQMode_Saturation(setValue[0], setValue[1], setValue[2], setValue[3], setValue[4]);
+            break;
+        case PQ_FACTORY_GET_SATUATION:
+            ret = mpPqClient->FactoryGetPQMode_Saturation(setValue[0], setValue[1], setValue[2], setValue[3]);
+            LOGD("%s: curent saturation mode is %d.\n", __FUNCTION__, ret);
+            break;
+        case PQ_FACTORY_SET_HUE:
+            ret = mpPqClient->FactorySetPQMode_Hue(setValue[0], setValue[1], setValue[2], setValue[3], setValue[4]);
+            break;
+        case PQ_FACTORY_GET_HUE:
+            ret = mpPqClient->FactoryGetPQMode_Hue(setValue[0], setValue[1], setValue[2], setValue[3]);
+            LOGD("%s: curent hue mode is %d.\n", __FUNCTION__, ret);
+            break;
+
+        case PQ_FACTORY_SET_SHARPNESS:
+            ret = mpPqClient->FactorySetPQMode_Sharpness(setValue[0], setValue[1], setValue[2], setValue[3], setValue[4]);
+            break;
+
+        case PQ_FACTORY_GET_SHARPNESS:
+            ret = mpPqClient->FactoryGetPQMode_Sharpness(setValue[0], setValue[1], setValue[2], setValue[3]);
+            LOGD("%s: curent sharpness mode is %d.\n", __FUNCTION__, ret);
+            break;
+        case PQ_FACTORY_SET_OVERSCAN:
+            tvin_cutwin_t overscanParam;
+            memset(&overscanParam, 0, sizeof(tvin_cutwin_t));
+            overscanParam.he = (unsigned short)setValue[3];
+            overscanParam.hs = (unsigned short)setValue[4];
+            overscanParam.ve = (unsigned short)setValue[5];
+            overscanParam.vs = (unsigned short)setValue[6];
+            ret = mpPqClient->FactorySetOverscanParams(setValue[0], setValue[1], setValue[2], overscanParam);
+            break;
+        case PQ_FACTORY_GET_OVERSCAN:
+            tvin_cutwin_t cutwin_t;
+            cutwin_t = mpPqClient->FactoryGetOverscanParams(setValue[0], setValue[1], setValue[2]);
+            LOGD("%s: cutwin_t: he:%d hs:%d ve:%d vs:%d.\n",
+                __FUNCTION__, cutwin_t.he, cutwin_t.hs, cutwin_t.ve, cutwin_t.vs);
+            break;
+        case PQ_FACTORY_SET_WB_RED_GAIN:
+            ret = mpPqClient->FactorySetWhiteBalanceRedGain(setValue[0], setValue[1], setValue[2], setValue[3], setValue[4]);
+            break;
+        case PQ_FACTORY_GET_WB_RED_GAIN:
+            ret = mpPqClient->FactoryGetWhiteBalanceRedGain(setValue[0], setValue[1], setValue[2], setValue[3]);
+            LOGD("%s: red gain is %d.\n", __FUNCTION__, ret);
+            break;
+
+        case PQ_FACTORY_SET_WB_GREEN_GAIN:
+            ret = mpPqClient->FactorySetWhiteBalanceRedGain(setValue[0], setValue[1], setValue[2], setValue[3], setValue[4]);
+            break;
+
+        case PQ_FACTORY_GET_WB_GREEN_GAIN:
+            ret = mpPqClient->FactoryGetWhiteBalanceGreenGain(setValue[0], setValue[1], setValue[2], setValue[3]);
+            LOGD("%s: green gain is %d.\n", __FUNCTION__, ret);
+            break;
+
+        case PQ_FACTORY_SET_WB_BLUE_GAIN:
+            ret = mpPqClient->FactorySetWhiteBalanceBlueGain(setValue[0], setValue[1], setValue[2], setValue[3], setValue[4]);
+            break;
+
+        case PQ_FACTORY_GET_WB_BLUE_GAIN:
+            ret = mpPqClient->FactoryGetWhiteBalanceBlueGain(setValue[0], setValue[1], setValue[2], setValue[3]);
+            LOGD("%s: blue gain is %d.\n", __FUNCTION__, ret);
+            break;
+
+        case PQ_FACTORY_SET_WB_RED_OFFSET:
+            ret = mpPqClient->FactorySetWhiteBalanceRedPostOffset(setValue[0], setValue[1], setValue[2], setValue[3], setValue[4]);
+            break;
+
+        case PQ_FACTORY_GET_WB_RED_OFFSET:
+            ret = mpPqClient->FactoryGetWhiteBalanceRedPostOffset(setValue[0], setValue[1], setValue[2], setValue[3]);
+            LOGD("%s: red offset is %d.\n", __FUNCTION__, ret);
+            break;
+
+        case PQ_FACTORY_SET_WB_GREEN_OFFSET:
+            ret = mpPqClient->FactorySetWhiteBalanceGreenPostOffset(setValue[0], setValue[1], setValue[2], setValue[3], setValue[4]);
+            break;
+
+        case PQ_FACTORY_GET_WB_GREEN_OFFSET:
+            ret = mpPqClient->FactoryGetWhiteBalanceGreenPostOffset(setValue[0], setValue[1], setValue[2], setValue[3]);
+            LOGD("%s: gree offset is %d.\n", __FUNCTION__, ret);
+            break;
+
+        case PQ_FACTORY_SET_WB_BLUE_OFFSET:
+            ret = mpPqClient->FactorySetWhiteBalanceBluePostOffset(setValue[0], setValue[1], setValue[2], setValue[3], setValue[4]);
+            break;
+
+        case PQ_FACTORY_GET_WB_BLUE_OFFSET:
+            ret = mpPqClient->FactoryGetWhiteBalanceBluePostOffset(setValue[0], setValue[1], setValue[2], setValue[3]);
+            LOGD("%s: blue offset is %d.\n", __FUNCTION__, ret);
+            break;
 
         default:
             break;
@@ -212,10 +329,9 @@ static int DisplayInit()
 int main(int argc, char **argv) {
     unsigned char read_buf[256];
     memset(read_buf, 0, sizeof(read_buf));
-#if (TV_IPC_TYPE == TV_BINDER)
+
     sp<ProcessState> proc(ProcessState::self());
     proc->startThreadPool();
-#endif
 
     PqTest *test = new PqTest();
     int run = 1;
@@ -254,6 +370,35 @@ int main(int argc, char **argv) {
     LOGD("#### select 30 to get CM ####\n");
     LOGD("#### select 31 to set source channel ####\n");
     LOGD("#### select 32 to get source channel ####\n");
+    LOGD("#### below is factory cmd####\n");
+    LOGD("#### select 33 to reset pq mode ####\n");
+    LOGD("#### select 34 to reset ColorTemperature ####\n");
+    LOGD("#### select 35 to set ColorTemperature ####\n");
+    LOGD("#### select 36 to get ColorTemperature ####\n");
+    LOGD("#### select 37 to set Brightness ####\n");
+    LOGD("#### select 38 to get Brightness ####\n");
+    LOGD("#### select 39 to set Contrast ####\n");
+    LOGD("#### select 40 to get Contrast ####\n");
+    LOGD("#### select 41 to set Saturatioin ####\n");
+    LOGD("#### select 42 to get Saturatioin ####\n");
+    LOGD("#### select 41 to set Hue ####\n");
+    LOGD("#### select 42 to get Hue ####\n");
+    LOGD("#### select 43 to set Sharpness ####\n");
+    LOGD("#### select 44 to get Sharpness ####\n");
+    LOGD("#### select 45 to set overscan ####\n");
+    LOGD("#### select 46 to get overscan ####\n");
+    LOGD("#### select 47 to set WB R Gain ####\n");
+    LOGD("#### select 48 to get WB R Gain ####\n");
+    LOGD("#### select 49 to set WB G Gain ####\n");
+    LOGD("#### select 50 to get WB G Gain ####\n");
+    LOGD("#### select 51 to set WB B Gain ####\n");
+    LOGD("#### select 52 to get WB B Gain ####\n");
+    LOGD("#### select 53 to set WB R OFFSET ####\n");
+    LOGD("#### select 54 to get WB R OFFSET ####\n");
+    LOGD("#### select 55 to set WB G OFFSET ####\n");
+    LOGD("#### select 56 to get WB G OFFSET ####\n");
+    LOGD("#### select 57 to set WB B OFFSET ####\n");
+    LOGD("#### select 58 to get WB B OFFSET ####\n");
 
     LOGD("#### select 299 to exit####\n");
     LOGD("##########################\n");
@@ -470,6 +615,601 @@ int main(int argc, char **argv) {
           }
           case 32: {
               test->cmdID = PQ_GET_SOURCE_CHANNEL;
+              break;
+          }
+          case 33: {
+              test->cmdID = PQ_FACTORY_RESET_PICTURE_MODE;
+              break;
+          }
+          case 34: {
+              test->cmdID = PQ_FACTORY_RESET_COLOR_TEMPERATURE_MODE;
+              break;
+          }
+          case 35: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+              LOGD("please input color mode value:\n");
+              int color_mode = 0;
+              scanf("%d", &color_mode);
+              test->setValue[3] = color_mode;
+
+              test->cmdID = PQ_FACTORY_SET_COLOR_TEMPERATURE_MODE;
+              break;
+          }
+          case 36: {
+              test->cmdID = PQ_FACTORY_GET_COLOR_TEMPERATURE_MODE;
+              break;
+          }
+          case 37: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+              LOGD("please input pq mode value:\n");
+              int pq_mode = 0;
+              scanf("%d", &pq_mode);
+              test->setValue[3] = pq_mode;
+              LOGD("please input brightness mode value:\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[4] = mode;
+
+              test->cmdID = PQ_FACTORY_SET_BRIGHTNESS;
+              break;
+          }
+          case 38: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+              LOGD("please input pq mode value:\n");
+              int pq_mode = 0;
+              scanf("%d", &pq_mode);
+              test->setValue[3] = pq_mode;
+
+              test->cmdID = PQ_FACTORY_GET_BRIGHTNESS;
+              break;
+          }
+          case 39: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+              LOGD("please input pq mode value:\n");
+              int pq_mode = 0;
+              scanf("%d", &pq_mode);
+              test->setValue[3] = pq_mode;
+
+
+              test->cmdID = PQ_FACTORY_SET_CONTRAST;
+              break;
+          }
+          case 40: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+              LOGD("please input pq mode value:\n");
+              int pq_mode = 0;
+              scanf("%d", &pq_mode);
+              test->setValue[3] = pq_mode;
+
+              test->cmdID = PQ_FACTORY_GET_CONTRAST;
+              break;
+          }
+          case 41: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+              LOGD("please input pq mode value:\n");
+              int pq_mode = 0;
+              scanf("%d", &pq_mode);
+              test->setValue[3] = pq_mode;
+              LOGD("please input saturation mode value:\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[3] = mode;
+
+              test->cmdID = PQ_FACTORY_SET_SATUATION;
+              break;
+          }
+          case 42: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+              LOGD("please input pq mode value:\n");
+              int pq_mode = 0;
+              scanf("%d", &pq_mode);
+              test->setValue[3] = pq_mode;
+
+              test->cmdID = PQ_FACTORY_GET_SATUATION;
+              break;
+          }
+          case 43: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+              LOGD("please input pq mode value:\n");
+              int pq_mode = 0;
+              scanf("%d", &pq_mode);
+              test->setValue[3] = pq_mode;
+
+              LOGD("please input hue mode value:\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[3] = mode;
+
+              test->cmdID = PQ_FACTORY_SET_HUE;
+              break;
+          }
+          case 44: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+              LOGD("please input pq mode value:\n");
+              int pq_mode = 0;
+              scanf("%d", &pq_mode);
+              test->setValue[3] = pq_mode;
+
+              test->cmdID = PQ_FACTORY_GET_HUE;
+              break;
+          }
+          case 45: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+              LOGD("please input pq mode value:\n");
+              int pq_mode = 0;
+              scanf("%d", &pq_mode);
+              test->setValue[3] = pq_mode;
+
+              LOGD("please input sharpness mode value:\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[3] = mode;
+
+              test->cmdID = PQ_FACTORY_SET_SHARPNESS;
+              break;
+          }
+          case 46: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+              LOGD("please input pq mode value:\n");
+              int pq_mode = 0;
+              scanf("%d", &pq_mode);
+              test->setValue[3] = pq_mode;
+
+              test->cmdID = PQ_FACTORY_GET_SHARPNESS;
+              break;
+          }
+          case 47: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+
+              LOGD("please input he:\n");
+              int he = 0;
+              scanf("%d", &he);
+              test->setValue[3] = he;
+              LOGD("please input hs:\n");
+              int hs = 0;
+              scanf("%d", &hs);
+              test->setValue[4] = hs;
+              LOGD("please input ve:\n");
+              int ve = 0;
+              scanf("%d", &ve);
+              test->setValue[5] = ve;
+              LOGD("please input vs:\n");
+              int vs = 0;
+              scanf("%d", &vs);
+              test->setValue[6] = vs;
+
+              test->cmdID = PQ_FACTORY_SET_OVERSCAN;
+              break;
+          }
+          case 48: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+
+              test->cmdID = PQ_FACTORY_GET_OVERSCAN;
+              break;
+          }
+          case 49: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+              LOGD("please input colortemp_mode:\n");
+              int pq_mode = 0;
+              scanf("%d", &pq_mode);
+              test->setValue[3] = pq_mode;
+
+              LOGD("please input red gain value:\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[4] = mode;
+
+              test->cmdID = PQ_FACTORY_SET_WB_RED_GAIN;
+              break;
+          }
+          case 50: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+              LOGD("please input colortemp_mode:\n");
+              int colortemp_mode = 0;
+              scanf("%d", &colortemp_mode);
+              test->setValue[3] = colortemp_mode;
+
+              test->cmdID = PQ_FACTORY_GET_WB_RED_GAIN;
+              break;
+          }
+          case 51: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+              LOGD("please input colortemp_mode:\n");
+              int colortemp_mode = 0;
+              scanf("%d", &colortemp_mode);
+              test->setValue[3] = colortemp_mode;
+
+              LOGD("please input green gain value:\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[4] = mode;
+
+              test->cmdID = PQ_FACTORY_SET_WB_GREEN_GAIN;
+              break;
+          }
+          case 52: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+              LOGD("please input colortemp_mode:\n");
+              int colortemp_mode = 0;
+              scanf("%d", &colortemp_mode);
+              test->setValue[3] = colortemp_mode;
+
+              test->cmdID = PQ_FACTORY_GET_WB_GREEN_GAIN;
+              break;
+          }
+          case 53: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+              LOGD("please input colortemp_mode:\n");
+              int colortemp_mode = 0;
+              scanf("%d", &colortemp_mode);
+              test->setValue[3] = colortemp_mode;
+
+              LOGD("please input blue gain value:\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[4] = mode;
+
+              test->cmdID = PQ_FACTORY_SET_WB_BLUE_GAIN;
+              break;
+          }
+          case 54: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+              LOGD("please input colortemp_mode:\n");
+              int colortemp_mode = 0;
+              scanf("%d", &colortemp_mode);
+              test->setValue[3] = colortemp_mode;
+
+              test->cmdID = PQ_FACTORY_GET_WB_BLUE_GAIN;
+              break;
+          }
+          case 55: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+              LOGD("please input colortemp_mode:\n");
+              int colortemp_mode = 0;
+              scanf("%d", &colortemp_mode);
+              test->setValue[3] = colortemp_mode;
+
+              LOGD("please input red offset value:\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[4] = mode;
+
+              test->cmdID = PQ_FACTORY_SET_WB_RED_OFFSET;
+              break;
+          }
+          case 56: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+              LOGD("please input colortemp_mode:\n");
+              int colortemp_mode = 0;
+              scanf("%d", &colortemp_mode);
+              test->setValue[3] = colortemp_mode;
+
+              test->cmdID = PQ_FACTORY_GET_WB_RED_OFFSET;
+              break;
+          }
+          case 57: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+              LOGD("please input colortemp_mode:\n");
+              int colortemp_mode = 0;
+              scanf("%d", &colortemp_mode);
+              test->setValue[3] = colortemp_mode;
+
+              LOGD("please input green offset value:\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[4] = mode;
+
+              test->cmdID = PQ_FACTORY_SET_WB_GREEN_OFFSET;
+              break;
+          }
+          case 58: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+              LOGD("please input colortemp_mode:\n");
+              int colortemp_mode = 0;
+              scanf("%d", &colortemp_mode);
+              test->setValue[3] = colortemp_mode;
+
+              test->cmdID = PQ_FACTORY_GET_WB_GREEN_OFFSET;
+              break;
+          }
+          case 59: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+              LOGD("please input colortemp_mode:\n");
+              int colortemp_mode = 0;
+              scanf("%d", &colortemp_mode);
+              test->setValue[3] = colortemp_mode;
+
+              LOGD("please input blue offset value:\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[4] = mode;
+
+              test->cmdID = PQ_FACTORY_SET_WB_BLUE_OFFSET;
+              break;
+          }
+          case 60: {
+              LOGD("please input source value:\n");
+              int source = 0;
+              scanf("%d", &source);
+              test->setValue[0] = source;
+              LOGD("please input sig_fmt value:\n");
+              int sig_fmt = 0;
+              scanf("%d", &sig_fmt);
+              test->setValue[1] = sig_fmt;
+              LOGD("please input 3d_fmt value:\n");
+              int fmt_3d = 0;
+              scanf("%d", &fmt_3d);
+              test->setValue[2] = fmt_3d;
+              LOGD("please input colortemp_mode:\n");
+              int colortemp_mode = 0;
+              scanf("%d", &colortemp_mode);
+              test->setValue[3] = colortemp_mode;
+
+              test->cmdID = PQ_FACTORY_GET_WB_BLUE_OFFSET;
               break;
           }
 

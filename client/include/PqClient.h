@@ -9,34 +9,23 @@
 #ifndef PQCLIENT_H
 #define PQCLIENT_H
 
-#if (TV_IPC_TYPE == TV_DBUS)
-#include <dbus/dbus.h>
-#endif
 #include <map>
 #include <memory>
 
-#if (TV_IPC_TYPE == TV_BINDER)
 #include <binder/Binder.h>
 #include <binder/Parcel.h>
 #include <binder/IServiceManager.h>
-#endif
 #include "common.h"
 
-#if (TV_IPC_TYPE == TV_BINDER)
 using namespace android;
-#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#if (TV_IPC_TYPE == TV_BINDER)
 class PqClient : public BBinder{
-#else //(TV_IPC_TYPE == TV_DBUS)
-class PqClient {
-#endif
 public:
-#if (TV_IPC_TYPE == TV_BINDER)
+
     enum {
         CMD_START = IBinder::FIRST_CALL_TRANSACTION,
         CMD_PQ_ACTION = IBinder::FIRST_CALL_TRANSACTION + 1,
@@ -45,7 +34,6 @@ public:
         EVT_SRC_CT_CB = IBinder::FIRST_CALL_TRANSACTION + 4,
         EVT_SIG_DT_CB = IBinder::FIRST_CALL_TRANSACTION + 5,
     };
-#endif
 
     PqClient();
     ~PqClient();
@@ -84,37 +72,50 @@ public:
     int setCurrentSourceInfo(int sourceInput, int sigFmt, int transFmt);
     source_input_param_t getCurrentSourceInfo();
 
+    int FactoryResetPQMode(void);
+    int FactoryResetColorTemp(void);
+    int FactoryWhiteBalanceSetColorTemperature(int sourceInput, int sigFmt, int transFmt, int colorTemperatureValue, int isSave = 0);
+    int FactoryWhiteBalanceGetColorTemperature();
+    int FactorySetPQMode_Brightness(int sourceInput, int sigFmt, int transFmt, int pq_mode, int brightness);
+    int FactoryGetPQMode_Brightness(int sourceInput, int sigFmt, int transFmt, int pq_mode);
+    int FactorySetPQMode_Contrast(int sourceInput, int sigFmt, int transFmt, int pq_mode, int contrast);
+    int FactoryGetPQMode_Contrast(int sourceInput, int sigFmt, int transFmt, int pq_mode);
+    int FactorySetPQMode_Saturation(int sourceInput, int sigFmt, int transFmt, int pq_mode, int saturation);
+    int FactoryGetPQMode_Saturation(int sourceInput, int sigFmt, int transFmt, int pq_mode);
+    int FactorySetPQMode_Hue(int sourceInput, int sigFmt, int transFmt, int pq_mode, int hue);
+    int FactoryGetPQMode_Hue(int sourceInput, int sigFmt, int transFmt, int pq_mode);
+    int FactorySetPQMode_Sharpness(int sourceInput, int sigFmt, int transFmt, int pq_mode, int sharpness);
+    int FactoryGetPQMode_Sharpness(int sourceInput, int sigFmt, int transFmt, int pq_mode);
+    int FactorySetOverscanParams(int sourceInput, int sigFmt, int transFmt, tvin_cutwin_t cutwin_t);
+    tvin_cutwin_t FactoryGetOverscanParams(int sourceInput, int sigFmt, int transFmt);
+    int FactorySetWhiteBalanceRedGain(int sourceInput, int sigFmt, int transFmt, int colortemptureMode, int value);
+    int FactoryGetWhiteBalanceRedGain(int sourceInput, int sigFmt, int transFmt, int colortemptureMode);
+    int FactorySetWhiteBalanceGreenGain(int sourceInput, int sigFmt, int transFmt, int colortemptureMode, int value);
+    int FactoryGetWhiteBalanceGreenGain(int sourceInput, int sigFmt, int transFmt, int colortemptureMode);
+    int FactorySetWhiteBalanceBlueGain(int sourceInput, int sigFmt, int transFmt, int colortemptureMode, int value);
+    int FactoryGetWhiteBalanceBlueGain(int sourceInput, int sigFmt, int transFmt, int colortemptureMode);
+    int FactorySetWhiteBalanceRedPostOffset(int sourceInput, int sigFmt, int transFmt, int colortemptureMode, int value);
+    int FactoryGetWhiteBalanceRedPostOffset(int sourceInput, int sigFmt, int transFmt, int colortemptureMode);
+    int FactorySetWhiteBalanceGreenPostOffset(int sourceInput, int sigFmt, int transFmt, int colortemptureMode, int value);
+    int FactoryGetWhiteBalanceGreenPostOffset(int sourceInput, int sigFmt, int transFmt, int colortemptureMode);
+    int FactorySetWhiteBalanceBluePostOffset(int sourceInput, int sigFmt, int transFmt, int colortemptureMode, int value);
+    int FactoryGetWhiteBalanceBluePostOffset(int sourceInput, int sigFmt, int transFmt, int colortemptureMode);
+
     int FactorySetRGBPattern(int r, int g, int b);
     int FactoryGetRGBPattern();
     int FactorySetGrayPattern(int value);
     int FactoryGetGrayPattern();
-    int FactorySetWhiteBalanceRedGain(int source, int colortemptureMode, int value);
-    int FactoryGetWhiteBalanceRedGain(int source, int colortemptureMode);
-    int FactorySetWhiteBalanceGreenGain(int source, int colortemptureMode, int value);
-    int FactoryGetWhiteBalanceGreenGain(int source, int colortemptureMode);
-    int FactorySetWhiteBalanceBlueGain(int source, int colortemptureMode, int value);
-    int FactoryGetWhiteBalanceBlueGain(int source, int colortemptureMode);
-    int FactorySetWhiteBalanceRedPostOffset(int source, int colortemptureMode, int value);
-    int FactoryGetWhiteBalanceRedPostOffset(int source, int colortemptureMode);
-    int FactorySetWhiteBalanceGreenPostOffset(int source, int colortemptureMode, int value);
-    int FactoryGetWhiteBalanceGreenPostOffset(int source, int colortemptureMode);
-    int FactorySetWhiteBalanceBluePostOffset(int source, int colortemptureMode, int value);
-    int FactoryGetWhiteBalanceBluePostOffset(int source, int colortemptureMode);
+
 private:
-#if (TV_IPC_TYPE == TV_DBUS)
-    DBusConnection *ClientBusInit();
-    DBusConnection *mpDBusConnection = NULL;
-#endif
     void SendMethodCall(char *CmdString);
     int SplitRetBuf(const char *commandData);
     char mRetBuf[128] = {0};
     std::string  mRet[10];
-#if (TV_IPC_TYPE == TV_BINDER)
+
     sp<IBinder> mpqServicebinder;
     virtual status_t onTransact(uint32_t code,
                                 const Parcel& data, Parcel* reply,
                                 uint32_t flags = 0);
-#endif
 };
 #ifdef __cplusplus
 }

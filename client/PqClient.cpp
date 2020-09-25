@@ -35,7 +35,6 @@ PqClient *PqClient::GetInstance() {
 }
 
 PqClient::PqClient() {
-#if (TV_IPC_TYPE == TV_BINDER)
     Parcel send, reply;
     sp<IServiceManager> serviceManager = defaultServiceManager();
     do {
@@ -45,122 +44,18 @@ PqClient::PqClient() {
         usleep(500000);
     } while(true);
     LOGD("Connected to pqservice.\n");
-#else
-    if (mpDBusConnection == NULL) {
-        mpDBusConnection = ClientBusInit();
-    }
-#endif
 }
 
 PqClient::~PqClient() {
-#if (TV_IPC_TYPE == TV_DBUS)
-    if (mpDBusConnection != NULL) {
-        dbus_connection_unref(mpDBusConnection);
-        mpDBusConnection = NULL;
-    }
-#else //(TV_IPC_TYPE == TV_BINDER)
     Parcel send, reply;
     mpqServicebinder->transact(CMD_CLR_PQ_CB, send, &reply);
     mpqServicebinder = NULL;
-#endif
 }
-
-#if (TV_IPC_TYPE == TV_DBUS)
-DBusConnection *PqClient::ClientBusInit()
-{
-    DBusConnection *connection;
-    DBusError err;
-    int ret;
-
-    dbus_error_init(&err);
-    connection = dbus_bus_get(DBUS_BUS_SESSION, &err);
-    if (dbus_error_is_set(&err)) {
-        LOGE("PqClient: connection error: :%s -- %s\n", err.name, err.message);
-        dbus_error_free(&err);
-        return NULL;
-    }
-
-    ret = dbus_bus_request_name(connection, "aml.tv.client", DBUS_NAME_FLAG_REPLACE_EXISTING, &err);
-    if (dbus_error_is_set(&err)) {
-        LOGE("PqClient: Name error: %s -- %s\n", err.name, err.message);
-        dbus_error_free(&err);
-        return NULL;
-    }
-
-    if (ret != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) {
-        return NULL;
-    }
-
-    dbus_bus_add_match(connection, "type='signal'", &err);
-
-    dbus_connection_flush(connection);
-    if (dbus_error_is_set(&err)) {
-        LOGE("PqClient: add Match Error %s--%s\n", err.name, err.message);
-        dbus_error_free(&err);
-        return connection;
-    }
-
-    return connection;
-}
-#endif
 
 void PqClient::SendMethodCall(char *CmdString)
 {
     LOGD("%s.\n", __FUNCTION__);
 
-#if (TV_IPC_TYPE == TV_DBUS)
-    DBusMessage *msg;
-    DBusMessageIter arg;
-    DBusPendingCall *pending;
-
-    msg = dbus_message_new_method_call("aml.tv.service", "/aml/tv", "aml.tv", "cmd");
-    if (msg == NULL) {
-        LOGE("PqClient: no memory\n");
-        return RET_FAILED;
-    }
-
-    if (!dbus_message_append_args(msg, DBUS_TYPE_STRING, &CmdString, DBUS_TYPE_INVALID)) {
-        LOGE("PqClient: add args failed!\n");
-        dbus_message_unref(msg);
-        return RET_FAILED;
-    }
-
-    if (!dbus_connection_send_with_reply (mpDBusConnection, msg, &pending, -1)) {
-        LOGE("PqClient: no memeory!");
-        dbus_message_unref(msg);
-        return RET_FAILED;
-    }
-
-    if (pending == NULL) {
-        LOGE("PqClient: Pending is NULL, may be disconnect...\n");
-        dbus_message_unref(msg);
-        return RET_FAILED;
-    }
-
-    dbus_connection_flush(mpDBusConnection);
-    dbus_message_unref(msg);
-
-    dbus_pending_call_block (pending);
-    msg = dbus_pending_call_steal_reply (pending);
-    if (msg == NULL) {
-        LOGE("PqClient: reply is null. error\n");
-        return RET_FAILED;
-    }
-
-    dbus_pending_call_unref(pending);
-
-    if (!dbus_message_iter_init(msg, &arg)) {
-        LOGE("PqClient: no argument, error\n");
-    }
-
-    if (dbus_message_iter_get_arg_type(&arg) != DBUS_TYPE_INT32) {
-        LOGE("PqClient: paramter type error\n");
-    }
-
-    dbus_message_iter_get_basic(&arg, &ReturnVal);
-    LOGE("PqClient: ret = %d\n",ReturnVal);
-    dbus_message_unref(msg);
-#else //(TV_IPC_TYPE == TV_BINDER)
     Parcel send, reply;
     memset(mRetBuf, 0, sizeof(mRetBuf)/sizeof(char));
 
@@ -177,7 +72,6 @@ void PqClient::SendMethodCall(char *CmdString)
             strcpy(mRetBuf, tmp);
         }
     }
-#endif
 
     LOGE("PqClient: mRetBuf %s.\n", mRetBuf);
 }
@@ -722,6 +616,460 @@ source_input_param_t PqClient::getCurrentSourceInfo()
     return source_input_param;
 }
 
+//PQ Factory cmd
+
+int PqClient::FactoryResetPQMode(void)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pqFactory.set.%d", PQ_FACTORY_RESET_PICTURE_MODE);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactoryResetColorTemp(void)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pqFactory.set.%d", PQ_FACTORY_RESET_COLOR_TEMPERATURE_MODE);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactoryWhiteBalanceSetColorTemperature(int sourceInput, int sigFmt, int transFmt, int colorTemperatureValue, int isSave)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d", PQ_FACTORY_SET_COLOR_TEMPERATURE_MODE, colorTemperatureValue, isSave);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactoryWhiteBalanceGetColorTemperature()
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d", PQ_FACTORY_GET_COLOR_TEMPERATURE_MODE);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactorySetPQMode_Brightness(int sourceInput, int sigFmt, int transFmt, int pq_mode, int brightness)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d.%d.%d.%d", PQ_FACTORY_SET_BRIGHTNESS, sourceInput, sigFmt, transFmt, pq_mode, brightness);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactoryGetPQMode_Brightness(int sourceInput, int sigFmt, int transFmt, int pq_mode)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d.%d.%d.%d.%d", PQ_FACTORY_GET_BRIGHTNESS, sourceInput, sigFmt, transFmt, pq_mode);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactorySetPQMode_Contrast(int sourceInput, int sigFmt, int transFmt, int pq_mode, int contrast)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d.%d.%d.%d", PQ_FACTORY_SET_CONTRAST, sourceInput, sigFmt, transFmt, pq_mode, contrast);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactoryGetPQMode_Contrast(int sourceInput, int sigFmt, int transFmt, int pq_mode)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d.%d.%d.%d.%d", PQ_FACTORY_GET_CONTRAST, sourceInput, sigFmt, transFmt, pq_mode);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactorySetPQMode_Saturation(int sourceInput, int sigFmt, int transFmt, int pq_mode, int saturation)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d.%d.%d.%d", PQ_FACTORY_SET_SATUATION, sourceInput, sigFmt, transFmt, pq_mode, saturation);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactoryGetPQMode_Saturation(int sourceInput, int sigFmt, int transFmt, int pq_mode)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d.%d.%d.%d.%d", PQ_FACTORY_GET_SATUATION, sourceInput, sigFmt, transFmt, pq_mode);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactorySetPQMode_Hue(int sourceInput, int sigFmt, int transFmt, int pq_mode, int hue)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d.%d.%d.%d", PQ_FACTORY_SET_HUE, sourceInput, sigFmt, transFmt, pq_mode, hue);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactoryGetPQMode_Hue(int sourceInput, int sigFmt, int transFmt, int pq_mode)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d.%d.%d.%d.%d", PQ_FACTORY_GET_HUE, sourceInput, sigFmt, transFmt, pq_mode);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactorySetPQMode_Sharpness(int sourceInput, int sigFmt, int transFmt, int pq_mode, int sharpness)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d.%d.%d.%d", PQ_FACTORY_SET_SHARPNESS, sourceInput, sigFmt, transFmt, pq_mode, sharpness);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactoryGetPQMode_Sharpness(int sourceInput, int sigFmt, int transFmt, int pq_mode)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d.%d.%d.%d.%d", PQ_FACTORY_GET_SHARPNESS, sourceInput, sigFmt, transFmt, pq_mode);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactorySetOverscanParams(int sourceInput, int sigFmt, int transFmt, tvin_cutwin_t cutwin_t)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d.%d.%d.%d.%d.%d.%d", PQ_FACTORY_SET_OVERSCAN, sourceInput, sigFmt, transFmt, cutwin_t.he, cutwin_t.hs, cutwin_t.ve, cutwin_t.vs);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+tvin_cutwin_t PqClient::FactoryGetOverscanParams(int sourceInput, int sigFmt, int transFmt)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d.%d.%d.%d", PQ_FACTORY_GET_OVERSCAN, sourceInput, sigFmt, transFmt);
+    SendMethodCall(buf);
+    SplitRetBuf(mRetBuf);
+
+    tvin_cutwin_t cutwin_t;
+    cutwin_t.he = atoi(mRet[0].c_str());
+    cutwin_t.hs = atoi(mRet[1].c_str());
+    cutwin_t.ve = atoi(mRet[2].c_str());
+    cutwin_t.vs = atoi(mRet[3].c_str());
+
+    return cutwin_t;
+}
+
+int PqClient::FactorySetWhiteBalanceRedGain(int sourceInput, int sigFmt, int transFmt, int colortemptureMode, int value)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pqFactory.set.%d.%d.%d.%d", PQ_FACTORY_SET_WB_RED_GAIN, sourceInput, colortemptureMode, value);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactoryGetWhiteBalanceRedGain(int sourceInput, int sigFmt, int transFmt, int colortemptureMode)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pqFactory.get.%d.%d.%d", PQ_FACTORY_GET_WB_RED_GAIN, sourceInput, colortemptureMode);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactorySetWhiteBalanceGreenGain(int sourceInput, int sigFmt, int transFmt, int colortemptureMode, int value)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pqFactory.set.%d.%d.%d.%d", PQ_FACTORY_SET_WB_GREEN_GAIN, sourceInput, colortemptureMode, value);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactoryGetWhiteBalanceGreenGain(int sourceInput, int sigFmt, int transFmt, int colortemptureMode)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pqFactory.get.%d.%d.%d", PQ_FACTORY_GET_WB_GREEN_GAIN, sourceInput, colortemptureMode);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactorySetWhiteBalanceBlueGain(int sourceInput, int sigFmt, int transFmt, int colortemptureMode, int value)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pqFactory.set.%d.%d.%d.%d", PQ_FACTORY_SET_WB_BLUE_GAIN, sourceInput, colortemptureMode, value);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactoryGetWhiteBalanceBlueGain(int sourceInput, int sigFmt, int transFmt, int colortemptureMode)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pqFactory.get.%d.%d.%d", PQ_FACTORY_GET_WB_BLUE_GAIN, sourceInput, colortemptureMode);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactorySetWhiteBalanceRedPostOffset(int sourceInput, int sigFmt, int transFmt, int colortemptureMode, int value)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pqFactory.set.%d.%d.%d.%d", PQ_FACTORY_SET_WB_RED_OFFSET, sourceInput, colortemptureMode, value);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactoryGetWhiteBalanceRedPostOffset(int sourceInput, int sigFmt, int transFmt, int colortemptureMode)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pqFactory.get.%d.%d.%d", PQ_FACTORY_GET_WB_RED_OFFSET, sourceInput, colortemptureMode);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactorySetWhiteBalanceGreenPostOffset(int sourceInput, int sigFmt, int transFmt, int colortemptureMode, int value)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pqFactory.set.%d.%d.%d.%d", PQ_FACTORY_SET_WB_GREEN_OFFSET, sourceInput, colortemptureMode, value);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactoryGetWhiteBalanceGreenPostOffset(int sourceInput, int sigFmt, int transFmt, int colortemptureMode)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pqFactory.get.%d.%d.%d", PQ_FACTORY_GET_WB_GREEN_OFFSET, sourceInput, colortemptureMode);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactorySetWhiteBalanceBluePostOffset(int sourceInput, int sigFmt, int transFmt, int colortemptureMode, int value)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pqFactory.set.%d.%d.%d.%d", PQ_FACTORY_SET_WB_BLUE_OFFSET, sourceInput, colortemptureMode, value);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactoryGetWhiteBalanceBluePostOffset(int sourceInput, int sigFmt, int transFmt, int colortemptureMode)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pqFactory.get.%d.%d.%d", PQ_FACTORY_GET_WB_BLUE_OFFSET, sourceInput, colortemptureMode);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
 int PqClient::FactorySetRGBPattern(int r, int g, int b)
 {
     LOGD("%s\n", __FUNCTION__);
@@ -786,199 +1134,6 @@ int PqClient::FactoryGetGrayPattern()
     return ret;
 }
 
-int PqClient::FactorySetWhiteBalanceRedGain(int source, int colortemptureMode, int value)
-{
-    LOGD("%s\n", __FUNCTION__);
-
-    char buf[32] = {0};
-    int  ret     = -1;
-
-    sprintf(buf, "pqFactory.set.%d.%d.%d.%d", PQ_FACTORY_SET_WB_RED_GAIN, source, colortemptureMode, value);
-    SendMethodCall(buf);
-
-    ret = atoi(mRetBuf);
-    LOGE("PqClient: ret %d.\n", ret);
-
-    return ret;
-}
-
-int PqClient::FactoryGetWhiteBalanceRedGain(int source, int colortemptureMode)
-{
-    LOGD("%s\n", __FUNCTION__);
-
-    char buf[32] = {0};
-    int  ret     = -1;
-
-    sprintf(buf, "pqFactory.get.%d.%d.%d", PQ_FACTORY_GET_WB_RED_GAIN, source, colortemptureMode);
-    SendMethodCall(buf);
-
-    ret = atoi(mRetBuf);
-    LOGE("PqClient: ret %d.\n", ret);
-
-    return ret;
-}
-
-int PqClient::FactorySetWhiteBalanceGreenGain(int source, int colortemptureMode, int value)
-{
-    LOGD("%s\n", __FUNCTION__);
-
-    char buf[32] = {0};
-    int  ret     = -1;
-
-    sprintf(buf, "pqFactory.set.%d.%d.%d.%d", PQ_FACTORY_SET_WB_GREE_GAIN, source, colortemptureMode, value);
-    SendMethodCall(buf);
-
-    ret = atoi(mRetBuf);
-    LOGE("PqClient: ret %d.\n", ret);
-
-    return ret;
-}
-
-int PqClient::FactoryGetWhiteBalanceGreenGain(int source, int colortemptureMode)
-{
-    LOGD("%s\n", __FUNCTION__);
-
-    char buf[32] = {0};
-    int  ret     = -1;
-
-    sprintf(buf, "pqFactory.get.%d.%d.%d", PQ_FACTORY_GET_WB_GREE_GAIN, source, colortemptureMode);
-    SendMethodCall(buf);
-
-    ret = atoi(mRetBuf);
-    LOGE("PqClient: ret %d.\n", ret);
-
-    return ret;
-}
-
-int PqClient::FactorySetWhiteBalanceBlueGain(int source, int colortemptureMode, int value)
-{
-    LOGD("%s\n", __FUNCTION__);
-
-    char buf[32] = {0};
-    int  ret     = -1;
-
-    sprintf(buf, "pqFactory.set.%d.%d.%d.%d", PQ_FACTORY_SET_WB_BLUE_GAIN, source, colortemptureMode, value);
-    SendMethodCall(buf);
-
-    ret = atoi(mRetBuf);
-    LOGE("PqClient: ret %d.\n", ret);
-
-    return ret;
-}
-
-int PqClient::FactoryGetWhiteBalanceBlueGain(int source, int colortemptureMode)
-{
-    LOGD("%s\n", __FUNCTION__);
-
-    char buf[32] = {0};
-    int  ret     = -1;
-
-    sprintf(buf, "pqFactory.get.%d.%d.%d", PQ_FACTORY_GET_WB_BLUE_GAIN, source, colortemptureMode);
-    SendMethodCall(buf);
-
-    ret = atoi(mRetBuf);
-    LOGE("PqClient: ret %d.\n", ret);
-
-    return ret;
-}
-
-int PqClient::FactorySetWhiteBalanceRedPostOffset(int source, int colortemptureMode, int value)
-{
-    LOGD("%s\n", __FUNCTION__);
-
-    char buf[32] = {0};
-    int  ret     = -1;
-
-    sprintf(buf, "pqFactory.set.%d.%d.%d.%d", PQ_FACTORY_SET_WB_RED_POSTOFFSET, source, colortemptureMode, value);
-    SendMethodCall(buf);
-
-    ret = atoi(mRetBuf);
-    LOGE("PqClient: ret %d.\n", ret);
-
-    return ret;
-}
-
-int PqClient::FactoryGetWhiteBalanceRedPostOffset(int source, int colortemptureMode)
-{
-    LOGD("%s\n", __FUNCTION__);
-
-    char buf[32] = {0};
-    int  ret     = -1;
-
-    sprintf(buf, "pqFactory.get.%d.%d.%d", PQ_FACTORY_GET_WB_RED_POSTOFFSET, source, colortemptureMode);
-    SendMethodCall(buf);
-
-    ret = atoi(mRetBuf);
-    LOGE("PqClient: ret %d.\n", ret);
-
-    return ret;
-}
-
-int PqClient::FactorySetWhiteBalanceGreenPostOffset(int source, int colortemptureMode, int value)
-{
-    LOGD("%s\n", __FUNCTION__);
-
-    char buf[32] = {0};
-    int  ret     = -1;
-
-    sprintf(buf, "pqFactory.set.%d.%d.%d.%d", PQ_FACTORY_SET_WB_GREE_POSTOFFSET, source, colortemptureMode, value);
-    SendMethodCall(buf);
-
-    ret = atoi(mRetBuf);
-    LOGE("PqClient: ret %d.\n", ret);
-
-    return ret;
-}
-
-int PqClient::FactoryGetWhiteBalanceGreenPostOffset(int source, int colortemptureMode)
-{
-    LOGD("%s\n", __FUNCTION__);
-
-    char buf[32] = {0};
-    int  ret     = -1;
-
-    sprintf(buf, "pqFactory.get.%d.%d.%d", PQ_FACTORY_GET_WB_GREE_POSTOFFSET, source, colortemptureMode);
-    SendMethodCall(buf);
-
-    ret = atoi(mRetBuf);
-    LOGE("PqClient: ret %d.\n", ret);
-
-    return ret;
-}
-
-int PqClient::FactorySetWhiteBalanceBluePostOffset(int source, int colortemptureMode, int value)
-{
-    LOGD("%s\n", __FUNCTION__);
-
-    char buf[32] = {0};
-    int  ret     = -1;
-
-    sprintf(buf, "pqFactory.set.%d.%d.%d.%d", PQ_FACTORY_SET_WB_BLUE_POSTOFFSET, source, colortemptureMode, value);
-    SendMethodCall(buf);
-
-    ret = atoi(mRetBuf);
-    LOGE("PqClient: ret %d.\n", ret);
-
-    return ret;
-}
-
-int PqClient::FactoryGetWhiteBalanceBluePostOffset(int source, int colortemptureMode)
-{
-    LOGD("%s\n", __FUNCTION__);
-
-    char buf[32] = {0};
-    int  ret     = -1;
-
-    sprintf(buf, "pqFactory.get.%d.%d.%d", PQ_FACTORY_GET_WB_BLUE_POSTOFFSET, source, colortemptureMode);
-    SendMethodCall(buf);
-
-    ret = atoi(mRetBuf);
-    LOGE("PqClient: ret %d.\n", ret);
-
-    return ret;
-}
-
-#if (TV_IPC_TYPE == TV_BINDER)
 status_t PqClient::onTransact(uint32_t code,
                                 const Parcel& data, Parcel* reply,
                                 uint32_t flags) {
@@ -991,4 +1146,3 @@ status_t PqClient::onTransact(uint32_t code,
 
     return (0);
 }
-#endif
