@@ -104,7 +104,7 @@ int PqService::SetCmd(pq_moudle_param_t param)
             ret = mpPQcontrol->SetPQMode(paramData[0], paramData[1]);
             break;
         case PQ_SET_COLOR_TEMPERATURE_MODE:
-            ret = mpPQcontrol->SetColorTemperature(paramData[0], paramData[1]);
+            ret = mpPQcontrol->SetColorTemperature(paramData[0], paramData[1], (rgb_ogo_type_t)paramData[2], paramData[3]);
             break;
         case PQ_SET_BRIGHTNESS:
             ret = mpPQcontrol->SetBrightness(paramData[0], paramData[1]);
@@ -150,7 +150,7 @@ int PqService::SetCmd(pq_moudle_param_t param)
             source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
             source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
 
-            ret = mpPQcontrol->SetCurrentSourceInputInfo(source_input_param);
+            ret = mpPQcontrol->SetCurrentSource((tv_source_input_t)paramData[0]);
             break;
         //Factory cmd
         case PQ_FACTORY_RESET_PICTURE_MODE:
@@ -399,7 +399,7 @@ char* PqService::GetCmd(pq_moudle_param_t param)
 
 void PqService::ParserPqCommand(const char *commandData)
 {
-    LOGD("%s: cmd is %s\n", __FUNCTION__, commandData);
+    LOGD("%s: cmd data is %s\n", __FUNCTION__, commandData);
 
     int  cmd_size = 0;
     int  ret      = 0;

@@ -51,9 +51,13 @@ SSMAction::~SSMAction()
 
 void SSMAction::init(char *settingDataPath, char *whiteBalanceDataPath)
 {
-    LOGD("%s: settingDataPath: %s, whiteBalanceDataPath:%s!\n", __FUNCTION__, settingDataPath, whiteBalanceDataPath);
+    LOGD("%s: settingDataPath: %s, whiteBalanceDataPath:%s\n", __FUNCTION__, settingDataPath, whiteBalanceDataPath);
     //check file PATH
-    mWhiteBalanceFilePath = whiteBalanceDataPath;
+    char filePath0[64] = {0};
+    sprintf(filePath0, "%s/cri_data", whiteBalanceDataPath);
+    strcpy(mWhiteBalanceFilePath, filePath0);
+    LOGD("mWhiteBalanceFilePath: %s\n", mWhiteBalanceFilePath);
+
     char filePath1[64] = {0};
     sprintf(filePath1, "%s/ssm_data", settingDataPath);
     mSSMDataFilePath = filePath1;

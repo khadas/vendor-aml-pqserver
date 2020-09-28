@@ -41,7 +41,7 @@ public:
 
     int SetPQMode(int mode, int isSave = 0);
     int GetPQMode();
-    int SetColorTemperature(int colorTemperatureValue, int isSave = 0);
+    int SetColorTemperature(int colorTemperatureValue, int isSave, int rgb_type, int value);
     int GetColorTemperature();
     int SetBrightness(int brightnessValue, int isSave = 0);
     int GetBrightness();

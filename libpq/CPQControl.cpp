@@ -68,15 +68,18 @@ void CPQControl::CPQControlInit()
         LOGD("Open DI module success!\n");
     }
 
+    //open vdin module
+    mpVdin = CVdin::getInstance();
+
     //Load config file
     mPQConfigFile = CConfigFile::GetInstance();
 
     const char* pqConfigFilePath = getenv("PQ_CONFIG_FILE_PATH");
     if (!pqConfigFilePath) {
-        LOGD("%s: read pqconfig file path failed!\n", __FUNCTION__);
+        LOGD("%s: read pqconfig file path failed,use default path:%s\n", __FUNCTION__, PQ_CONFIG_DEFAULT_PATH);
         pqConfigFilePath = PQ_CONFIG_DEFAULT_PATH;
     } else {
-        LOGD("%s: pqconfig file path is %s!\n", __FUNCTION__, pqConfigFilePath);
+        LOGD("%s: pqconfig file path is %s\n", __FUNCTION__, pqConfigFilePath);
     }
     mPQConfigFile->LoadFromFile(pqConfigFilePath);
     SetFlagByCfg();
@@ -123,16 +126,16 @@ void CPQControl::CPQControlInit()
     memset(filePath2, 0, sizeof(filePath2));
     config_value = mPQConfigFile->GetSettingDataFilePath(CFG_SECTION_PQ, CFG_PQ_SETTINGDATA_FILE_PATH, NULL);
     if (!config_value) {
-        LOGD("%s: read setting data file path failed!\n", __FUNCTION__);
+        LOGD("%s: read setting data file path failed,use default path:%s\n", __FUNCTION__, PQ_SETTINGDATA_DEFAULT_PATH);
         sprintf(filePath1, "%s", PQ_SETTINGDATA_DEFAULT_PATH);
     } else {
-        LOGD("%s: setting data file path is %s!\n", __FUNCTION__, config_value);
+        LOGD("%s: setting data file path is %s\n", __FUNCTION__, config_value);
         sprintf(filePath1, "%s", config_value);
     }
 
     config_value = mPQConfigFile->GetWhiteBalanceFilePath(CFG_SECTION_PQ, CFG_PQ_WHITEBALANCE_FILE_PATH, NULL);
     if (!config_value) {
-        LOGD("%s: read whitebalance data file path failed!\n", __FUNCTION__);
+        LOGD("%s: read whitebalance data file path failed,use default path:%s\n", __FUNCTION__, PQ_WHITEBALANCE_DEFAULT_PATH);
         sprintf(filePath2, "%s", PQ_WHITEBALANCE_DEFAULT_PATH);
     } else {
         LOGD("%s: whitebalance data file path is %s!\n", __FUNCTION__, config_value);
@@ -143,6 +146,7 @@ void CPQControl::CPQControlInit()
     mSSMAction->init(filePath1, filePath2);
 
     //init source
+    mSourceInput                        = SOURCE_MPEG;
     mCurentSourceInputInfo.source_input = SOURCE_MPEG;
     mCurentSourceInputInfo.sig_fmt      = TVIN_SIG_FMT_HDMI_1920X1080P_60HZ;
     mCurentSourceInputInfo.trans_fmt    = TVIN_TFMT_2D;
@@ -169,6 +173,10 @@ void CPQControl::CPQControlInit()
     //Vframe size
     mCDevicePollCheckThread.setObserver(this);
     mCDevicePollCheckThread.StartCheck();
+
+    mUEventObserver.setUeventObserverCallBack(this);
+    mUEventObserver.StartUEventThead();
+
     mInitialized = true;
 
     //auto backlight
@@ -188,6 +196,12 @@ void CPQControl::CPQControlUnInit()
     VPPCloseModule();
     //close DI module
     DICloseModule();
+
+    //close vdin
+    if (mpVdin != NULL) {
+        delete mpVdin;
+        mpVdin = NULL;
+    }
 
     if (mSSMAction!= NULL) {
         delete mSSMAction;
@@ -321,10 +335,10 @@ void CPQControl::onVframeSizeChange()
     if (ret > 0) {
         int eventFlagValue = strtol(temp, NULL, 16);
         LOGD("%s: event value = %d(0x%x)!\n", __FUNCTION__, eventFlagValue, eventFlagValue);
-        int frameszieEventFlag = (eventFlagValue & 0x1) >> 0;
-        int hdrTypeEventFlag = (eventFlagValue & 0x2) >> 1;
+        int frameszieEventFlag      = (eventFlagValue & 0x1) >> 0;
+        int hdrTypeEventFlag        = (eventFlagValue & 0x2) >> 1;
         int videoPlayStartEventFlag = (eventFlagValue & 0x4) >> 2;
-        int videoPlayStopEventFlag = (eventFlagValue & 0x8) >> 3;
+        int videoPlayStopEventFlag  = (eventFlagValue & 0x8) >> 3;
         //int videoPlayAxisEventFlag = (eventFlagValue & 0x10) >> 4;
         /*LOGD("%s: frameszieEventFlag = %d,hdrTypeEventFlag = %d,videoPlayStartEventFlag = %d,videoPlayStopEventFlag = %d,videoPlayAxisEventFlag = %d!\n",
                  __FUNCTION__, frameszieEventFlag, hdrTypeEventFlag, videoPlayStartEventFlag, videoPlayStopEventFlag,
@@ -333,10 +347,11 @@ void CPQControl::onVframeSizeChange()
         if (((mCurentSourceInputInfo.source_input == SOURCE_DTV)
             || (mCurentSourceInputInfo.source_input == SOURCE_MPEG))
             && (frameszieEventFlag == 1)) {
-            new_source_input_param.sig_fmt = getVideoResolutionToFmt();
-            LOGD("%s: sig_fmt = 0x%x(%d).\n", __FUNCTION__, new_source_input_param.sig_fmt, new_source_input_param.sig_fmt);
+            new_source_input_param.sig_fmt      = getVideoResolutionToFmt();
             new_source_input_param.source_input = mCurentSourceInputInfo.source_input;
-            new_source_input_param.trans_fmt = mCurentSourceInputInfo.trans_fmt;
+            new_source_input_param.trans_fmt    = mCurentSourceInputInfo.trans_fmt;
+            LOGD("%s: source_input = %d sig_fmt = 0x%x(%d).\n", __FUNCTION__, new_source_input_param.source_input,
+                new_source_input_param.sig_fmt, new_source_input_param.sig_fmt);
             SetCurrentSourceInputInfo(new_source_input_param);
         }
 
@@ -383,6 +398,171 @@ tvin_sig_fmt_t CPQControl::getVideoResolutionToFmt()
     return sig_fmt;
 }
 
+int CPQControl::SetCurrenSourceInfo(vdin_parm_t sig_info)
+{
+    if (mCurrentSignalInfo.info.trans_fmt  != sig_info.info.trans_fmt
+        || mCurrentSignalInfo.info.fmt     != sig_info.info.fmt
+        || mCurrentSignalInfo.info.status  != sig_info.info.status
+        || mCurrentSignalInfo.port         != sig_info.port
+        || mCurrentSignalInfo.info.hdr_info != sig_info.info.hdr_info) {
+        mCurrentSignalInfo.info.trans_fmt    = sig_info.info.trans_fmt;
+        mCurrentSignalInfo.info.fmt          = sig_info.info.fmt;
+        mCurrentSignalInfo.info.status       = sig_info.info.status;
+        mCurrentSignalInfo.info.cfmt         = sig_info.info.cfmt;
+        mCurrentSignalInfo.info.hdr_info     = sig_info.info.hdr_info;
+        mCurrentSignalInfo.info.fps          = sig_info.info.fps;
+        mCurrentSignalInfo.info.is_dvi       = sig_info.info.is_dvi;
+        mCurrentSignalInfo.info.aspect_ratio = sig_info.info.aspect_ratio;
+
+        mCurrentSignalInfo.port              = sig_info.port;
+
+        mSourceInput = mpVdin->Tvin_PortToSourceInput(sig_info.port);
+
+        if ((mSourceInput == SOURCE_MPEG)
+            || (mSourceInput != SOURCE_MPEG && mCurrentSignalInfo.info.status == TVIN_SIG_STATUS_STABLE)) {
+             source_input_param_t source_input_param;
+             source_input_param.source_input = mSourceInput;
+             source_input_param.sig_fmt      = mCurrentSignalInfo.info.fmt;
+             source_input_param.trans_fmt    = mCurrentSignalInfo.info.trans_fmt;
+             SetCurrentSourceInputInfo(source_input_param);
+        }
+    }
+
+    return 0;
+}
+
+void CPQControl::onSigStatusChange(void)
+{
+    vdin_parm_s tempSignalInfo;
+    int ret = mpVdin->Tvin_GetVdinParam(&tempSignalInfo);
+
+    if (ret < 0) {
+        LOGD("%s Get Signal Info error!\n", __FUNCTION__);
+    } else {
+        SetCurrenSourceInfo(tempSignalInfo);
+        LOGD("mSourceInput is %d, port is %d, sig_fmt is %d, status is %d, isDVI is %d, hdr_info is 0x%x\n",
+            mSourceInput, mCurrentSignalInfo.port, mCurrentSignalInfo.info.fmt, mCurrentSignalInfo.info.status,
+            mCurrentSignalInfo.info.is_dvi, mCurrentSignalInfo.info.hdr_info);
+    }
+
+    return;
+}
+
+void CPQControl::stopVdin(void)
+{
+    SetCurrentSource(SOURCE_MPEG);
+
+    vdin_parm_s tempSignalInfo;
+    tempSignalInfo.info.trans_fmt    = TVIN_TFMT_2D;
+    tempSignalInfo.info.fmt          = TVIN_SIG_FMT_NULL;
+    tempSignalInfo.info.status       = TVIN_SIG_STATUS_NULL;
+    tempSignalInfo.info.cfmt         = TVIN_COLOR_FMT_MAX;
+    tempSignalInfo.info.hdr_info     = 0;
+    tempSignalInfo.info.fps          = 60;
+    tempSignalInfo.info.is_dvi       = 0;
+    tempSignalInfo.info.aspect_ratio = TVIN_ASPECT_NULL;
+    tempSignalInfo.port              = TVIN_PORT_MPEG0;
+
+    SetCurrenSourceInfo(tempSignalInfo);
+}
+
+void CPQControl::onUevent(uevent_data_t ueventData)
+{
+    LOGD("%s matchName:%s\n", __FUNCTION__, ueventData.matchName);
+    int ret = -1;
+
+    vdin_event_info_s SignalEventInfo;
+    memset(&SignalEventInfo, 0, sizeof(vdin_event_info_s));
+    ret = mpVdin->Tvin_GetSignalEventInfo(&SignalEventInfo);
+
+    if (ret < 0) {
+        stopVdin();
+        LOGD("Get vidn event error!\n");
+    } else {
+        //tv_source_input_type_t source_type = mpTvin->Tvin_SourceInputToSourceInputType(mCurrentSource);
+        tvin_sig_change_flag_t vdinEventType = (tvin_sig_change_flag_t)SignalEventInfo.event_sts;
+        switch (vdinEventType) {
+        case TVIN_SIG_CHG_SDR2HDR:
+        case TVIN_SIG_CHG_HDR2SDR:
+        case TVIN_SIG_CHG_DV2NO:
+        case TVIN_SIG_CHG_NO2DV: {
+            LOGD("%s: hdr info change!\n", __FUNCTION__);
+            vdin_info_s vdinSignalInfo;
+            memset(&vdinSignalInfo, 0, sizeof(vdin_info_t));
+            ret = mpVdin->Tvin_GetSignalInfo(&vdinSignalInfo);
+            if (ret < 0) {
+                LOGD("%s: Get vidn event error!\n", __FUNCTION__);
+            } else {
+                if ((mCurrentSignalInfo.info.status == TVIN_SIG_STATUS_STABLE)
+                    && (mCurrentSignalInfo.info.hdr_info != vdinSignalInfo.hdr_info)) {
+                    //if (source_type == SOURCE_TYPE_HDMI) {
+                        //tvSetCurrentHdrInfo(vdinSignalInfo.hdr_info);
+                    //}
+                    mCurrentSignalInfo.info.hdr_info = vdinSignalInfo.hdr_info;
+                } else {
+                    LOGD("%s: hdmi signal don't stable!\n", __FUNCTION__);
+                }
+            }
+            break;
+        }
+        case TVIN_SIG_CHG_COLOR_FMT:
+            LOGD("%s: no need do any thing for colorFmt change!\n", __FUNCTION__);
+            break;
+        case TVIN_SIG_CHG_RANGE:
+            LOGD("%s: no need do any thing for colorRange change!\n", __FUNCTION__);
+            break;
+        case TVIN_SIG_CHG_BIT:
+            LOGD("%s: no need do any thing for color bit deepth change!\n", __FUNCTION__);
+            break;
+        case TVIN_SIG_CHG_VS_FRQ:
+            LOGD("%s: no need do any thing for VS_FRQ change!\n", __FUNCTION__);
+            break;
+        case TVIN_SIG_CHG_STS:
+            LOGD("%s: vdin signal status change!\n", __FUNCTION__);
+            onSigStatusChange();
+            break;
+        case TVIN_SIG_CHG_AFD: {
+            LOGD("%s: AFD info change!\n", __FUNCTION__);
+            /*
+            if (source_type == SOURCE_TYPE_HDMI) {
+                tvin_info_t newSignalInfo;
+                memset(&newSignalInfo, 0, sizeof(tvin_info_t));
+                int ret = mpTvin->Tvin_GetSignalInfo(&newSignalInfo);
+                if (ret < 0) {
+                    LOGD("%s: Get Signal Info error!\n", __FUNCTION__);
+                } else {
+                    if ((newSignalInfo.status == TVIN_SIG_STATUS_STABLE)
+                        && (mCurrentSignalInfo.aspect_ratio != newSignalInfo.aspect_ratio)) {
+                        mCurrentSignalInfo.aspect_ratio = newSignalInfo.aspect_ratio;
+                        //tvSetCurrentAspectRatioInfo(newSignalInfo.aspect_ratio);
+                    } else {
+                        LOGD("%s: signal not stable or same AFD info!\n", __FUNCTION__);
+                    }
+                }
+            }
+            */
+            break;
+        }
+        case TVIN_SIG_CHG_DV_ALLM:
+            LOGD("%s: allm info change!\n", __FUNCTION__);
+            /*
+            if (source_type == SOURCE_TYPE_HDMI) {
+                //setPictureModeBySignal(PQ_MODE_SWITCH_TYPE_AUTO);
+            } else {
+                LOGD("%s: not hdmi source!\n", __FUNCTION__);
+            }
+            */
+            break;
+        case TVIN_SIG_CHG_CLOSE_FE:
+            stopVdin();
+            break;
+        default:
+            LOGD("%s: invalid vdin event!\n", __FUNCTION__);
+            break;
+        }
+    }
+}
+
 void CPQControl::onTXStatusChange()
 {
     LOGD("%s!\n", __FUNCTION__);
@@ -413,8 +593,9 @@ int CPQControl::LoadPQSettings()
             LOGE("%s error: %s!\n", __FUNCTION__, strerror(errno));
         }
     } else {
-        LOGD("source_input: %d, sig_fmt: 0x%x(%d), trans_fmt: 0x%x\n", mCurentSourceInputInfo.source_input,
-                 mCurentSourceInputInfo.sig_fmt, mCurentSourceInputInfo.sig_fmt, mCurentSourceInputInfo.trans_fmt);
+        LOGD("%s source_input: %d, sig_fmt: 0x%x(%d), trans_fmt: 0x%x\n", __FUNCTION__,
+            mCurentSourceInputInfo.source_input,
+            mCurentSourceInputInfo.sig_fmt, mCurentSourceInputInfo.sig_fmt, mCurentSourceInputInfo.trans_fmt);
 
         ret |= Cpq_SetXVYCCMode(VPP_XVYCC_MODE_STANDARD, mCurentSourceInputInfo);
 
@@ -779,7 +960,6 @@ int CPQControl::Cpq_SetPQMode(vpp_picture_mode_t pq_mode, source_input_param_t s
 int CPQControl::SetPQParams(vpp_pq_para_t pq_para, source_input_param_t source_input_param)
 {
     int ret = 0;
-
 
     if (mbCpqCfg_amvecm_basic_enable || mbCpqCfg_amvecm_basic_withOSD_enable) {
         int hue_level = 0, hue = 50, saturation = 50;
@@ -4173,8 +4353,8 @@ int CPQControl::SetCurrentSourceInputInfo(source_input_param_t source_input_para
          (mCurentSourceInputInfo.trans_fmt != source_input_param.trans_fmt) ||
          (mCurrentHdrStatus != mPQdb->mHdrStatus)) {
         mCurentSourceInputInfo.source_input = source_input_param.source_input;
-        mCurentSourceInputInfo.sig_fmt = source_input_param.sig_fmt;
-        mCurentSourceInputInfo.trans_fmt = source_input_param.trans_fmt;
+        mCurentSourceInputInfo.sig_fmt      = source_input_param.sig_fmt;
+        mCurentSourceInputInfo.trans_fmt    = source_input_param.trans_fmt;
         mCurrentHdrStatus = mPQdb->mHdrStatus;
 
         if (mbCpqCfg_pq_param_check_source_enable) {
@@ -4192,6 +4372,18 @@ int CPQControl::SetCurrentSourceInputInfo(source_input_param_t source_input_para
     } else {
         LOGD("%s: same signal, no need set!\n", __FUNCTION__);
     }
+    pthread_mutex_unlock(&PqControlMutex);
+    return 0;
+}
+
+int CPQControl::SetCurrentSource(tv_source_input_t source_input)
+{
+    LOGD("%s: source_input = %d!\n", __FUNCTION__, source_input);
+
+    pthread_mutex_lock(&PqControlMutex);
+
+    mSourceInput = source_input;
+
     pthread_mutex_unlock(&PqControlMutex);
     return 0;
 }

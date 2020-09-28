@@ -159,6 +159,6 @@ private:
     ISSMActionObserver *mpObserver;
     const char *mSSMDataFilePath;
     const char *mSSMHandlerFilePath;
-    const char *mWhiteBalanceFilePath;
+    char mWhiteBalanceFilePath[64];
 };
 #endif

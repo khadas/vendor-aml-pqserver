@@ -69,7 +69,7 @@ public:
             LOGD("%s: curent pq mode is %d.\n", __FUNCTION__, ret);
             break;
         case PQ_SET_COLOR_TEMPERATURE_MODE:
-            ret = mpPqClient->SetColorTemperature(setValue[0], setValue[1]);
+            ret = mpPqClient->SetColorTemperature(setValue[0], setValue[1], setValue[2], setValue[3]);
             break;
         case PQ_GET_COLOR_TEMPERATURE_MODE:
             ret = mpPqClient->GetColorTemperature();
@@ -315,7 +315,6 @@ static int DisplayInit()
     SetOsdBlankStatus("/sys/class/graphics/fb0/osd_display_debug", 1);
     SetOsdBlankStatus("/sys/class/graphics/fb0/blank", 1);
     return 0;
-
 }
 
 int main(int argc, char **argv) {
@@ -409,11 +408,17 @@ int main(int argc, char **argv) {
             break;
           }
           case 1: {
-              LOGD("please input pq_mode value:\n");
+              LOGD("please input pq_mode value:(0~10)\n");
               int mode = 0;
               scanf("%d", &mode);
-              test->cmdID = PQ_SET_PICTURE_MODE;
               test->setValue[0] = mode;
+
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              test->cmdID = PQ_SET_PICTURE_MODE;
               break;
           }
           case 2: {
@@ -421,11 +426,27 @@ int main(int argc, char **argv) {
               break;
           }
           case 3: {
-              LOGD("please input ColorTemperature mode value:\n");
+              LOGD("please input ColorTemperature mode value:(0~3)\n");
               int mode = 0;
               scanf("%d", &mode);
-              test->cmdID = PQ_SET_COLOR_TEMPERATURE_MODE;
               test->setValue[0] = mode;
+
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              LOGD("please input rgb_ogo_type_t:(0~5)\n");
+              int rgb_type = 0;
+              scanf("%d", &rgb_type);
+              test->setValue[2] = rgb_type;
+
+              LOGD("please input value:(0~5)\n");
+              int value = 0;
+              scanf("%d", &value);
+              test->setValue[3] = value;
+
+              test->cmdID = PQ_SET_COLOR_TEMPERATURE_MODE;
               break;
           }
           case 4: {
@@ -433,11 +454,17 @@ int main(int argc, char **argv) {
               break;
           }
           case 5: {
-              LOGD("please input Brightness value:\n");
+              LOGD("please input Brightness value:(0~100)\n");
               int mode = 0;
               scanf("%d", &mode);
-              test->cmdID = PQ_SET_BRIGHTNESS;
               test->setValue[0] = mode;
+
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              test->cmdID = PQ_SET_BRIGHTNESS;
               break;
           }
           case 6: {
@@ -445,11 +472,17 @@ int main(int argc, char **argv) {
               break;
           }
           case 7: {
-              LOGD("please input Contrast value:\n");
+              LOGD("please input Contrast value:(0~100)\n");
               int mode = 0;
               scanf("%d", &mode);
-              test->cmdID = PQ_SET_CONTRAST;
               test->setValue[0] = mode;
+
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              test->cmdID = PQ_SET_CONTRAST;
               break;
           }
           case 8: {
@@ -457,11 +490,17 @@ int main(int argc, char **argv) {
               break;
           }
           case 9: {
-              LOGD("please input Saturatioin value:\n");
+              LOGD("please input Saturatioin value:(0~100)\n");
               int mode = 0;
               scanf("%d", &mode);
-              test->cmdID = PQ_SET_SATUATION;
               test->setValue[0] = mode;
+
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              test->cmdID = PQ_SET_SATUATION;
               break;
           }
           case 10: {
@@ -469,11 +508,17 @@ int main(int argc, char **argv) {
               break;
           }
           case 11: {
-              LOGD("please input Hue value:\n");
+              LOGD("please input Hue value:(0~100)\n");
               int mode = 0;
               scanf("%d", &mode);
-              test->cmdID = PQ_SET_HUE;
               test->setValue[0] = mode;
+
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              test->cmdID = PQ_SET_HUE;
               break;
           }
           case 12: {
@@ -481,11 +526,17 @@ int main(int argc, char **argv) {
               break;
           }
           case 13: {
-              LOGD("please input Sharpness value:\n");
+              LOGD("please input Sharpness value:(0~100)\n");
               int mode = 0;
               scanf("%d", &mode);
-              test->cmdID = PQ_SET_SHARPNESS;
               test->setValue[0] = mode;
+
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              test->cmdID = PQ_SET_SHARPNESS;
               break;
           }
           case 14: {
@@ -493,11 +544,17 @@ int main(int argc, char **argv) {
               break;
           }
           case 15: {
-              LOGD("please input NoiseRedution value:\n");
+              LOGD("please input NoiseRedution value:(0~4)\n");
               int mode = 0;
               scanf("%d", &mode);
-              test->cmdID = PQ_SET_NOISE_REDUCTION_MODE;
               test->setValue[0] = mode;
+
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              test->cmdID = PQ_SET_NOISE_REDUCTION_MODE;
               break;
           }
           case 16: {
@@ -505,11 +562,12 @@ int main(int argc, char **argv) {
               break;
           }
           case 17: {
-              LOGD("please input EyeProtection value:\n");
+              LOGD("please input EyeProtection value:(0~1)\n");
               int mode = 0;
               scanf("%d", &mode);
-              test->cmdID = PQ_SET_EYE_PROTECTION_MODE;
               test->setValue[1] = mode;
+
+              test->cmdID = PQ_SET_EYE_PROTECTION_MODE;
               break;
           }
           case 18: {
@@ -517,11 +575,17 @@ int main(int argc, char **argv) {
               break;
           }
           case 19: {
-              LOGD("please input Gamma value:\n");
+              LOGD("please input Gamma value:(0~11)\n");
               int mode = 0;
               scanf("%d", &mode);
-              test->cmdID = PQ_SET_GAMMA;
               test->setValue[0] = mode;
+
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              test->cmdID = PQ_SET_GAMMA;
               break;
           }
           case 20: {
@@ -529,11 +593,17 @@ int main(int argc, char **argv) {
               break;
           }
           case 21: {
-              LOGD("please input displaymode value:\n");
+              LOGD("please input displaymode value:(0/4/5/6)\n");
               int mode = 0;
               scanf("%d", &mode);
-              test->cmdID = PQ_SET_DISPLAY_MODE;
               test->setValue[1] = mode;
+
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[2] = is_save;
+
+              test->cmdID = PQ_SET_DISPLAY_MODE;
               break;
           }
           case 22: {
@@ -541,11 +611,17 @@ int main(int argc, char **argv) {
               break;
           }
           case 23: {
-              LOGD("please input backlight value:\n");
+              LOGD("please input backlight value:(0~100)\n");
               int mode = 0;
               scanf("%d", &mode);
-              test->cmdID = PQ_SET_BACKLIGHT;
               test->setValue[0] = mode;
+
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              test->cmdID = PQ_SET_BACKLIGHT;
               break;
           }
           case 24: {
@@ -553,11 +629,17 @@ int main(int argc, char **argv) {
               break;
           }
           case 25: {
-              LOGD("please input DynamicBacklight value:\n");
+              LOGD("please input DynamicBacklight value:(0~2)\n");
               int mode = 0;
               scanf("%d", &mode);
-              test->cmdID = PQ_SET_DYNAMICBACKLIGHT;
               test->setValue[0] = mode;
+
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              test->cmdID = PQ_SET_DYNAMICBACKLIGHT;
               break;
           }
           case 26: {
@@ -565,11 +647,17 @@ int main(int argc, char **argv) {
               break;
           }
           case 27: {
-              LOGD("please input LocalContrast value:\n");
+              LOGD("please input LocalContrast value:(0~3)\n");
               int mode = 0;
               scanf("%d", &mode);
-              test->cmdID = PQ_SET_LOCALCONTRAST;
               test->setValue[0] = mode;
+
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              test->cmdID = PQ_SET_LOCALCONTRAST;
               break;
           }
           case 28: {
@@ -577,11 +665,17 @@ int main(int argc, char **argv) {
               break;
           }
           case 29: {
-              LOGD("please input CM value:\n");
+              LOGD("please input CM value:(0~3)\n");
               int mode = 0;
               scanf("%d", &mode);
-              test->cmdID = PQ_SET_CM;
               test->setValue[0] = mode;
+
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              test->cmdID = PQ_SET_CM;
               break;
           }
           case 30: {
@@ -655,7 +749,7 @@ int main(int argc, char **argv) {
               int fmt_3d = 0;
               scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              LOGD("please input pq mode value:\n");
+              LOGD("please input pq mode value:(0~10)\n");
               int pq_mode = 0;
               scanf("%d", &pq_mode);
               test->setValue[3] = pq_mode;
@@ -680,7 +774,7 @@ int main(int argc, char **argv) {
               int fmt_3d = 0;
               scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              LOGD("please input pq mode value:\n");
+              LOGD("please input pq mode value:(0~10)\n");
               int pq_mode = 0;
               scanf("%d", &pq_mode);
               test->setValue[3] = pq_mode;
@@ -701,7 +795,7 @@ int main(int argc, char **argv) {
               int fmt_3d = 0;
               scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              LOGD("please input pq mode value:\n");
+              LOGD("please input pq mode value:(0~10)\n");
               int pq_mode = 0;
               scanf("%d", &pq_mode);
               test->setValue[3] = pq_mode;
@@ -723,7 +817,7 @@ int main(int argc, char **argv) {
               int fmt_3d = 0;
               scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              LOGD("please input pq mode value:\n");
+              LOGD("please input pq mode value:(0~10)\n");
               int pq_mode = 0;
               scanf("%d", &pq_mode);
               test->setValue[3] = pq_mode;
@@ -744,7 +838,7 @@ int main(int argc, char **argv) {
               int fmt_3d = 0;
               scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              LOGD("please input pq mode value:\n");
+              LOGD("please input pq mode value:(0~10)\n");
               int pq_mode = 0;
               scanf("%d", &pq_mode);
               test->setValue[3] = pq_mode;
@@ -769,7 +863,7 @@ int main(int argc, char **argv) {
               int fmt_3d = 0;
               scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              LOGD("please input pq mode value:\n");
+              LOGD("please input pq mode value:(0~10)\n");
               int pq_mode = 0;
               scanf("%d", &pq_mode);
               test->setValue[3] = pq_mode;
@@ -790,7 +884,7 @@ int main(int argc, char **argv) {
               int fmt_3d = 0;
               scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              LOGD("please input pq mode value:\n");
+              LOGD("please input pq mode value:(0~10)\n");
               int pq_mode = 0;
               scanf("%d", &pq_mode);
               test->setValue[3] = pq_mode;
@@ -816,7 +910,7 @@ int main(int argc, char **argv) {
               int fmt_3d = 0;
               scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              LOGD("please input pq mode value:\n");
+              LOGD("please input pq mode value:(0~10)\n");
               int pq_mode = 0;
               scanf("%d", &pq_mode);
               test->setValue[3] = pq_mode;
@@ -837,7 +931,7 @@ int main(int argc, char **argv) {
               int fmt_3d = 0;
               scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              LOGD("please input pq mode value:\n");
+              LOGD("please input pq mode value:(0~10)\n");
               int pq_mode = 0;
               scanf("%d", &pq_mode);
               test->setValue[3] = pq_mode;
@@ -863,7 +957,7 @@ int main(int argc, char **argv) {
               int fmt_3d = 0;
               scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              LOGD("please input pq mode value:\n");
+              LOGD("please input pq mode value:(0~10)\n");
               int pq_mode = 0;
               scanf("%d", &pq_mode);
               test->setValue[3] = pq_mode;
@@ -935,7 +1029,7 @@ int main(int argc, char **argv) {
               int fmt_3d = 0;
               scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              LOGD("please input colortemp_mode:\n");
+              LOGD("please input colortemp_mode:(0~3)\n");
               int pq_mode = 0;
               scanf("%d", &pq_mode);
               test->setValue[3] = pq_mode;
@@ -961,7 +1055,7 @@ int main(int argc, char **argv) {
               int fmt_3d = 0;
               scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              LOGD("please input colortemp_mode:\n");
+              LOGD("please input colortemp_mode:(0~3)\n");
               int colortemp_mode = 0;
               scanf("%d", &colortemp_mode);
               test->setValue[3] = colortemp_mode;
@@ -982,7 +1076,7 @@ int main(int argc, char **argv) {
               int fmt_3d = 0;
               scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              LOGD("please input colortemp_mode:\n");
+              LOGD("please input colortemp_mode:(0~3)\n");
               int colortemp_mode = 0;
               scanf("%d", &colortemp_mode);
               test->setValue[3] = colortemp_mode;
@@ -1008,7 +1102,7 @@ int main(int argc, char **argv) {
               int fmt_3d = 0;
               scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              LOGD("please input colortemp_mode:\n");
+              LOGD("please input colortemp_mode:(0~3)\n");
               int colortemp_mode = 0;
               scanf("%d", &colortemp_mode);
               test->setValue[3] = colortemp_mode;
@@ -1029,7 +1123,7 @@ int main(int argc, char **argv) {
               int fmt_3d = 0;
               scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              LOGD("please input colortemp_mode:\n");
+              LOGD("please input colortemp_mode:(0~3)\n");
               int colortemp_mode = 0;
               scanf("%d", &colortemp_mode);
               test->setValue[3] = colortemp_mode;
@@ -1055,7 +1149,7 @@ int main(int argc, char **argv) {
               int fmt_3d = 0;
               scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              LOGD("please input colortemp_mode:\n");
+              LOGD("please input colortemp_mode:(0~3)\n");
               int colortemp_mode = 0;
               scanf("%d", &colortemp_mode);
               test->setValue[3] = colortemp_mode;
@@ -1076,7 +1170,7 @@ int main(int argc, char **argv) {
               int fmt_3d = 0;
               scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              LOGD("please input colortemp_mode:\n");
+              LOGD("please input colortemp_mode:(0~3)\n");
               int colortemp_mode = 0;
               scanf("%d", &colortemp_mode);
               test->setValue[3] = colortemp_mode;
@@ -1102,7 +1196,7 @@ int main(int argc, char **argv) {
               int fmt_3d = 0;
               scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              LOGD("please input colortemp_mode:\n");
+              LOGD("please input colortemp_mode:(0~3)\n");
               int colortemp_mode = 0;
               scanf("%d", &colortemp_mode);
               test->setValue[3] = colortemp_mode;
@@ -1123,7 +1217,7 @@ int main(int argc, char **argv) {
               int fmt_3d = 0;
               scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              LOGD("please input colortemp_mode:\n");
+              LOGD("please input colortemp_mode:(0~3)\n");
               int colortemp_mode = 0;
               scanf("%d", &colortemp_mode);
               test->setValue[3] = colortemp_mode;
@@ -1149,7 +1243,7 @@ int main(int argc, char **argv) {
               int fmt_3d = 0;
               scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              LOGD("please input colortemp_mode:\n");
+              LOGD("please input colortemp_mode:(0~3)\n");
               int colortemp_mode = 0;
               scanf("%d", &colortemp_mode);
               test->setValue[3] = colortemp_mode;
@@ -1170,7 +1264,7 @@ int main(int argc, char **argv) {
               int fmt_3d = 0;
               scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              LOGD("please input colortemp_mode:\n");
+              LOGD("please input colortemp_mode:(0~3)\n");
               int colortemp_mode = 0;
               scanf("%d", &colortemp_mode);
               test->setValue[3] = colortemp_mode;
@@ -1196,7 +1290,7 @@ int main(int argc, char **argv) {
               int fmt_3d = 0;
               scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              LOGD("please input colortemp_mode:\n");
+              LOGD("please input colortemp_mode:(0~3)\n");
               int colortemp_mode = 0;
               scanf("%d", &colortemp_mode);
               test->setValue[3] = colortemp_mode;

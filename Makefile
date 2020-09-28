@@ -39,6 +39,8 @@ pq_SRCS = \
   $(LOCAL_PATH)/libpq/CEpoll.cpp \
   $(LOCAL_PATH)/libpq/CDynamicBackLight.cpp \
   $(LOCAL_PATH)/libpq/CConfigFile.cpp \
+  $(LOCAL_PATH)/libpq/UEventObserver.cpp \
+  $(LOCAL_PATH)/libpq/CVdin.cpp \
   $(NULL)
 
 pq_HEADERS = \

@@ -20,6 +20,8 @@
 #include "CDynamicBackLight.h"
 #include "CConfigFile.h"
 #include "COverScandb.h"
+#include "UEventObserver.h"
+#include "CVdin.h"
 
 #define PQ_DB_DEFAULT_PATH               "/vendor/etc/tvconfig/pq/pq.db"
 #define OVERSCAN_DB_DEFAULT_PATH         "/vendor/etc/tvconfig/pq/overscan.db"
@@ -125,7 +127,8 @@ typedef enum rgb_ogo_type_e{
     RGB_TYPE_MAX,
 } rgb_ogo_type_t;
 
-class CPQControl: public CDevicePollCheckThread::IDevicePollCheckObserver,
+class CPQControl: public UEventObserver::IUEventObserverCallBack,
+                       public CDevicePollCheckThread::IDevicePollCheckObserver,
                          public CDynamicBackLight::IDynamicBackLightObserver,
                          public SSMAction::ISSMActionObserver {
 public:
@@ -134,6 +137,7 @@ public:
     static CPQControl *GetInstance();
     void CPQControlInit(void);
     void CPQControlUnInit(void);
+    virtual void onUevent(uevent_data_t ueventData);
     virtual void onVframeSizeChange();
     virtual void onTXStatusChange();
     virtual void resetAllUserSettingParam();
@@ -321,6 +325,7 @@ public:
     int SetPLLValues(source_input_param_t source_input_param);
     int SetCVD2Values(void);
     int SetCurrentSourceInputInfo(source_input_param_t source_input_param);
+    int SetCurrentSource(tv_source_input_t source_input);
     source_input_param_t GetCurrentSourceInputInfo();
     int GetHistParam(ve_hist_t *hist);
     bool isFileExist(const char *file_name);
@@ -346,7 +351,14 @@ private:
     int DIOpenModule(void);
     int DICloseModule(void);
     int DIDeviceIOCtl(int request, ...);
+    int VDINOpenModule(void);
+    int VDINCloseModule(void);
+    int VDINDeviceIOCtl(int request, ...);
     int AFEDeviceIOCtl ( int request, ... );
+    void stopVdin(void);
+    void onSigStatusChange(void);
+    int SetCurrenSourceInfo(vdin_parm_t sig_info);
+
     tvin_sig_fmt_t getVideoResolutionToFmt();
     int Cpq_SetXVYCCMode(vpp_xvycc_mode_t xvycc_mode, source_input_param_t source_input_param);
     int pqWriteSys(const char *path, const char *val);
@@ -388,16 +400,22 @@ private:
     SSMAction *mSSMAction;
     static CPQControl *mInstance;
     CDevicePollCheckThread mCDevicePollCheckThread;
+    UEventObserver         mUEventObserver;
     CDynamicBackLight mDynamicBackLight;
     CConfigFile *mPQConfigFile;
 
     int mAmvideoFd;
     int mDiFd;
+
+    CVdin *mpVdin;
+
     tcon_rgb_ogo_t rgbfrompq[3];
     source_input_param_t mCurentSourceInputInfo;
     tv_source_input_t mSourceInputForSaveParam;
+    tv_source_input_t mSourceInput;
     bool mCurrentHdrStatus;
     unsigned int mHdmiHdrInfo = 0;
+    vdin_parm_s mCurrentSignalInfo;
     bool mbDtvKitEnable;
     bool mbDatabaseMatchChipStatus;
     bool mbVideoIsPlaying = false;//video don't playing
