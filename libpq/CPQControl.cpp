@@ -70,12 +70,35 @@ void CPQControl::CPQControlInit()
 
     //Load config file
     mPQConfigFile = CConfigFile::GetInstance();
-    mPQConfigFile->LoadFromFile(PQ_CONFIG_DEFAULT_PATH);
+
+    const char* pqConfigFilePath = getenv("PQ_CONFIG_FILE_PATH");
+    if (!pqConfigFilePath) {
+        LOGD("%s: read pqconfig file path failed!\n", __FUNCTION__);
+        pqConfigFilePath = PQ_CONFIG_DEFAULT_PATH;
+    } else {
+        LOGD("%s: pqconfig file path is %s!\n", __FUNCTION__, pqConfigFilePath);
+    }
+    mPQConfigFile->LoadFromFile(pqConfigFilePath);
     SetFlagByCfg();
 
     //open DB
     mPQdb = new CPQdb();
-    int ret = mPQdb->openPqDB(PQ_DB_DEFAULT_PATH);
+
+    const char *config_value;
+    char filePath1[64] = {0};
+    char filePath2[64] = {0};
+
+    config_value = mPQConfigFile->GetDatabaseFilePath(CFG_SECTION_PQ, CFG_PQ_DB_CONFIG_PATH, NULL);
+    if (!config_value) {
+        LOGD("%s: read pqconfig file path failed!\n", __FUNCTION__);
+        sprintf(filePath1, "%s", PQ_DB_DEFAULT_PATH);
+        sprintf(filePath2, "%s", OVERSCAN_DB_DEFAULT_PATH);
+    } else {
+        LOGD("%s: pqconfig file path is %s!\n", __FUNCTION__, config_value);
+        sprintf(filePath1, "%s/pq.db", config_value);
+        sprintf(filePath2, "%s/overscan.db", config_value);
+    }
+    int ret = mPQdb->openPqDB(filePath1);
     if (ret != 0) {
         mbDatabaseMatchChipStatus = false;
         LOGE("open pq DB failed!\n");
@@ -87,7 +110,7 @@ void CPQControl::CPQControlInit()
     //open overscan DB
     if (mbCpqCfg_seperate_db_enable) {
         mpOverScandb = new COverScandb();
-        ret = mpOverScandb->openOverScanDB(OVERSCAN_DB_DEFAULT_PATH);
+        ret = mpOverScandb->openOverScanDB(filePath2);
         if (ret != 0) {
             LOGE("open overscan DB failed!\n");
         } else {
@@ -96,9 +119,28 @@ void CPQControl::CPQControlInit()
     }
 
     //SSM file check
+    memset(filePath1, 0, sizeof(filePath1));
+    memset(filePath2, 0, sizeof(filePath2));
+    config_value = mPQConfigFile->GetSettingDataFilePath(CFG_SECTION_PQ, CFG_PQ_SETTINGDATA_FILE_PATH, NULL);
+    if (!config_value) {
+        LOGD("%s: read setting data file path failed!\n", __FUNCTION__);
+        sprintf(filePath1, "%s", PQ_SETTINGDATA_DEFAULT_PATH);
+    } else {
+        LOGD("%s: setting data file path is %s!\n", __FUNCTION__, config_value);
+        sprintf(filePath1, "%", config_value);
+    }
+
+    config_value = mPQConfigFile->GetWhiteBalanceFilePath(CFG_SECTION_PQ, CFG_PQ_WHITEBALANCE_FILE_PATH, NULL);
+    if (!config_value) {
+        LOGD("%s: read whitebalance data file path failed!\n", __FUNCTION__);
+        sprintf(filePath2, "%s", PQ_WHITEBALANCE_DEFAULT_PATH);
+    } else {
+        LOGD("%s: whitebalance data file path is %s!\n", __FUNCTION__, config_value);
+        sprintf(filePath2, "%s", config_value);
+    }
     mSSMAction = SSMAction::getInstance();
     mSSMAction->setObserver(this);
-    mSSMAction->init();
+    mSSMAction->init(filePath1, filePath2);
 
     //init source
     mCurentSourceInputInfo.source_input = SOURCE_MPEG;

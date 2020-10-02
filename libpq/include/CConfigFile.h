@@ -15,6 +15,9 @@
 
 //for pq config
 #define CFG_SECTION_PQ                          "PQ"
+#define CFG_PQ_DB_CONFIG_PATH                   "pq_db_config_path"
+#define CFG_PQ_SETTINGDATA_FILE_PATH            "pq_uiSettingDataFile_path"
+#define CFG_PQ_WHITEBALANCE_FILE_PATH           "pq_FactorywhiteBalance_path"
 #define CFG_BIG_SMALL_DB_ENABLE                 "pq.BigSmallDb.en"
 #define CFG_ALL_PQ_MOUDLE_ENABLE                "pq.AllPQMoudle.en"
 #define CFG_PQ_PARAM_CHECK_SOURCE_ENABLE        "pq.ParamCheckSource.en"
@@ -118,7 +121,9 @@ public:
     const char *GetString(const char *section, const char *key, const char *def_value);
     int GetInt(const char *section, const char *key, int def_value);
     float GetFloat(const char *section, const char *key, float def_value);
-
+    const char *GetDatabaseFilePath(const char *section, const char *key, const char *def_value);
+    const char *GetSettingDataFilePath(const char *section, const char *key, const char *def_value);
+    const char *GetWhiteBalanceFilePath(const char *section, const char *key, const char *def_value);
 private:
     LINE_TYPE getLineType(char *Str);
     void allTrim(char *Str);

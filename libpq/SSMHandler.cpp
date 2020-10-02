@@ -7,7 +7,7 @@
  * Description: c++ file
  */
 
-#define LOG_MOUDLE_TAG "TV"
+#define LOG_MOUDLE_TAG "PQ"
 #define LOG_CLASS_TAG "SSMHandler"
 
 #include "SSMHandler.h"
@@ -15,14 +15,14 @@
 SSMHandler* SSMHandler::mSSMHandler = NULL;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-SSMHandler* SSMHandler::GetSingletonInstance()
+SSMHandler* SSMHandler::GetSingletonInstance(const char *SSMHandlerPath)
 {
 
     pthread_mutex_lock(&mutex);
 
     if (!mSSMHandler) {
         mSSMHandler = new SSMHandler();
-
+        mSSMHandler->mSSMHandlerPath = SSMHandlerPath;
         if (mSSMHandler && !mSSMHandler->Construct()) {
             delete mSSMHandler;
             mSSMHandler = NULL;
@@ -59,11 +59,10 @@ bool SSMHandler::Construct()
 {
     bool ret = true;
 
-    mFd = open(SSM_HANDLER_PATH, O_RDWR | O_SYNC | O_CREAT, S_IRUSR | S_IWUSR);
-
+    mFd = open(mSSMHandlerPath, O_RDWR | O_SYNC | O_CREAT, S_IRUSR | S_IWUSR);
     if (-1 == mFd) {
         ret = false;
-        LOGD ("%s, Open %s failure\n", __FUNCTION__, SSM_HANDLER_PATH);
+        LOGD ("%s, Open %s failure\n", __FUNCTION__, mSSMHandlerPath);
     }
 
     return ret;

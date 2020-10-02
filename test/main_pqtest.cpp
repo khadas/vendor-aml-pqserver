@@ -39,18 +39,10 @@ static int WriteSysfs(const char *path, const char *cmd)
 
 static int WriteSysfs(const char *path, int value)
 {
-    int fd;
-    char  bcmd[16];
-    fd = open(path, O_CREAT|O_RDWR | O_TRUNC, 0777);
+    char cmd[16] = {0};
+    sprintf(cmd, "%d", value);
 
-    if (fd >= 0) {
-        sprintf(bcmd,"%d",value);
-        write(fd,bcmd,strlen(bcmd));
-        close(fd);
-        return 0;
-    }
-
-    return -1;
+    return WriteSysfs(path, cmd);
 }
 
 class PqTest {

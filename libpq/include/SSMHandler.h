@@ -24,12 +24,10 @@
 #include <memory>
 #include "CPQLog.h"
 
-#define SSM_HANDLER_PATH             "/vendor/etc/tvconfig/pq/SSMHandler"
-
 class SSMHandler
 {
 public:
-    static SSMHandler* GetSingletonInstance();
+    static SSMHandler* GetSingletonInstance(const char *SSMHandlerPath);
     virtual ~SSMHandler();
     SSM_status_t SSMVerify(void);
     bool SSMRecreateHeader(void);
@@ -40,7 +38,7 @@ private:
     int mFd;
     static SSMHandler *mSSMHandler;
     SSMHeader_section1_t mSSMHeader_section1;
-
+    const char *mSSMHandlerPath;
     bool Construct();
     explicit SSMHandler();
     SSM_status_t SSMSection1Verify();

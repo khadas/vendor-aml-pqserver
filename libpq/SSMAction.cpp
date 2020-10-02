@@ -7,7 +7,7 @@
  * Description: c++ file
  */
 
-#define LOG_MOUDLE_TAG "TV"
+#define LOG_MOUDLE_TAG "PQ"
 #define LOG_CLASS_TAG "SSMAction"
 
 #include <stdio.h>
@@ -49,26 +49,33 @@ SSMAction::~SSMAction()
     }
 }
 
-void SSMAction::init()
+void SSMAction::init(char *settingDataPath, char *whiteBalanceDataPath)
 {
-    bool FileExist;
+    //check file PATH
+    mWhiteBalanceFilePath = whiteBalanceDataPath;
+    char filePath[64] = {0};
+    sprintf(filePath, "%s/ssm_data", settingDataPath);
+    mSSMDataFilePath = filePath;
+    memset(filePath, 0, sizeof(filePath));
+    sprintf(filePath, "%s/SSMHandler", settingDataPath);
+    mSSMHandlerFilePath = filePath;
     //check ssm file exist!
-    FileExist = isFileExist(SSM_DATA_PATH);
+    bool FileExist = isFileExist(mSSMDataFilePath);
     //open SSM handler!
-    mSSMHandler = SSMHandler::GetSingletonInstance();
+    mSSMHandler = SSMHandler::GetSingletonInstance(mSSMHandlerFilePath);
     //open ssm file!
     if (!FileExist) {
-        LOGD("%s, %s don't exist,create and open!\n", __FUNCTION__, SSM_DATA_PATH);
-        m_dev_fd = open(SSM_DATA_PATH, O_RDWR | O_SYNC | O_CREAT, S_IRUSR | S_IWUSR);
+        LOGD("%s, %s don't exist,create and open!\n", __FUNCTION__, mSSMDataFilePath);
+        m_dev_fd = open(mSSMDataFilePath, O_RDWR | O_SYNC | O_CREAT, S_IRUSR | S_IWUSR);
     } else {
-        LOGD("open %s file!\n",SSM_DATA_PATH);
-        m_dev_fd = open(SSM_DATA_PATH, O_RDWR | O_SYNC | O_CREAT, S_IRUSR | S_IWUSR);
+        LOGD("open %s file!\n",mSSMDataFilePath);
+        m_dev_fd = open(mSSMDataFilePath, O_RDWR | O_SYNC | O_CREAT, S_IRUSR | S_IWUSR);
     }
 
     if (m_dev_fd < 0) {
-        LOGE("%s, Open %s failed! error: %s.\n", __FUNCTION__, SSM_DATA_PATH, strerror(errno));
+        LOGE("%s, Open %s failed! error: %s.\n", __FUNCTION__, mSSMDataFilePath, strerror(errno));
     } else {
-        LOGD("%s, Open %s success!\n", __FUNCTION__, SSM_DATA_PATH);
+        LOGD("%s, Open %s success!\n", __FUNCTION__, mSSMDataFilePath);
     }
     //ssm check
     if (mSSMHandler != NULL) {
@@ -619,7 +626,7 @@ int SSMAction::SSMReadRGBOGOValue(int offset, int size, unsigned char data_buf[]
 
     tmp_off = SSM_RGBOGO_FILE_OFFSET + offset;
 
-    ret = ReadDataFromFile(SSM_RGBOGO_FILE_PATH, tmp_off, size, data_buf);
+    ret = ReadDataFromFile(mWhiteBalanceFilePath, tmp_off, size, data_buf);
 
     return ret;
 }
@@ -637,7 +644,7 @@ int SSMAction::SSMSaveRGBOGOValue(int offset, int size, unsigned char data_buf[]
 
     tmp_off = SSM_RGBOGO_FILE_OFFSET + offset;
 
-    ret = SaveDataToFile(SSM_RGBOGO_FILE_PATH, tmp_off, size, data_buf);
+    ret = SaveDataToFile(mWhiteBalanceFilePath, tmp_off, size, data_buf);
 
     return ret;
 }

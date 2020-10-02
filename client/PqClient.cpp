@@ -863,7 +863,6 @@ tvin_cutwin_t PqClient::FactoryGetOverscanParams(int sourceInput, int sigFmt, in
     LOGD("%s\n", __FUNCTION__);
 
     char buf[32] = {0};
-    int  ret     = -1;
 
     sprintf(buf, "pq.get.%d.%d.%d.%d", PQ_FACTORY_GET_OVERSCAN, sourceInput, sigFmt, transFmt);
     SendMethodCall(buf);

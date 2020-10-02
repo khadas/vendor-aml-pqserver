@@ -364,3 +364,18 @@ void CConfigFile::allTrim(char *Str)
     }
     return;
 }
+
+const char *CConfigFile::GetDatabaseFilePath(const char *section, const char *key, const char *def_value)
+{
+    return GetString(section, key, def_value);
+}
+
+const char *CConfigFile::GetSettingDataFilePath(const char *section, const char *key, const char *def_value)
+{
+    return GetString(section, key, def_value);
+}
+
+const char *CConfigFile::GetWhiteBalanceFilePath(const char *section, const char *key, const char *def_value)
+{
+    return GetString(section, key, def_value);
+}

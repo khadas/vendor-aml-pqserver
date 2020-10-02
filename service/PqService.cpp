@@ -92,7 +92,7 @@ int PqService::SetCmd(pq_moudle_param_t param)
         int i = 0;
         source_input_param_t source_input_param;
         tvin_cutwin_t overscanParam;
-        memset(&overscanParam, 0, sizeof(source_input_param_t));
+        memset(&source_input_param, 0, sizeof(source_input_param_t));
         memset(&overscanParam, 0, sizeof(tvin_cutwin_t));
 
         for (i = 0; i < param.paramLength; i++) {
@@ -256,7 +256,7 @@ char* PqService::GetCmd(pq_moudle_param_t param)
         int i = 0;
         source_input_param_t source_input_param;
         tvin_cutwin_t overscanParam;
-        memset(&overscanParam, 0, sizeof(source_input_param_t));
+        memset(&source_input_param, 0, sizeof(source_input_param_t));
         memset(&overscanParam, 0, sizeof(tvin_cutwin_t));
 
         for (i = 0; i < param.paramLength; i++) {

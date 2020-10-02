@@ -14,8 +14,6 @@
 #include "SSMHandler.h"
 #include "PQSettingCfg.h"
 
-#define SSM_DATA_PATH             "/vendor/etc/tvconfig/pq/ssm_data"
-#define SSM_RGBOGO_FILE_PATH      "/vendor/etc/tvconfig/pq/cri_data"
 #define SSM_RGBOGO_FILE_OFFSET    (0)
 
 #define SSM_CR_RGBOGO_LEN                           (256)
@@ -35,7 +33,7 @@ class SSMAction {
 public:
     SSMAction();
     ~SSMAction();
-    void init();
+    void init(char *settingDataPath, char *whiteBalanceDataPath);
     int SaveBurnWriteCharaterChar(int rw_val);
     int ReadBurnWriteCharaterChar();
     int DeviceMarkCheck();
@@ -159,5 +157,8 @@ public:
     };
 private:
     ISSMActionObserver *mpObserver;
+    const char *mSSMDataFilePath;
+    const char *mSSMHandlerFilePath;
+    const char *mWhiteBalanceFilePath;
 };
 #endif
