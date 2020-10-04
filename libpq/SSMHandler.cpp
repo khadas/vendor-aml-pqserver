@@ -125,7 +125,7 @@ bool SSMHandler::SSMRecreateHeader()
 {
     bool ret = true;
 
-    LOGD ("%s ---   ", __FUNCTION__);
+    LOGD ("%s ---.\n", __FUNCTION__);
 
     ftruncate(mFd, 0);
     lseek (mFd, 0, SEEK_SET);

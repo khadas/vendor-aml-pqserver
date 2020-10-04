@@ -127,7 +127,7 @@ void CPQControl::CPQControlInit()
         sprintf(filePath1, "%s", PQ_SETTINGDATA_DEFAULT_PATH);
     } else {
         LOGD("%s: setting data file path is %s!\n", __FUNCTION__, config_value);
-        sprintf(filePath1, "%", config_value);
+        sprintf(filePath1, "%s", config_value);
     }
 
     config_value = mPQConfigFile->GetWhiteBalanceFilePath(CFG_SECTION_PQ, CFG_PQ_WHITEBALANCE_FILE_PATH, NULL);
@@ -4525,7 +4525,7 @@ int CPQControl::pqWriteSys(const char *path, const char *val)
 {
     int fd;
     if ((fd = open(path, O_RDWR)) < 0) {
-        LOGE("writeSys, open %s error(%s)", path, strerror (errno));
+        LOGE("writeSys, open %s error(%s).\n", path, strerror (errno));
         return -1;
     }
 
@@ -4539,12 +4539,12 @@ int CPQControl::pqReadSys(const char *path, char *buf, int count)
     int fd, len;
 
     if ( NULL == buf ) {
-        LOGE("buf is NULL");
+        LOGE("buf is NULL.\n");
         return -1;
     }
 
     if ((fd = open(path, O_RDONLY)) < 0) {
-        LOGE("pqReadSys, open %s error(%s)", path, strerror (errno));
+        LOGE("pqReadSys, open %s error(%s).\n", path, strerror (errno));
         return -1;
     }
 

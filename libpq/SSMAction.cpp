@@ -51,14 +51,16 @@ SSMAction::~SSMAction()
 
 void SSMAction::init(char *settingDataPath, char *whiteBalanceDataPath)
 {
+    LOGD("%s: settingDataPath: %s, whiteBalanceDataPath:%s!\n", __FUNCTION__, settingDataPath, whiteBalanceDataPath);
     //check file PATH
     mWhiteBalanceFilePath = whiteBalanceDataPath;
-    char filePath[64] = {0};
-    sprintf(filePath, "%s/ssm_data", settingDataPath);
-    mSSMDataFilePath = filePath;
-    memset(filePath, 0, sizeof(filePath));
-    sprintf(filePath, "%s/SSMHandler", settingDataPath);
-    mSSMHandlerFilePath = filePath;
+    char filePath1[64] = {0};
+    sprintf(filePath1, "%s/ssm_data", settingDataPath);
+    mSSMDataFilePath = filePath1;
+
+    char filePath2[64] = {0};
+    sprintf(filePath2, "%s/SSMHandler", settingDataPath);
+    mSSMHandlerFilePath = filePath2;
     //check ssm file exist!
     bool FileExist = isFileExist(mSSMDataFilePath);
     //open SSM handler!
