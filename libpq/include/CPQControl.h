@@ -27,7 +27,7 @@
 #define OVERSCAN_DB_DEFAULT_PATH         "/vendor/etc/tvconfig/pq/overscan.db"
 #define PQ_CONFIG_DEFAULT_PATH           "/vendor/etc/tvconfig/pq/pq_default.ini"
 #define PQ_SETTINGDATA_DEFAULT_PATH      "/vendor/etc/tvconfig/pq"
-#define PQ_WHITEBALANCE_DEFAULT_PATH     "/vendor/etc/tvconfig/pq/cri_data"
+#define PQ_WHITEBALANCE_DEFAULT_PATH     "/vendor/etc/tvconfig/pq"
 
 #define LDIM_PATH                        "/dev/aml_ldim"
 #define LDIM_CONTROL_PATH                "/sys/class/aml_ldim/func_en"

@@ -141,6 +141,7 @@ void CPQControl::CPQControlInit()
         LOGD("%s: whitebalance data file path is %s!\n", __FUNCTION__, config_value);
         sprintf(filePath2, "%s", config_value);
     }
+
     mSSMAction = SSMAction::getInstance();
     mSSMAction->setObserver(this);
     mSSMAction->init(filePath1, filePath2);
