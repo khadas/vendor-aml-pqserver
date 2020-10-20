@@ -216,6 +216,7 @@ public:
     int Tvin_GetSignalInfo(vdin_info_s *SignalInfo);
     int Tvin_GetVdinParam(vdin_parm_s *vdinParam);
     tv_source_input_t Tvin_PortToSourceInput (tvin_port_t port);
+    tv_source_input_type_t Tvin_SourceInputToSourceInputType ( tv_source_input_t source_input );
 
 private:
     //VDIN

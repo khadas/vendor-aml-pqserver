@@ -73,6 +73,18 @@ typedef enum ve_csc_type_e {
     VPP_MATRIX_DEFAULT_CSCTYPE       = 0xffff,
 } ve_csc_type_t;
 
+typedef enum hdr_type_e {
+    HDR_TYPE_NONE      = 0,
+    HDR_TYPE_HDR10     = 1,
+    HDR_TYPE_HDR10PLUS = 2,
+    HDR_TYPE_DOVI      = 3,
+    HDR_TYPE_PRIMESL   = 4,
+    HDR_TYPE_HLG       = 5,
+    HDR_TYPE_SDR       = 6,
+    HDR_TYPE_MVC       = 7,
+    HDR_TYPE_MAX,
+} hdr_type_t;
+
 typedef enum meson_cpu_ver_e {
     MESON_CPU_VERSION_NULL = 0,
     MESON_CPU_VERSION_A,

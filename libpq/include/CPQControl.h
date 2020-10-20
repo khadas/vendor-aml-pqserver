@@ -150,7 +150,7 @@ public:
     int Cpq_LoadRegs(am_regs_t regs);
     int Cpq_LoadDisplayModeRegs(ve_pq_load_t regs);
     int DI_LoadRegs(am_pq_param_t di_regs );
-    int Cpq_LoadBasicRegs(source_input_param_t source_input_param);
+    int Cpq_LoadBasicRegs(source_input_param_t source_input_param, vpp_picture_mode_t pqMode);
     int Cpq_SetDIModuleParam(source_input_param_t source_input_param);
     int ResetLastPQSettingsSourceType(void);
     int BacklightInit(void);
@@ -159,7 +159,7 @@ public:
     int GetPQMode(void);
     int SavePQMode(int pq_mode);
     int Cpq_SetPQMode(vpp_picture_mode_t pq_mode, source_input_param_t source_input_param);
-    int SetPQParams(vpp_pq_para_t pq_para, source_input_param_t source_input_param);
+    int SetPQParams(source_input_param_t source_input_param, vpp_picture_mode_t pq_mode, vpp_pq_para_t pq_para);
     int GetPQParams(source_input_param_t source_input_param, vpp_picture_mode_t pq_mode, vpp_pq_para_t *pq_para);
     //color Temperature
     int SetColorTemperature(int temp_mode, int is_save, rgb_ogo_type_t rgb_ogo_type = TYPE_INVALID, int value = -1);
@@ -322,6 +322,7 @@ public:
     int Cpq_GetSSMActualSize(int id);
     int Cpq_SSMRecovery(void);
     int Cpq_GetSSMStatus();
+    hdr_type_t Cpq_GetSourceHDRType(tv_source_input_t source_input);
     int SetFlagByCfg(void);
     int SetPLLValues(source_input_param_t source_input_param);
     int SetCVD2Values(void);
@@ -359,7 +360,6 @@ private:
     void stopVdin(void);
     void onSigStatusChange(void);
     int SetCurrenSourceInfo(vdin_parm_t sig_info);
-
     tvin_sig_fmt_t getVideoResolutionToFmt();
     int Cpq_SetXVYCCMode(vpp_xvycc_mode_t xvycc_mode, source_input_param_t source_input_param);
     int pqWriteSys(const char *path, const char *val);
@@ -415,7 +415,7 @@ private:
     source_input_param_t mCurentSourceInputInfo;
     tv_source_input_t mSourceInputForSaveParam;
     tv_source_input_t mSourceInput;
-    bool mCurrentHdrStatus;
+    hdr_type_t mCurrentHdrType = HDR_TYPE_NONE;
     unsigned int mHdmiHdrInfo = 0;
     vdin_parm_s mCurrentSignalInfo;
     bool mbDtvKitEnable;

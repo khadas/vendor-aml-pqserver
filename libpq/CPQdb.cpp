@@ -53,11 +53,14 @@ int CPQdb::openPqDB(const char *db_path)
         std::string PQ_ToolVersion, PQ_DBVersion, PQ_DBGenerateTime, PQ_DBChipVersion, val;
         if (PQ_GetPqVersion(PQ_ToolVersion, PQ_DBVersion, PQ_DBGenerateTime, PQ_DBChipVersion)) {
             val = PQ_ToolVersion + " " + PQ_DBVersion + " " + PQ_DBGenerateTime+ " " + PQ_DBChipVersion;
+            mDbVersion  = atoi(PQ_DBVersion.c_str());
         } else {
             val = "Get PQ_DB Verion failure!!!";
         }
         LOGD("%s = %s\n", "PQ.db.version", val.c_str());
     }
+
+    LOGD("db-code version:%d db version:%d\n", PQ_DB_CODE_VERSION, mDbVersion);
 
     return rval;
 }
@@ -240,9 +243,6 @@ int CPQdb::PQ_GetBlackExtensionParams(source_input_param_t source_input_param, a
 {
     int rval = -1;
 
-    if (CheckHdrStatus("GeneralBlackBlueTable"))
-        source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HDR;
-
     std::string TableName = GetTableName("GeneralBlackBlueTable", source_input_param);
     if ((TableName.c_str() != NULL) && (TableName.length() != 0) ) {
         rval = getRegValues(TableName.c_str(), regs);
@@ -257,9 +257,6 @@ int CPQdb::PQ_GetSharpness0FixedParams(source_input_param_t source_input_param, 
 {
     int rval = -1;
 
-    if (CheckHdrStatus("GeneralSharpness0FixedTable"))
-        source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HDR;
-
     std::string TableName = GetTableName("GeneralSharpness0FixedTable", source_input_param);
     if ((TableName.c_str() != NULL) && (TableName.length() != 0) ) {
         rval = getRegValues(TableName.c_str(), regs);
@@ -273,8 +270,6 @@ int CPQdb::PQ_GetSharpness0FixedParams(source_input_param_t source_input_param, 
 int CPQdb::PQ_SetSharpness0VariableParams(source_input_param_t source_input_param)
 {
     int rval = -1;
-    if (CheckHdrStatus("GeneralSharpness0VariableTable"))
-        source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HDR;
 
     std::string TableName = GetTableName("GeneralSharpness0VariableTable", source_input_param);
     if ((TableName.c_str() != NULL) && (TableName.length() != 0) ) {
@@ -290,9 +285,6 @@ int CPQdb::PQ_GetSharpness1FixedParams(source_input_param_t source_input_param, 
 {
     int rval = -1;
 
-    if (CheckHdrStatus("GeneralSharpness1FixedTable"))
-        source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HDR;
-
     std::string TableName = GetTableName("GeneralSharpness1FixedTable", source_input_param);
     if ((TableName.c_str() != NULL) && (TableName.length() != 0) ) {
         rval = getRegValues(TableName.c_str(), regs);
@@ -306,8 +298,6 @@ int CPQdb::PQ_GetSharpness1FixedParams(source_input_param_t source_input_param, 
 int CPQdb::PQ_SetSharpness1VariableParams(source_input_param_t source_input_param)
 {
     int rval = -1;
-    if (CheckHdrStatus("GeneralSharpness1VariableTable"))
-        source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HDR;
 
     std::string TableName = GetTableName("GeneralSharpness1VariableTable", source_input_param);
     if ((TableName.c_str() != NULL) && (TableName.length() != 0) ) {
@@ -322,9 +312,6 @@ int CPQdb::PQ_SetSharpness1VariableParams(source_input_param_t source_input_para
 int CPQdb::PQ_GetCM2Params(vpp_color_management2_t basemode, source_input_param_t source_input_param, am_regs_t *regs)
 {
     int rval = -1;
-
-    if (CheckHdrStatus("GeneralCM2Table"))
-        source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HDR;
 
     std::string TableName = GetTableName("GeneralCM2Table", source_input_param);
     if ((TableName.c_str() != NULL) && (TableName.length() != 0) ) {
@@ -602,9 +589,6 @@ int CPQdb::PQ_GetDNLPParams(source_input_param_t source_input_param, Dynamic_con
     int rval = -1;
 
     memset(newParams, 0, sizeof(ve_dnlp_curve_param_s));
-
-    if (CheckHdrStatus("GeneralDNLPTable"))
-        source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HDR;
 
     std::string TableName = GetTableName("GeneralDNLPTable", source_input_param);
     if ((TableName.c_str() != NULL) && (TableName.length() != 0) ) {
@@ -909,9 +893,6 @@ int CPQdb::PQ_GetLocalContrastNodeParams(source_input_param_t source_input_param
     unsigned int index = 0;
     int rval = -1;
 
-    if (CheckHdrStatus("GeneralLocalContrastNodeTable"))
-        source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HDR;
-
     std::string TableName = GetTableName("GeneralLocalContrastNodeTable", source_input_param);
     if ((TableName.c_str() != NULL) && (TableName.length() != 0) ) {
         { //for param
@@ -1085,9 +1066,6 @@ int CPQdb::PQ_GetLocalContrastNodeParams(source_input_param_t source_input_param
 int CPQdb::PQ_GetLocalContrastRegParams(source_input_param_t source_input_param, local_contrast_mode_t mode, am_regs_t *regs)
 {
     int ret = -1;
-
-    if (CheckHdrStatus("GeneralLocalContrastRegTable"))
-        source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HDR;
 
     std::string TableName = GetTableName("GeneralLocalContrastRegTable", source_input_param);
     if ((TableName.c_str() != NULL) && (TableName.length() != 0) ) {
@@ -1854,6 +1832,57 @@ std::string CPQdb::GetTableName(const char *GeneralTableName, source_input_param
     char sqlmaster[256];
     int ret = -1;
 
+    switch (mDbVersion) {
+    case PQ_DB_CODE_VERSION_0:
+        //for hdr case
+        if ((strcmp(GeneralTableName, "GeneralBlackBlueTable") == 0) ||
+            (strcmp(GeneralTableName, "GeneralSharpness0FixedTable") == 0) ||
+            (strcmp(GeneralTableName, "GeneralSharpness0VariableTable") == 0) ||
+            (strcmp(GeneralTableName, "GeneralSharpness1FixedTable") == 0) ||
+            (strcmp(GeneralTableName, "GeneralSharpness1VariableTable") == 0) ||
+            (strcmp(GeneralTableName, "GeneralCM2Table") == 0) ||
+            (strcmp(GeneralTableName, "GeneralDNLPTable") == 0) ||
+            (strcmp(GeneralTableName, "GeneralLocalContrastNodeTable") == 0) ||
+            (strcmp(GeneralTableName, "GeneralLocalContrastRegTable") == 0)) {
+            if ((mHdrType == HDR_TYPE_HDR10) ||
+                (mHdrType == HDR_TYPE_HDR10PLUS) ||
+                (mHdrType == HDR_TYPE_HLG) ||
+                (mHdrType == HDR_TYPE_DOVI)) {
+                source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HDR;
+            } else {
+                LOGD("%s: SDR source!\n", __FUNCTION__);
+            }
+        }
+        break;
+    case PQ_DB_CODE_VERSION_1:
+        //for hdr10/hdr10plus/hlg/dolby vision
+        if ((strcmp(GeneralTableName, "GeneralBlackBlueTable") == 0) ||
+            (strcmp(GeneralTableName, "GeneralSharpness0FixedTable") == 0) ||
+            (strcmp(GeneralTableName, "GeneralSharpness0VariableTable") == 0) ||
+            (strcmp(GeneralTableName, "GeneralSharpness1FixedTable") == 0) ||
+            (strcmp(GeneralTableName, "GeneralSharpness1VariableTable") == 0) ||
+            (strcmp(GeneralTableName, "GeneralCM2Table") == 0) ||
+            (strcmp(GeneralTableName, "GeneralDNLPTable") == 0) ||
+            (strcmp(GeneralTableName, "GeneralLocalContrastNodeTable") == 0) ||
+            (strcmp(GeneralTableName, "GeneralLocalContrastRegTable") == 0)) {
+            if (mHdrType == HDR_TYPE_HDR10) {
+                source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HDR10;
+            } else if (mHdrType == HDR_TYPE_HDR10PLUS) {
+                source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HDR10PLUS;
+            } else if (mHdrType == HDR_TYPE_HLG) {
+                source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HLG;
+            } else if (mHdrType == HDR_TYPE_DOVI) {
+                source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_DOLBY;
+            } else {
+                LOGD("%s: SDR source\n", __FUNCTION__);
+            }
+        }
+        break;
+    default:
+        LOGD("db %d is not match version\n", mDbVersion);
+        break;
+    }
+
     if (CheckIdExistInDb(CVBS_NAME_ID, "GeneralNR2Table")) {
         getSqlParams(__FUNCTION__, sqlmaster, "select TableName from %s where "
                      "TVIN_PORT = %d and "
@@ -1872,7 +1901,7 @@ std::string CPQdb::GetTableName(const char *GeneralTableName, source_input_param
     ret = this->select(sqlmaster, c);
     if (ret == 0) {
         if (c.moveToFirst()) {
-            LOGD("table name is %s!\n", c.getString(0).c_str());
+            LOGD("table name is %s\n", c.getString(0).c_str());
             return c.getString(0);
         } else {
             LOGE("%s don't have this table!\n", GeneralTableName);
@@ -2220,9 +2249,6 @@ int CPQdb::LoadVppBasicParam(tvpq_data_type_t data_type, source_input_param_t so
     default:
         return rval;
     }
-
-    if (CheckHdrStatus(tableName[data_type].c_str()))
-        source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HDR;
 
     std::string TableName = GetTableName(tableName[data_type].c_str(), source_input_param);
     if ((TableName.c_str() != NULL) && (TableName.length() != 0) ) {

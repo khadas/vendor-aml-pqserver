@@ -18,6 +18,13 @@
 #include "CPQLog.h"
 #include <string>
 
+#define PQ_DB_CODE_VERSION        20201029
+
+typedef enum code_db_version_e {
+    PQ_DB_CODE_VERSION_0 = 20191113,
+    PQ_DB_CODE_VERSION_1 = 20201029,  //split hdr10/hdr10plus/hlg/dv
+} code_db_version_t;
+
 typedef enum output_type_e {
     OUTPUT_TYPE_HDMI = -1,
     OUTPUT_TYPE_PAL,
@@ -129,6 +136,8 @@ private:
     int sha1_nodes;
 public:
     bool mHdrStatus = false;
+    hdr_type_t mHdrType = HDR_TYPE_SDR;
     output_type_t mOutPutType = OUTPUT_TYPE_HDMI;
+    unsigned int mDbVersion;
 };
 #endif

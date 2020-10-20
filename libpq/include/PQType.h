@@ -407,6 +407,11 @@ typedef enum tvin_sig_fmt_e {
     TVIN_SIG_FMT_CAMERA_1280X720P_30HZ              = 0x809,
     TVIN_SIG_FMT_BT601_MAX                          = 0x80a,
     TVIN_SIG_FMT_BT601_THRESHOLD                    = 0xa00,
+    //HDR Formats
+    TVIN_SIG_FMT_HDMI_HDR10                         = 0x80b,
+    TVIN_SIG_FMT_HDMI_HDR10PLUS                     = 0x80c,
+    TVIN_SIG_FMT_HDMI_HLG                           = 0x80d,
+    TVIN_SIG_FMT_HDMI_DOLBY                         = 0x80e,
     TVIN_SIG_FMT_MAX,
 } tvin_sig_fmt_t;
 
@@ -466,6 +471,14 @@ typedef enum vpp_picture_mode_e {
     VPP_PICTURE_MODE_SONY,
     VPP_PICTURE_MODE_SAMSUNG,
     VPP_PICTURE_MODE_SHARP,
+    VPP_PICTURE_MODE_STORE,
+    VPP_PICTURE_MODE_DYNAMIC,
+    VPP_PICTURE_MODE_VIVID,
+    VPP_PICTURE_MODE_NORMAL,
+    VPP_PICTURE_MODE_NATURAL,
+    VPP_PICTURE_MODE_PC,
+    VPP_PICTURE_MODE_HDR,
+    VPP_PICTURE_MODE_CUSTOMER,
     VPP_PICTURE_MODE_MAX,
 } vpp_picture_mode_t;
 

@@ -169,6 +169,47 @@ int CVdin::Tvin_GetSignalInfo(vdin_info_s *SignalInfo)
     return ret;
 }
 
+tv_source_input_type_t CVdin::Tvin_SourceInputToSourceInputType ( tv_source_input_t source_input )
+{
+    tv_source_input_type_t ret = SOURCE_TYPE_MPEG;
+    switch (source_input) {
+        case SOURCE_TV:
+            ret = SOURCE_TYPE_TV;
+            break;
+        case SOURCE_AV1:
+        case SOURCE_AV2:
+            ret = SOURCE_TYPE_AV;
+            break;
+        case SOURCE_YPBPR1:
+        case SOURCE_YPBPR2:
+            ret = SOURCE_TYPE_COMPONENT;
+            break;
+        case SOURCE_VGA:
+            ret = SOURCE_TYPE_VGA;
+            break;
+        case SOURCE_HDMI1:
+        case SOURCE_HDMI2:
+        case SOURCE_HDMI3:
+        case SOURCE_HDMI4:
+            ret = SOURCE_TYPE_HDMI;
+            break;
+        case SOURCE_DTV:
+            ret = SOURCE_TYPE_DTV;
+            break;
+        case SOURCE_IPTV:
+            ret = SOURCE_TYPE_IPTV;
+            break;
+        case SOURCE_SPDIF:
+            ret = SOURCE_TYPE_SPDIF;
+            break;
+        default:
+            ret = SOURCE_TYPE_MPEG;
+            break;
+    }
+
+    return ret;
+}
+
 static CConfigFile *pTvcfgFile = NULL;
 int CVdin::LoadConfigFile(const char *file_name)
 {

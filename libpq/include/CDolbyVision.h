@@ -10,10 +10,32 @@
 #ifndef __CDOLBY_VISION_H
 #define __CDOLBY_VISION_H
 
+#include "PQType.h"
+
 #define DV_DEV_PATH                "/dev/amdolby_vision"
 #define DV_BIN_FILE_DEFAULT_PATH   "/vendor/etc/tvconfig/panel/dv_config.bin"
 #define DV_CFG_FILE_DEFAULT_PATH   "/vendor/etc/tvconfig/panel/Amlogic_dv.cfg"
 #define DV_CFG_FILE_DEFAULT_DIR    "/vendor/etc/tvconfig/panel"
+
+#define HDR10_POLICY_PATH          "/sys/module/amdolby_vision/parameters/dolby_vision_hdr10_policy"
+
+/* === HDR10 === */
+/* bit0: follow sink 0: bypass hdr10 to vpp 1: process hdr10 by dolby core */
+/* bit1: follow source 0: bypass hdr10 to vpp 1: process hdr10 by dolby core */
+/* === HDR10+ === */
+/* bit2: 0: bypass hdr10+ to vpp, 1: process hdr10+ as hdr10 by dolby core */
+/* === HLG -- TV core 1.6 only === */
+/* bit3: follow sink 0: bypass hlg to vpp, 1: process hlg by dolby core */
+/* bit4: follow source 0: bypass hlg to vpp, 1: process hlg by dolby core */
+/* === SDR === */
+/* bit5: 0: bypass SDR to vpp, 1: process SDR by dolby core */
+/* set by policy_process */
+#define HDR_BY_DV_F_SINK 0x1
+#define HDR_BY_DV_F_SRC  0x2
+#define HDRP_BY_DV       0x4
+#define HLG_BY_DV_F_SINK 0x8
+#define HLG_BY_DV_F_SRC  0x10
+#define SDR_BY_DV        0x20
 
 // ***************************************************************************
 // *** ENUM definitions **********
@@ -127,10 +149,14 @@ public:
     int GetDolbyPQParam(dolby_pq_mode_t mode, dolby_pq_item_t iteamID);
     int SetDolbyPQFullParam(dolby_full_pq_info_t fullInfo);
     int GetDolbyPQFullParam(dolby_full_pq_info_t *fullInfo);
+    bool isSourceCallDolbyCore(hdr_type_t hdrType);
+    dolby_pq_mode_t MappingPQModeToDolbyVisionPQMode(hdr_type_t hdrType, vpp_picture_mode_t pq_mode);
+
 private:
     int DV_OpenModule();
     int DV_CloseModule();
     int DV_DeviceIOCtl(int request, ...);
+    int ReadSysfs(const char *path, char *buf, int count);
 
 private:
     int mDVDevFd;

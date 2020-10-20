@@ -166,7 +166,7 @@ void CPQControl::CPQControlInit()
     mCurentSourceInputInfo.sig_fmt      = TVIN_SIG_FMT_HDMI_1920X1080P_60HZ;
     mCurentSourceInputInfo.trans_fmt    = TVIN_TFMT_2D;
     mSourceInputForSaveParam            = SOURCE_MPEG;
-    mCurrentHdrStatus                   = false;
+    mCurrentHdrType                     = HDR_TYPE_SDR;
 
     //Set DNLP
     if (mbCpqCfg_dnlp_enable) {
@@ -355,33 +355,37 @@ void CPQControl::onVframeSizeChange()
     int ret = pqReadSys(SYSFS_VIDEO_EVENT_PATH, temp, sizeof(temp));
     if (ret > 0) {
         int eventFlagValue = strtol(temp, NULL, 16);
-        LOGD("%s: event value = %d(0x%x)!\n", __FUNCTION__, eventFlagValue, eventFlagValue);
+        LOGD("%s: event value = %d(0x%x)\n", __FUNCTION__, eventFlagValue, eventFlagValue);
         int frameszieEventFlag      = (eventFlagValue & 0x1) >> 0;
-        int hdrTypeEventFlag        = (eventFlagValue & 0x2) >> 1;
+        //int hdrTypeEventFlag        = (eventFlagValue & 0x2) >> 1;
         int videoPlayStartEventFlag = (eventFlagValue & 0x4) >> 2;
         int videoPlayStopEventFlag  = (eventFlagValue & 0x8) >> 3;
         //int videoPlayAxisEventFlag = (eventFlagValue & 0x10) >> 4;
         /*LOGD("%s: frameszieEventFlag = %d,hdrTypeEventFlag = %d,videoPlayStartEventFlag = %d,videoPlayStopEventFlag = %d,videoPlayAxisEventFlag = %d!\n",
                  __FUNCTION__, frameszieEventFlag, hdrTypeEventFlag, videoPlayStartEventFlag, videoPlayStopEventFlag,
                  videoPlayAxisEventFlag);*/
-        source_input_param_t new_source_input_param;
-        if (((mCurentSourceInputInfo.source_input == SOURCE_DTV)
-            || (mCurentSourceInputInfo.source_input == SOURCE_MPEG))
-            && (frameszieEventFlag == 1)) {
-            new_source_input_param.sig_fmt      = getVideoResolutionToFmt();
-            new_source_input_param.source_input = mCurentSourceInputInfo.source_input;
-            new_source_input_param.trans_fmt    = mCurentSourceInputInfo.trans_fmt;
-            LOGD("%s: source_input = %d sig_fmt = 0x%x(%d).\n", __FUNCTION__, new_source_input_param.source_input,
-                new_source_input_param.sig_fmt, new_source_input_param.sig_fmt);
-            SetCurrentSourceInputInfo(new_source_input_param);
-        }
-
         if ((videoPlayStartEventFlag == 1) && (videoPlayStopEventFlag == 0)) {
             mbVideoIsPlaying = true;
         } else if ((videoPlayStartEventFlag == 0) && (videoPlayStopEventFlag == 1)) {
             mbVideoIsPlaying = false;
         } else {
-            LOGD("%s: invalid case!\n", __FUNCTION__);
+            LOGD("%s: not videoplay on/off event\n", __FUNCTION__);
+        }
+
+        source_input_param_t new_source_input_param;
+        if ((mCurentSourceInputInfo.source_input == SOURCE_DTV)
+            || (mCurentSourceInputInfo.source_input == SOURCE_MPEG)) {
+            if (mbVideoIsPlaying && (frameszieEventFlag == 1)) {
+                new_source_input_param.source_input = mCurentSourceInputInfo.source_input;
+                new_source_input_param.trans_fmt    = mCurentSourceInputInfo.trans_fmt;
+                new_source_input_param.sig_fmt      = getVideoResolutionToFmt();
+                SetCurrentSourceInputInfo(new_source_input_param);
+            } else if (!mbVideoIsPlaying) {
+                new_source_input_param.source_input = mCurentSourceInputInfo.source_input;
+                new_source_input_param.trans_fmt    = mCurentSourceInputInfo.trans_fmt;
+                new_source_input_param.sig_fmt      = TVIN_SIG_FMT_HDMI_1920X1080P_60HZ;
+                SetCurrentSourceInputInfo(new_source_input_param);
+            }
         }
     } else {
         LOGE("%s: read video event failed!\n", __FUNCTION__);
@@ -500,7 +504,7 @@ void CPQControl::onUevent(uevent_data_t ueventData)
         stopVdin();
         LOGD("Get vidn event error!\n");
     } else {
-        //tv_source_input_type_t source_type = mpTvin->Tvin_SourceInputToSourceInputType(mCurrentSource);
+        tv_source_input_type_t source_type   = mpVdin->Tvin_SourceInputToSourceInputType(mSourceInput);
         tvin_sig_change_flag_t vdinEventType = (tvin_sig_change_flag_t)SignalEventInfo.event_sts;
         switch (vdinEventType) {
         case TVIN_SIG_CHG_SDR2HDR:
@@ -516,9 +520,9 @@ void CPQControl::onUevent(uevent_data_t ueventData)
             } else {
                 if ((mCurrentSignalInfo.info.status == TVIN_SIG_STATUS_STABLE)
                     && (mCurrentSignalInfo.info.hdr_info != vdinSignalInfo.hdr_info)) {
-                    //if (source_type == SOURCE_TYPE_HDMI) {
-                        //tvSetCurrentHdrInfo(vdinSignalInfo.hdr_info);
-                    //}
+                    if (source_type == SOURCE_TYPE_HDMI) {
+                        SetCurrentHdrInfo(vdinSignalInfo.hdr_info);
+                    }
                     mCurrentSignalInfo.info.hdr_info = vdinSignalInfo.hdr_info;
                 } else {
                     LOGD("%s: hdmi signal don't stable!\n", __FUNCTION__);
@@ -608,7 +612,7 @@ int CPQControl::LoadPQSettings()
         memset(&pqControlVal, 0, sizeof(pq_ctrl_t));
         vpp_pq_ctrl_t amvecmConfigVal;
         amvecmConfigVal.length = 14;//this is the count of pq_ctrl_s option
-        amvecmConfigVal.ptr = (long long)&pqControlVal;
+        amvecmConfigVal.ptr    = (long long)&pqControlVal;
         ret = VPPDeviceIOCtl(AMVECM_IOC_S_PQ_CTRL, &amvecmConfigVal);
         if (ret < 0) {
             LOGE("%s error: %s!\n", __FUNCTION__, strerror(errno));
@@ -616,7 +620,8 @@ int CPQControl::LoadPQSettings()
     } else {
         LOGD("%s source_input: %d, sig_fmt: 0x%x(%d), trans_fmt: 0x%x\n", __FUNCTION__,
             mCurentSourceInputInfo.source_input,
-            mCurentSourceInputInfo.sig_fmt, mCurentSourceInputInfo.sig_fmt, mCurentSourceInputInfo.trans_fmt);
+            mCurentSourceInputInfo.sig_fmt, mCurentSourceInputInfo.sig_fmt,
+            mCurentSourceInputInfo.trans_fmt);
 
         ret |= Cpq_SetXVYCCMode(VPP_XVYCC_MODE_STANDARD, mCurentSourceInputInfo);
 
@@ -763,30 +768,33 @@ int CPQControl::LoadCpqLdimRegs()
     return ret;
 }
 
-int CPQControl::Cpq_LoadBasicRegs(source_input_param_t source_input_param)
+int CPQControl::Cpq_LoadBasicRegs(source_input_param_t source_input_param, vpp_picture_mode_t pqMode)
 {
     int ret = 0;
-    if (mbCpqCfg_blackextension_enable) {
-        ret |= SetBlackExtensionParam(source_input_param);
-    } else {
-        LOGD("%s: BlackExtension moudle disabled!\n", __FUNCTION__);
+
+    if (pqMode != VPP_PICTURE_MODE_MONITOR) {
+        if (mbCpqCfg_blackextension_enable) {
+            ret |= SetBlackExtensionParam(source_input_param);
+        } else {
+            LOGD("%s: BlackExtension moudle disabled!\n", __FUNCTION__);
+        }
+
+        if (mbCpqCfg_sharpness0_enable) {
+            ret |= Cpq_SetSharpness0FixedParam(source_input_param);
+            ret |= Cpq_SetSharpness0VariableParam(source_input_param);
+        } else {
+            LOGD("%s: Sharpness0 moudle disabled!\n", __FUNCTION__);
+        }
+
+        if (mbCpqCfg_sharpness1_enable) {
+            ret |= Cpq_SetSharpness1FixedParam(source_input_param);
+            ret |= Cpq_SetSharpness1VariableParam(source_input_param);
+        } else {
+            LOGD("%s: Sharpness1 moudle disabled!\n", __FUNCTION__);
+        }
     }
 
-    if (mbCpqCfg_sharpness0_enable) {
-        ret |= Cpq_SetSharpness0FixedParam(source_input_param);
-        ret |= Cpq_SetSharpness0VariableParam(source_input_param);
-    } else {
-        LOGD("%s: Sharpness0 moudle disabled!\n", __FUNCTION__);
-    }
-
-    if (mbCpqCfg_sharpness1_enable) {
-        ret |= Cpq_SetSharpness1FixedParam(source_input_param);
-        ret |= Cpq_SetSharpness1VariableParam(source_input_param);
-    } else {
-        LOGD("%s: Sharpness1 moudle disabled!\n", __FUNCTION__);
-    }
-
-    if (mbCpqCfg_amvecm_basic_enable || mbCpqCfg_amvecm_basic_withOSD_enable) {
+    if (mbCpqCfg_amvecm_basic_enable) {
         ret |= Cpq_SetBrightnessBasicParam(source_input_param);
         ret |= Cpq_SetContrastBasicParam(source_input_param);
         ret |= Cpq_SetSaturationBasicParam(source_input_param);
@@ -842,17 +850,6 @@ int CPQControl::Cpq_SetDIModuleParam(source_input_param_t source_input_param)
         }
     } else {
         LOGD("Deblock moudle disabled!\n");
-    }
-
-    if (mbCpqCfg_nr_enable) {
-        vpp_noise_reduction_mode_t nr_mode =(vpp_noise_reduction_mode_t)GetNoiseReductionMode();
-        if (mPQdb->PQ_GetNR2Params(nr_mode, source_input_param,  &regs) == 0) {
-            di_regs.table_name |= TABLE_NAME_NR;
-        } else {
-            LOGE("%s GetNR2Params failed!\n",__FUNCTION__);
-        }
-    } else {
-        LOGD("NR moudle disabled!\n");
     }
 
     if (mbCpqCfg_demoSquito_enable) {
@@ -948,25 +945,40 @@ int CPQControl::SavePQMode(int pq_mode)
 
 int CPQControl::Cpq_SetPQMode(vpp_picture_mode_t pq_mode, source_input_param_t source_input_param)
 {
-    int ret = -1;
+    int ret = 0;
     vpp_pq_para_t pq_para;
-    if (pq_mode == VPP_PICTURE_MODE_USER) {
-        mSSMAction->SSMReadBrightness(mSourceInputForSaveParam, &pq_para.brightness);
-        mSSMAction->SSMReadContrast(mSourceInputForSaveParam, &pq_para.contrast);
-        mSSMAction->SSMReadSaturation(mSourceInputForSaveParam, &pq_para.saturation);
-        mSSMAction->SSMReadHue(mSourceInputForSaveParam, &pq_para.hue);
-        mSSMAction->SSMReadSharpness(mSourceInputForSaveParam, &pq_para.sharpness);
 
-        Cpq_LoadBasicRegs(source_input_param);
-        ret = SetPQParams(pq_para, source_input_param);
-    } else {
-        ret = GetPQParams(source_input_param, pq_mode, &pq_para);
-        if (ret < 0) {
-            LOGE("%s: GetPQParams failed!\n", __FUNCTION__);
+    // set dobly vision picture mode
+    bool isDolbyCoreSupport   = mDolbyVision->isSourceCallDolbyCore(mCurrentHdrType);
+    dolby_pq_mode_t dolbyMode = mDolbyVision->MappingPQModeToDolbyVisionPQMode(mCurrentHdrType, pq_mode);
+    if (isDolbyCoreSupport && (dolbyMode != DOLBY_PQ_MODE_MAX)) {
+        mDolbyVision->SetDolbyPQMode(dolbyMode);
+    }
+
+    // load basic picture mode settings
+    vpp_noise_reduction_mode_t nrMode = VPP_NOISE_REDUCTION_MODE_OFF;
+    if (mbCpqCfg_nr_enable) {
+        if ((pq_mode == VPP_PICTURE_MODE_MONITOR) ||
+            (pq_mode == VPP_PICTURE_MODE_GAME)) {
+            nrMode = VPP_NOISE_REDUCTION_MODE_OFF;
         } else {
-            Cpq_LoadBasicRegs(source_input_param);
-            ret = SetPQParams(pq_para, source_input_param);
+            nrMode = (vpp_noise_reduction_mode_t)GetNoiseReductionMode();
         }
+        Cpq_SetNoiseReductionMode(nrMode, source_input_param);
+    } else {
+        LOGD("%s: nr2 moudle disabled!\n", __FUNCTION__);
+    }
+
+    ret |= Cpq_LoadBasicRegs(source_input_param, pq_mode);
+    if (ret < 0) {
+        LOGE("%s: Cpq_LoadBasicRegs failed!\n", __FUNCTION__);
+    }
+
+    ret |= GetPQParams(source_input_param, pq_mode, &pq_para);
+    if (ret < 0) {
+        LOGE("%s: Get PQ Params failed!\n", __FUNCTION__);
+    } else {
+        ret = SetPQParams(source_input_param, pq_mode, pq_para);
     }
 
     if (ret < 0) {
@@ -978,7 +990,7 @@ int CPQControl::Cpq_SetPQMode(vpp_picture_mode_t pq_mode, source_input_param_t s
     return ret;
 }
 
-int CPQControl::SetPQParams(vpp_pq_para_t pq_para, source_input_param_t source_input_param)
+int CPQControl::SetPQParams(source_input_param_t source_input_param, vpp_picture_mode_t pq_mode, vpp_pq_para_t pq_para)
 {
     int ret = 0;
 
@@ -1010,7 +1022,10 @@ int CPQControl::SetPQParams(vpp_pq_para_t pq_para, source_input_param_t source_i
         ret = 0;
     }
 
-    ret |= Cpq_SetSharpness(pq_para.sharpness, source_input_param);
+    if (pq_mode != VPP_PICTURE_MODE_MONITOR) {
+        ret |= Cpq_SetSharpness(pq_para.sharpness, source_input_param);
+    }
+
     ret |= Cpq_SetBrightness(pq_para.brightness, source_input_param);
     ret |= Cpq_SetContrast(pq_para.contrast, source_input_param);
 
@@ -1020,22 +1035,32 @@ int CPQControl::SetPQParams(vpp_pq_para_t pq_para, source_input_param_t source_i
 int CPQControl::GetPQParams(source_input_param_t source_input_param, vpp_picture_mode_t pq_mode, vpp_pq_para_t *pq_para)
 {
     int ret = -1;
-    if (pq_para == NULL) {
-        return ret;
-    }
 
-    if (mbCpqCfg_seperate_db_enable) {
-        ret = mpOverScandb->PQ_GetPQModeParams(source_input_param.source_input, pq_mode, pq_para);
+    if (pq_para == NULL) {
+        LOGD("%s: pq_para is NULL!\n", __FUNCTION__);
     } else {
-        ret = mPQdb->PQ_GetPQModeParams(source_input_param.source_input, pq_mode, pq_para);
+        if (pq_mode == VPP_PICTURE_MODE_USER) {
+            mSSMAction->SSMReadBrightness(mSourceInputForSaveParam, &pq_para->brightness);
+            mSSMAction->SSMReadContrast(mSourceInputForSaveParam, &pq_para->contrast);
+            mSSMAction->SSMReadSaturation(mSourceInputForSaveParam, &pq_para->saturation);
+            mSSMAction->SSMReadHue(mSourceInputForSaveParam, &pq_para->hue);
+            mSSMAction->SSMReadSharpness(mSourceInputForSaveParam, &pq_para->sharpness);
+            ret = 0;
+        } else {
+            if (mbCpqCfg_seperate_db_enable) {
+                ret = mpOverScandb->PQ_GetPQModeParams(source_input_param.source_input, pq_mode, pq_para);
+            } else {
+                ret = mPQdb->PQ_GetPQModeParams(source_input_param.source_input, pq_mode, pq_para);
+            }
+        }
     }
 
     if (ret != 0) {
-        LOGE("GetPQParams, PQ_GetPQModeParams failed!\n");
+        LOGE("%s failed!\n", __FUNCTION__);
         return -1;
+    } else {
+        return 0;
     }
-
-    return 0;
 }
 
 //color temperature
@@ -4347,53 +4372,64 @@ int CPQControl::Cpq_GetSSMStatus()
 
 int CPQControl::SetCurrentSourceInputInfo(source_input_param_t source_input_param)
 {
-    LOGD("%s: param_check_source_enable = %d!\n", __FUNCTION__, mbCpqCfg_pq_param_check_source_enable);
     pthread_mutex_lock(&PqControlMutex);
-    if (source_input_param.source_input == SOURCE_MPEG) {
-        int HdrMode = GetHDRMode();
-        if (HdrMode >= VPP_MATRIX_BT2020YUV_BT2020RGB && HdrMode != VPP_MATRIX_DEFAULT_CSCTYPE) {
-            mPQdb->mHdrStatus = true;
-        } else {
-            mPQdb->mHdrStatus = false;
-        }
-    } else if ((source_input_param.source_input >= SOURCE_HDMI1) &&
-               (source_input_param.source_input <= SOURCE_HDMI4)) {
-        int isHdr = (mHdmiHdrInfo >> 29) & 0x1;
-        if (isHdr == 1) {
-            mPQdb->mHdrStatus = true;
-        } else {
-            mPQdb->mHdrStatus = false;
-        }
-    } else {
-        LOGD("%s: This source no need check hdr!\n", __FUNCTION__);
-    }
-    LOGD("%s: hdr status is %d!\n", __FUNCTION__, mPQdb->mHdrStatus);
+
+    hdr_type_t newHdrType = HDR_TYPE_NONE;
+    newHdrType = Cpq_GetSourceHDRType(source_input_param.source_input);
+
+    LOGD("%s:new source info: source=%d,sigFmt=%d(0x%x),hdrType=%d\n", __FUNCTION__,
+                                                                         source_input_param.source_input,
+                                                                         source_input_param.sig_fmt,
+                                                                         source_input_param.sig_fmt,
+                                                                         newHdrType);
 
     if ((mCurentSourceInputInfo.source_input != source_input_param.source_input) ||
-         (mCurentSourceInputInfo.sig_fmt != source_input_param.sig_fmt) ||
-         (mCurentSourceInputInfo.trans_fmt != source_input_param.trans_fmt) ||
-         (mCurrentHdrStatus != mPQdb->mHdrStatus)) {
+         (mCurentSourceInputInfo.sig_fmt     != source_input_param.sig_fmt) ||
+         (mCurentSourceInputInfo.trans_fmt   != source_input_param.trans_fmt) ||
+         (mCurrentHdrType                    != newHdrType)) {
+        LOGD("%s: update sourceinput info!\n", __FUNCTION__);
         mCurentSourceInputInfo.source_input = source_input_param.source_input;
-        mCurentSourceInputInfo.sig_fmt      = source_input_param.sig_fmt;
         mCurentSourceInputInfo.trans_fmt    = source_input_param.trans_fmt;
-        mCurrentHdrStatus = mPQdb->mHdrStatus;
 
-        if (mbCpqCfg_pq_param_check_source_enable) {
-            mSourceInputForSaveParam = mCurentSourceInputInfo.source_input;
-        } else {
-            mSourceInputForSaveParam = SOURCE_MPEG;
-        }
-
-        if (mCurentSourceInputInfo.sig_fmt != TVIN_SIG_FMT_NULL) {
+        if (source_input_param.sig_fmt == TVIN_SIG_FMT_NULL) {//enter source
+            mCurrentHdrType = HDR_TYPE_NONE;
+            mPQdb->mHdrType = HDR_TYPE_NONE;
+            mHdmiHdrInfo    = 0;
+            if ((mCurentSourceInputInfo.source_input == SOURCE_MPEG)
+                || (mCurentSourceInputInfo.source_input == SOURCE_DTV)) {
+                mCurentSourceInputInfo.sig_fmt = TVIN_SIG_FMT_HDMI_1920X1080P_60HZ;
+                LoadPQSettings();
+            } else if ((mCurentSourceInputInfo.source_input == SOURCE_TV)
+                    || (mCurentSourceInputInfo.source_input == SOURCE_AV1)
+                    || (mCurentSourceInputInfo.source_input == SOURCE_AV2)) {
+                mCurentSourceInputInfo.sig_fmt = TVIN_SIG_FMT_CVBS_NTSC_M;
+            } else {
+                mCurentSourceInputInfo.sig_fmt = TVIN_SIG_FMT_HDMI_1920X1080P_60HZ;
+            }
+        } else if (source_input_param.sig_fmt == TVIN_SIG_FMT_MAX) {//enter nosignal
+                mCurrentHdrType = HDR_TYPE_NONE;
+                mPQdb->mHdrType = HDR_TYPE_NONE;
+                mHdmiHdrInfo    = 0;
+            if ((mCurentSourceInputInfo.source_input    == SOURCE_TV)
+                || (mCurentSourceInputInfo.source_input == SOURCE_AV1)
+                || (mCurentSourceInputInfo.source_input == SOURCE_AV2)) {
+               mCurentSourceInputInfo.sig_fmt = TVIN_SIG_FMT_CVBS_NTSC_M;
+            } else {
+               mCurentSourceInputInfo.sig_fmt = TVIN_SIG_FMT_HDMI_1920X1080P_60HZ;
+            }
             LoadPQSettings();
-        } else {
-            vpp_display_mode_t display_mode = (vpp_display_mode_t)GetDisplayMode();
-            SetDisplayMode(display_mode, 1);
+        } else {//play video
+            mCurentSourceInputInfo.sig_fmt = source_input_param.sig_fmt;
+            mCurrentHdrType                = newHdrType;
+            mPQdb->mHdrType                = newHdrType;
+            LoadPQSettings();
         }
     } else {
         LOGD("%s: same signal, no need set!\n", __FUNCTION__);
     }
+
     pthread_mutex_unlock(&PqControlMutex);
+
     return 0;
 }
 
@@ -4580,6 +4616,70 @@ int CPQControl::GetHDRMode()
     return mode;
 }
 
+hdr_type_t CPQControl::Cpq_GetSourceHDRType(tv_source_input_t source_input)
+{
+    hdr_type_t newHdrType = HDR_TYPE_NONE;
+    if ((source_input == SOURCE_MPEG)
+        ||(source_input == SOURCE_DTV)) {
+        if (!mbVideoIsPlaying) {
+            newHdrType = HDR_TYPE_SDR;
+        } else {
+            char buf[32] = {0};
+            int ret = pqReadSys(SYS_VIDEO_HDR_FMT, buf, sizeof(buf));
+            if (ret < 0) {
+                newHdrType = HDR_TYPE_SDR;
+                LOGE("%s error: %s!\n", __FUNCTION__, strerror(errno));
+            } else {
+                if (0 == strcmp(buf, "src_fmt = SDR")) {
+                    newHdrType = HDR_TYPE_SDR;
+                } else if (0 == strcmp(buf, "src_fmt = HDR10")) {
+                    newHdrType = HDR_TYPE_HDR10;
+                } else if (0 == strcmp(buf, "src_fmt = HDR10+")) {
+                    newHdrType = HDR_TYPE_HDR10PLUS;
+                } else if (0 == strcmp(buf, "src_fmt = HDR10 prime")) {
+                    newHdrType = HDR_TYPE_PRIMESL;
+                } else if (0 == strcmp(buf, "src_fmt = HLG")) {
+                    newHdrType = HDR_TYPE_HLG;
+                } else if (0 == strcmp(buf, "src_fmt = Dolby Vison")) {
+                    newHdrType = HDR_TYPE_DOVI;
+                } else if (0 == strcmp(buf, "src_fmt = MVC")) {
+                    newHdrType = HDR_TYPE_MVC;
+                } else {
+                    LOGD("%s: invalid hdr type!\n", __FUNCTION__);
+                    newHdrType = HDR_TYPE_SDR;
+                }
+            }
+        }
+    } else if ((source_input == SOURCE_HDMI1)
+             || (source_input == SOURCE_HDMI2)
+             || (source_input == SOURCE_HDMI3)
+             || (source_input == SOURCE_HDMI4)) {
+            int signalRange                  = (mHdmiHdrInfo >> 29) & 0x1;
+            int signalColorPrimaries         = (mHdmiHdrInfo >> 16) & 0xff;
+            int signalTransferCharacteristic = (mHdmiHdrInfo >> 8) & 0xff;
+            int dvFlag                       = (mHdmiHdrInfo >> 30) & 0x1;
+            /*LOGD("%s: signalColorPrimaries = 0x%x, signalTransferCharacteristic = 0x%x, dvFlag = 0x%x.\n",
+                    __FUNCTION__, signalColorPrimaries, signalTransferCharacteristic, dvFlag);*/
+            if (((signalTransferCharacteristic == 0xe) || (signalTransferCharacteristic == 0x12))
+                && (signalColorPrimaries == 0x9)) {
+                newHdrType = HDR_TYPE_HLG;
+            } else if ((signalTransferCharacteristic == 0x30) && (signalColorPrimaries == 0x9)) {
+                newHdrType = HDR_TYPE_HDR10PLUS;
+            } else if ((signalTransferCharacteristic == 0x10) || (signalColorPrimaries == 0x9)) {
+                newHdrType = HDR_TYPE_HDR10;
+            } else if (dvFlag == 0x1) {
+                newHdrType = HDR_TYPE_DOVI;
+            } else {
+                newHdrType = HDR_TYPE_SDR;
+            }
+    } else {
+        LOGD("%s: This source no hdr status!\n", __FUNCTION__);
+        newHdrType = HDR_TYPE_NONE;
+    }
+
+    return newHdrType;
+}
+
 tvpq_databaseinfo_t CPQControl::GetDBVersionInfo(db_name_t name) {
     bool val = false;
     std::string tmpToolVersion, tmpProjectVersion, tmpGenerateTime, ChipVersion;
@@ -4609,8 +4709,15 @@ tvpq_databaseinfo_t CPQControl::GetDBVersionInfo(db_name_t name) {
 
 int CPQControl::SetCurrentHdrInfo (int hdrInfo)
 {
-    mHdmiHdrInfo = hdrInfo;
-    return 0;
+    int ret = 0;
+    if (mHdmiHdrInfo != (unsigned int)hdrInfo) {
+        mHdmiHdrInfo = (unsigned int)hdrInfo;
+        SetCurrentSourceInputInfo(mCurentSourceInputInfo);
+    } else {
+        LOGD("%s: same HDR info!\n", __FUNCTION__);
+    }
+
+    return ret;
 }
 
 int CPQControl::SetDtvKitSourceEnable(bool isEnable)
