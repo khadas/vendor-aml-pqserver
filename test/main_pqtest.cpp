@@ -534,7 +534,7 @@ int main(int argc, char **argv) {
               LOGD("please input is save:(0~1)\n");
               int is_save = 0;
               scanf("%d", &is_save);
-              test->setValue[1] = is_save;
+              test->setValue[2] = is_save;
 
               test->cmdID = PQ_SET_SHARPNESS;
               break;
