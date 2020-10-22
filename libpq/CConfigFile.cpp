@@ -379,3 +379,8 @@ const char *CConfigFile::GetWhiteBalanceFilePath(const char *section, const char
 {
     return GetString(section, key, def_value);
 }
+
+const char *CConfigFile::GetFilePath(const char *section, const char *key, const char *def_value)
+{
+    return GetString(section, key, def_value);
+}

@@ -52,6 +52,11 @@ void CPQControl::CPQControlInit()
     mDiFd          = -1;
     mbDtvKitEnable = false;
 
+    //for read file path
+    const char *config_value;
+    char filePath1[64] = {0};
+    char filePath2[64] = {0};
+
     //open vpp module
     mAmvideoFd = VPPOpenModule();
     if (mAmvideoFd < 0) {
@@ -84,13 +89,22 @@ void CPQControl::CPQControlInit()
     mPQConfigFile->LoadFromFile(pqConfigFilePath);
     SetFlagByCfg();
 
+    //load DV config file
+    config_value = mPQConfigFile->GetFilePath(CFG_SECTION_PQ, CFG_PQ_DV_CONFIG_FILE_PATH, NULL);
+    if (!config_value) {
+        LOGD("%s: read dv config file path failed,use default dir:%s\n", __FUNCTION__, DV_CFG_FILE_DEFAULT_DIR);
+        sprintf(filePath1, "%s", DV_CFG_FILE_DEFAULT_DIR);
+    } else {
+        LOGD("%s: dv config file path is %s\n", __FUNCTION__, config_value);
+        sprintf(filePath1, "%s", config_value);
+    }
+    mDolbyVision = new CDolbyVision(filePath1, filePath1);
+
     //open DB
     mPQdb = new CPQdb();
 
-    const char *config_value;
-    char filePath1[64] = {0};
-    char filePath2[64] = {0};
-
+    memset(filePath1, 0, sizeof(filePath1));
+    memset(filePath2, 0, sizeof(filePath2));
     config_value = mPQConfigFile->GetDatabaseFilePath(CFG_SECTION_PQ, CFG_PQ_DB_CONFIG_PATH, NULL);
     if (!config_value) {
         LOGD("%s: read pqconfig file path failed!\n", __FUNCTION__);
@@ -202,6 +216,12 @@ void CPQControl::CPQControlUnInit()
     if (mpVdin != NULL) {
         delete mpVdin;
         mpVdin = NULL;
+    }
+
+    //close dobly vision
+    if (mDolbyVision != NULL) {
+        delete mDolbyVision;
+        mDolbyVision = NULL;
     }
 
     if (mSSMAction!= NULL) {

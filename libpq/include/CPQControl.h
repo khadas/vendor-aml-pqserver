@@ -22,6 +22,7 @@
 #include "COverScandb.h"
 #include "UEventObserver.h"
 #include "CVdin.h"
+#include "CDolbyVision.h"
 
 #define PQ_DB_DEFAULT_PATH               "/vendor/etc/tvconfig/pq/pq.db"
 #define OVERSCAN_DB_DEFAULT_PATH         "/vendor/etc/tvconfig/pq/overscan.db"
@@ -408,6 +409,7 @@ private:
     int mDiFd;
 
     CVdin *mpVdin;
+    CDolbyVision *mDolbyVision;
 
     tcon_rgb_ogo_t rgbfrompq[3];
     source_input_param_t mCurentSourceInputInfo;
