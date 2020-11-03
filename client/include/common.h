@@ -9,6 +9,8 @@
 #ifndef __COMMON_H__
 #define __COMMON_H__
 
+#ifndef __TV_SOURCE_INPUT__
+#define __TV_SOURCE_INPUT__
 typedef enum tv_source_input_e {
     SOURCE_INVALID = -1,
     SOURCE_TV = 0,
@@ -29,7 +31,10 @@ typedef enum tv_source_input_e {
     SOURCE_SPDIF,
     SOURCE_MAX,
 } tv_source_input_t;
+#endif
 
+#ifndef __TV_SOURCE_INPUT_TYPE__
+#define __TV_SOURCE_INPUT_TYPE__
 typedef enum tv_source_input_type_e {
     SOURCE_TYPE_TV,
     SOURCE_TYPE_AV,
@@ -43,7 +48,10 @@ typedef enum tv_source_input_type_e {
     SOURCE_TYPE_SPDIF,
     SOURCE_TYPE_MAX,
 } tv_source_input_type_t;
+#endif
 
+#ifndef __TVIN_PORT__
+#define __TVIN_PORT__
 /* tvin input port select */
 typedef enum tvin_port_e {
     TVIN_PORT_NULL    = 0x00000000,
@@ -98,7 +106,10 @@ typedef enum tvin_port_e {
     TVIN_PORT_DTV     = 0x00040000,
     TVIN_PORT_MAX     = 0x80000000,
 } tvin_port_t;
+#endif
 
+#ifndef __TVIN_TRANS_FMT__
+#define __TVIN_TRANS_FMT__
 typedef enum tvin_trans_fmt {
     TVIN_TFMT_2D = 0,
     TVIN_TFMT_3D_LRH_OLOR,  // 1 Primary: Side-by-Side(Half) Odd/Left picture, Odd/Right p
@@ -119,7 +130,10 @@ typedef enum tvin_trans_fmt {
     TVIN_TFMT_3D_DET_CHESSBOARD,// 15
     TVIN_TFMT_3D_MAX,
 } tvin_trans_fmt_t;
+#endif
 
+#ifndef __TVIN_SIG_FMT__
+#define __TVIN_SIG_FMT__
 /* tvin signal format table */
 typedef enum tvin_sig_fmt_e {
     TVIN_SIG_FMT_NULL = 0,
@@ -384,18 +398,24 @@ typedef enum tvin_sig_fmt_e {
     TVIN_SIG_FMT_BT601_THRESHOLD                    = 0xa00,
     TVIN_SIG_FMT_MAX,
 } tvin_sig_fmt_t;
+#endif
 
+#ifndef __SOURCE_INPUT_PARAM__
+#define __SOURCE_INPUT_PARAM__
 typedef struct source_input_param_s {
     int source_input;
     int sig_fmt;
     int trans_fmt;
 } source_input_param_t;
+#endif
 
+#ifndef __TVIN_CUTWIN__
+#define __TVIN_CUTWIN__
 typedef struct tvin_cutwin_s {
     unsigned short hs;
     unsigned short he;
     unsigned short vs;
     unsigned short ve;
 } tvin_cutwin_t;
-
+#endif
 #endif
