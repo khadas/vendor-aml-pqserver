@@ -682,6 +682,7 @@ int CPQControl::Cpq_LoadRegs(am_regs_t regs)
             LOGE("%s, error(%s), errno(%d)\n", __FUNCTION__, strerror(errno), errno);
             if (errno == EBUSY) {
                 LOGE("%s, %s, retry...\n", __FUNCTION__, strerror(errno));
+                usleep(16*1000);
                 count_retry--;
                 continue;
             }
