@@ -4,7 +4,7 @@
 #
 ################################################################################
 LOCAL_PATH = $(shell pwd)
-LDFLAGS += -lstdc++ -lpthread -lz -ldl -lrt -L$(STAGING_DIR)/usr/lib
+LDFLAGS += -Wl,--no-as-needed -lstdc++ -lpthread -lz -ldl -lrt -L$(STAGING_DIR)/usr/lib
 CFLAGS += -Wall -Wno-unknown-pragmas -Wno-format \
           -O3 -fexceptions -fnon-call-exceptions -D_GNU_SOURCE -I$(STAGING_DIR)/usr/include
 
