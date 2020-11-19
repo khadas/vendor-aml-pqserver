@@ -142,7 +142,7 @@ int PqClient::SetColorTemperature(int colorTemperatureValue, int isSave, int rgb
     char buf[32] = {0};
     int  ret     = -1;
 
-    sprintf(buf, "pq.set.%d.%d.%d", PQ_SET_COLOR_TEMPERATURE_MODE, colorTemperatureValue, isSave, rgb_type, value);
+    sprintf(buf, "pq.set.%d.%d.%d.%d.%d", PQ_SET_COLOR_TEMPERATURE_MODE, colorTemperatureValue, isSave, rgb_type, value);
     SendMethodCall(buf);
 
     ret = atoi(mRetBuf);
