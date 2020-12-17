@@ -162,7 +162,6 @@ void CPQControl::CPQControlInit()
     mSSMAction->init(filePath1, filePath2);
 
     //init source
-    mSourceInput                        = SOURCE_MPEG;
     mCurentSourceInputInfo.source_input = SOURCE_MPEG;
     mCurentSourceInputInfo.sig_fmt      = TVIN_SIG_FMT_HDMI_1920X1080P_60HZ;
     mCurentSourceInputInfo.trans_fmt    = TVIN_TFMT_2D;
@@ -175,6 +174,10 @@ void CPQControl::CPQControlInit()
     } else {
         Cpq_SetDNLPStatus(VE_DNLP_STATE_OFF);
     }
+
+    //load display mode setting
+    vpp_display_mode_t display_mode = (vpp_display_mode_t)GetDisplayMode();
+    SetDisplayMode(display_mode, 1);
 
     //Load PQ
     if (LoadPQSettings() < 0) {
@@ -419,24 +422,70 @@ void CPQControl::onVframeSizeChange()
             LOGD("%s: not videoplay on/off event\n", __FUNCTION__);
         }
 
-        source_input_param_t new_source_input_param;
-        if ((mCurentSourceInputInfo.source_input == SOURCE_DTV)
-            || (mCurentSourceInputInfo.source_input == SOURCE_MPEG)) {
-            if (mbVideoIsPlaying && (frameszieEventFlag == 1)) {
-                new_source_input_param.source_input = mCurentSourceInputInfo.source_input;
-                new_source_input_param.trans_fmt    = mCurentSourceInputInfo.trans_fmt;
-                new_source_input_param.sig_fmt      = getVideoResolutionToFmt();
-                SetCurrentSourceInputInfo(new_source_input_param);
-            } else if (!mbVideoIsPlaying) {
-                new_source_input_param.source_input = mCurentSourceInputInfo.source_input;
-                new_source_input_param.trans_fmt    = mCurentSourceInputInfo.trans_fmt;
-                new_source_input_param.sig_fmt      = TVIN_SIG_FMT_HDMI_1920X1080P_60HZ;
-                SetCurrentSourceInputInfo(new_source_input_param);
-            }
+        if (((mCurentSourceInputInfo.source_input == SOURCE_DTV)
+            || (mCurentSourceInputInfo.source_input == SOURCE_MPEG))
+            && (frameszieEventFlag == 1)) {
+            source_input_param_t new_source_input_param;
+            new_source_input_param.source_input = mCurentSourceInputInfo.source_input;
+            new_source_input_param.trans_fmt    = mCurentSourceInputInfo.trans_fmt;
+            new_source_input_param.sig_fmt      = getVideoResolutionToFmt();
+            SetCurrentSourceInputInfo(new_source_input_param);
         }
     } else {
         LOGE("%s: read video event failed!\n", __FUNCTION__);
     }
+}
+
+int CPQControl::GetWindowStatus(void)
+{
+    window_mode_t newWindowStatus = WINDOW_FULL;
+
+    int width = 0, height = 0;
+    char axisValue[32] = {0};
+    char resolutionVal[32] = {0};
+    int readRet =  pqReadSys(SYSFS_VIDEO_AXIS_PATH, axisValue, sizeof(axisValue));
+    if (readRet == -1) {
+        LOGD("%s: read videoAxis failed!\n",__FUNCTION__);
+    } else {
+        char *buf = strtok(axisValue, " ");
+        int position[4] = {0};
+        int i = 0;
+        while (buf != NULL) {
+            position[i++] = atoi(buf);
+            buf = strtok(NULL, " ");
+        }
+        pqReadSys(SYSFS_DEVICE_RESOLUTION, resolutionVal, sizeof(resolutionVal));
+        if (strncasecmp(resolutionVal, "1366x768", strlen ("1366x768")) == 0) {
+            width = 1366;
+            height = 768;
+        } else if (strncasecmp(resolutionVal, "3840x2160", strlen ("3840x2160")) == 0) {
+            width = 3840;
+            height = 2160;
+        } else if (strncasecmp(resolutionVal, "1920x1080", strlen ("1920x1080")) == 0) {
+            width = 1920;
+            height = 1080;
+        } else {
+            LOGD("video display resolution is = (%s) not define , default it", resolutionVal);
+            width = 1366;
+            height = 768;
+        }
+        if ((position[0] == 0) && (position[1] == 0) &&(position[2] == -1) && (position[3] == -1)) {//device first on
+            newWindowStatus = WINDOW_LUNCHER;
+        } else {
+            if (GetVideoPlayStatus() == 1) {
+                if (((width - (position[2] - position[0]) <= 40) && (height - (position[3] - position[1]) <= 40))
+                    || ((width - (position[2] - position[0]) >= width) && (height - (position[3] - position[1]) >= height))) {
+                    newWindowStatus = WINDOW_FULL;
+                } else {
+                    newWindowStatus = WINDOW_PREVIEW;
+                }
+            } else {
+                newWindowStatus = WINDOW_LUNCHER;
+            }
+        }
+    }
+    LOGD("%s: newWindowStatus = %d!\n",__FUNCTION__, newWindowStatus);
+    return (int)newWindowStatus;
 }
 
 tvin_sig_fmt_t CPQControl::getVideoResolutionToFmt()
@@ -488,12 +537,13 @@ int CPQControl::SetCurrenSourceInfo(vdin_parm_t sig_info)
 
         mCurrentSignalInfo.port              = sig_info.port;
 
-        mSourceInput = mpVdin->Tvin_PortToSourceInput(sig_info.port);
+        tv_source_input_t SourceInput;
+        SourceInput = mpVdin->Tvin_PortToSourceInput(sig_info.port);
 
-        if ((mSourceInput == SOURCE_MPEG)
-            || (mSourceInput != SOURCE_MPEG && mCurrentSignalInfo.info.status == TVIN_SIG_STATUS_STABLE)) {
+        if ((SourceInput == SOURCE_MPEG)
+            || (SourceInput != SOURCE_MPEG && mCurrentSignalInfo.info.status == TVIN_SIG_STATUS_STABLE)) {
              source_input_param_t source_input_param;
-             source_input_param.source_input = mSourceInput;
+             source_input_param.source_input = SourceInput;
              source_input_param.sig_fmt      = mCurrentSignalInfo.info.fmt;
              source_input_param.trans_fmt    = mCurrentSignalInfo.info.trans_fmt;
              SetCurrentSourceInputInfo(source_input_param);
@@ -512,8 +562,8 @@ void CPQControl::onSigStatusChange(void)
         LOGD("%s Get Signal Info error!\n", __FUNCTION__);
     } else {
         SetCurrenSourceInfo(tempSignalInfo);
-        LOGD("mSourceInput is %d, port is %d, sig_fmt is %d, status is %d, isDVI is %d, hdr_info is 0x%x\n",
-            mSourceInput, mCurrentSignalInfo.port, mCurrentSignalInfo.info.fmt, mCurrentSignalInfo.info.status,
+        LOGD("source_input is %d, port is %d, sig_fmt is %d, status is %d, isDVI is %d, hdr_info is 0x%x\n",
+            mCurentSourceInputInfo.source_input, mCurrentSignalInfo.port, mCurrentSignalInfo.info.fmt, mCurrentSignalInfo.info.status,
             mCurrentSignalInfo.info.is_dvi, mCurrentSignalInfo.info.hdr_info);
     }
 
@@ -551,7 +601,7 @@ void CPQControl::onUevent(uevent_data_t ueventData)
         stopVdin();
         LOGD("Get vidn event error!\n");
     } else {
-        tv_source_input_type_t source_type   = mpVdin->Tvin_SourceInputToSourceInputType(mSourceInput);
+        tv_source_input_type_t source_type   = mpVdin->Tvin_SourceInputToSourceInputType(mCurentSourceInputInfo.source_input);
         tvin_sig_change_flag_t vdinEventType = (tvin_sig_change_flag_t)SignalEventInfo.event_sts;
         switch (vdinEventType) {
         case TVIN_SIG_CHG_SDR2HDR:
@@ -653,6 +703,8 @@ int CPQControl::LoadPQSettings()
     int ret = 0;
     const char *config_value;
     config_value = mPQConfigFile->GetString(CFG_SECTION_PQ, CFG_ALL_PQ_MOUDLE_ENABLE, "enable");
+    int displayWindowStatus = GetWindowStatus();
+
     if (strcmp(config_value, "disable") == 0) {
         LOGD("All PQ moudle disabled!\n");
         pq_ctrl_t pqControlVal;
@@ -707,10 +759,8 @@ int CPQControl::LoadPQSettings()
 
         int LocalContrastMode = GetLocalContrastMode();
         ret |= SetLocalContrastMode((local_contrast_mode_t)LocalContrastMode, 1);
-
-        vpp_display_mode_t display_mode = (vpp_display_mode_t)GetDisplayMode();
-        ret |= SetDisplayMode(display_mode, 1);
     }
+
     return ret;
 }
 
@@ -3012,7 +3062,6 @@ int CPQControl::GetVideoPlayStatus(void)
         curVideoState = 0;//video stoping
     }
 
-    //LOGD("%s: curVideoState = %d!\n",__FUNCTION__, curVideoState);
     return curVideoState;
 }
 
@@ -4479,18 +4528,29 @@ int CPQControl::SetCurrentSourceInputInfo(source_input_param_t source_input_para
          (mCurentSourceInputInfo.sig_fmt     != source_input_param.sig_fmt) ||
          (mCurentSourceInputInfo.trans_fmt   != source_input_param.trans_fmt) ||
          (mCurrentHdrType                    != newHdrType)) {
-        LOGD("%s: update sourceinput info!\n", __FUNCTION__);
+        LOGD("%s: update source input info\n", __FUNCTION__);
         mCurentSourceInputInfo.source_input = source_input_param.source_input;
         mCurentSourceInputInfo.trans_fmt    = source_input_param.trans_fmt;
 
-        if (source_input_param.sig_fmt == TVIN_SIG_FMT_NULL) {//enter source
+        if (mbCpqCfg_pq_param_check_source_enable) {
+            mSourceInputForSaveParam = mCurentSourceInputInfo.source_input;
+        } else {
+            mSourceInputForSaveParam = SOURCE_MPEG;
+        }
+
+        //load display mode setting
+        vpp_display_mode_t display_mode = (vpp_display_mode_t)GetDisplayMode();
+        SetDisplayMode(display_mode, 1);
+
+        //load pq setting
+        if (source_input_param.sig_fmt == TVIN_SIG_FMT_NULL) {//exit source
             mCurrentHdrType = HDR_TYPE_NONE;
             mPQdb->mHdrType = HDR_TYPE_NONE;
             mHdmiHdrInfo    = 0;
             if ((mCurentSourceInputInfo.source_input == SOURCE_MPEG)
                 || (mCurentSourceInputInfo.source_input == SOURCE_DTV)) {
                 mCurentSourceInputInfo.sig_fmt = TVIN_SIG_FMT_HDMI_1920X1080P_60HZ;
-                LoadPQSettings();
+                //LoadPQSettings();
             } else if ((mCurentSourceInputInfo.source_input == SOURCE_TV)
                     || (mCurentSourceInputInfo.source_input == SOURCE_AV1)
                     || (mCurentSourceInputInfo.source_input == SOURCE_AV2)) {
@@ -4529,11 +4589,12 @@ int CPQControl::SetCurrentSource(tv_source_input_t source_input)
 {
     LOGD("%s: source_input = %d!\n", __FUNCTION__, source_input);
 
-    pthread_mutex_lock(&PqControlMutex);
+    source_input_param_t new_source_input_param;
+    new_source_input_param.source_input = source_input;
+    new_source_input_param.trans_fmt    = mCurentSourceInputInfo.trans_fmt;
+    new_source_input_param.sig_fmt      = getVideoResolutionToFmt();
+    SetCurrentSourceInputInfo(new_source_input_param);
 
-    mSourceInput = source_input;
-
-    pthread_mutex_unlock(&PqControlMutex);
     return 0;
 }
 

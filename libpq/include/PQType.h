@@ -34,6 +34,12 @@ typedef enum is_3d_type_e {
     INDEX_3D = 1,
 } is_3d_type_t;
 
+typedef enum window_mode_e {
+    WINDOW_FULL = 0,
+    WINDOW_PREVIEW = 1,
+    WINDOW_LUNCHER = 2,
+} window_mode_t;
+
 typedef enum vpp_deblock_mode_e {
     VPP_DEBLOCK_MODE_OFF,
     VPP_DEBLOCK_MODE_LOW,

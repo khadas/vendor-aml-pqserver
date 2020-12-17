@@ -41,6 +41,9 @@
 
 #define CROP_PATH                        "/sys/class/video/crop"
 #define SCREEN_MODE_PATH                 "/sys/class/video/screen_mode"
+#define SYSFS_VIDEO_AXIS_PATH            "/sys/class/video/axis"
+#define SYSFS_DEVICE_RESOLUTION          "/sys/class/video/device_resolution"
+
 #define NOLINER_FACTORY                  "/sys/class/video/nonlinear_factor"
 #define BACKLIGHT_PATH                   "/sys/class/backlight/aml-bl/brightness"
 #define SYSFS_VFM_MAP_PATH               "/sys/class/vfm/map"
@@ -366,6 +369,7 @@ private:
     void onSigStatusChange(void);
     int SetCurrenSourceInfo(vdin_parm_t sig_info);
     tvin_sig_fmt_t getVideoResolutionToFmt();
+    int GetWindowStatus(void);
     int Cpq_SetXVYCCMode(vpp_xvycc_mode_t xvycc_mode, source_input_param_t source_input_param);
     int pqWriteSys(const char *path, const char *val);
     int pqReadSys(const char *path, char *buf, int count);
@@ -421,7 +425,6 @@ private:
     tcon_rgb_ogo_t rgbfrompq[3];
     source_input_param_t mCurentSourceInputInfo;
     tv_source_input_t mSourceInputForSaveParam;
-    tv_source_input_t mSourceInput;
     hdr_type_t mCurrentHdrType = HDR_TYPE_NONE;
     unsigned int mHdmiHdrInfo = 0;
     vdin_parm_s mCurrentSignalInfo;
