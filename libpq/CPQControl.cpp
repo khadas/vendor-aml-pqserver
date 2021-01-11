@@ -50,6 +50,7 @@ void CPQControl::CPQControlInit()
     mInitialized   = false;
     mAmvideoFd     = -1;
     mDiFd          = -1;
+    mLCDLdimFd     = -1;
     mbDtvKitEnable = false;
 
     //for read file path
@@ -107,11 +108,11 @@ void CPQControl::CPQControlInit()
     memset(filePath2, 0, sizeof(filePath2));
     config_value = mPQConfigFile->GetDatabaseFilePath(CFG_SECTION_PQ, CFG_PQ_DB_CONFIG_PATH, NULL);
     if (!config_value) {
-        LOGD("%s: read pqconfig file path failed!\n", __FUNCTION__);
+        LOGD("%s: read pqconfig file path failed\n", __FUNCTION__);
         sprintf(filePath1, "%s", PQ_DB_DEFAULT_PATH);
         sprintf(filePath2, "%s", OVERSCAN_DB_DEFAULT_PATH);
     } else {
-        LOGD("%s: pqconfig file path is %s!\n", __FUNCTION__, config_value);
+        LOGD("%s: pqconfig file path is %s\n", __FUNCTION__, config_value);
         sprintf(filePath1, "%s/pq.db", config_value);
         sprintf(filePath2, "%s/overscan.db", config_value);
     }
@@ -196,7 +197,14 @@ void CPQControl::CPQControlInit()
 
     //auto backlight
     if (isFileExist(LDIM_PATH)) {
-        SetDynamicBacklight((Dynamic_backlight_status_t)GetDynamicBacklight(), 1);
+        mLCDLdimFd = LCDLdimOpenModule();
+        if (mLCDLdimFd < 0) {
+            LOGE("Open lcd ldim failed!\n");
+        } else {
+            LOGD("Open lcd ldim success!\n");
+            SetLdim();
+        }
+        //SetDynamicBacklight((Dynamic_backlight_status_t)GetDynamicBacklight(), 1);
     } else if (isFileExist(BACKLIGHT_PATH)) {//local diming or pwm
         mDynamicBackLight.setObserver(this);
         mDynamicBackLight.startDected();
@@ -211,6 +219,8 @@ void CPQControl::CPQControlUnInit()
     VPPCloseModule();
     //close DI module
     DICloseModule();
+    //close lcd ldim
+    LCDLdimCloseModule();
 
     //close vdin
     if (mpVdin != NULL) {
@@ -346,6 +356,43 @@ int CPQControl::AFEDeviceIOCtl ( int request, ... )
         LOGE ( "Open tvafe module error(%s).\n", strerror ( errno ));
         return -1;
     }
+}
+
+int CPQControl::LCDLdimOpenModule(void)
+{
+    if (mLCDLdimFd < 0) {
+        mLCDLdimFd = open(LDIM_PATH, O_RDWR);
+        LOGD("lcd ldim module path: %s.\n", LDIM_PATH);
+        if (mLCDLdimFd < 0) {
+            LOGE("Open lcd ldim module, error(%s)!\n", strerror(errno));
+            return -1;
+        }
+    } else {
+        LOGD("lcd ldim module has been opened before!\n");
+    }
+
+    return mLCDLdimFd;
+}
+
+int CPQControl::LCDLdimCloseModule(void)
+{
+    if (mLCDLdimFd >= 0) {
+        close( mLCDLdimFd);
+        mLCDLdimFd = -1;
+    }
+    return 0;
+}
+
+int CPQControl::LCDLdimDeviceIOCtl(int request, ...)
+{
+    int ret = -1;
+    va_list ap;
+    void *arg;
+    va_start(ap, request);
+    arg = va_arg ( ap, void * );
+    va_end(ap);
+    ret = ioctl(mLCDLdimFd, request, arg);
+    return ret;
 }
 
 void CPQControl::onVframeSizeChange()
@@ -2746,6 +2793,43 @@ int CPQControl::Cpq_SetNonLinearFactor(int value)
     fp = NULL;
     return 0;
 }
+//local dimming
+int CPQControl::Cpq_SetLdim(const aml_ldim_info_s *pldim)
+{
+    int ret = 0;
+
+    ret = LCDLdimDeviceIOCtl(AML_LDIM_IOC_CMD_SET_INFO, pldim);
+    if (ret < 0) {
+        LOGE("%s error(%s)!\n", __FUNCTION__, strerror(errno));
+    }
+
+    return ret;
+}
+
+int CPQControl::SetLdim(void)
+{
+    int ret = -1;
+    aml_ldim_info_s ldim;
+
+    if (mbCpqCfg_ldim_enable) {
+        if (mPQdb->PQ_GetLDIMParams(mCurentSourceInputInfo, &ldim) == 0) {
+            ret = Cpq_SetLdim(&ldim);
+        } else {
+            LOGE("mPQdb->PQ_GetLDIMParams failed!\n");
+        }
+    } else {
+        LOGD("LDIM moudle disabled\n");
+        ret = 0;
+    }
+
+    if (ret < 0) {
+        LOGE("%s failed\n",__FUNCTION__);
+    } else {
+        LOGD("%s success\n",__FUNCTION__);
+    }
+
+    return ret;
+}
 
 //Backlight
 int CPQControl::SetBacklight(int value, int is_save)
@@ -4269,6 +4353,13 @@ int CPQControl::SetFlagByCfg(void)
         mbCpqCfg_pq_param_check_source_enable = true;
     } else {
         mbCpqCfg_pq_param_check_source_enable = false;
+    }
+
+    config_value = mPQConfigFile->GetString(CFG_SECTION_BACKLIGHT, CFG_LDIM_ENABLE, "disable");
+    if (strcmp(config_value, "enable") == 0) {
+        mbCpqCfg_ldim_enable = true;
+    } else {
+        mbCpqCfg_ldim_enable = false;
     }
 
     vpp_pq_ctrl_t amvecmConfigVal;

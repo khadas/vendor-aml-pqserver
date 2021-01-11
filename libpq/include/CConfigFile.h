@@ -72,6 +72,7 @@
 
 //for backlight
 #define CFG_SECTION_BACKLIGHT                   "BACKLIGHT"
+#define CFG_LDIM_ENABLE                         "backlight.ldim.en"
 #define CFG_AUTOBACKLIGHT_THTF                  "auto.backlight.thtf"
 #define CFG_AUTOBACKLIGHT_LUTMODE               "auto.backlight.lutmode"
 #define CFG_AUTOBACKLIGHT_LUTHIGH               "auto.backlight.lutvalue_high"

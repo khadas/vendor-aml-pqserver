@@ -576,6 +576,121 @@ int CPQdb::PQ_ResetAllColorTemperatureParams(void)
     return rval;
 }
 
+int CPQdb::PQ_GetLDIMParams(source_input_param_t source_input_param, aml_ldim_info_s *newParams)
+{
+    CSqlite::Cursor c;
+    char sqlmaster[256];
+    char buf[512];
+    char *buffer = NULL;
+    char *aa = NULL;
+    char *aa_save[100];
+    unsigned int index = 0;
+    int rval = -1;
+
+    memset(newParams, 0, sizeof(aml_ldim_info_s));
+
+    {// for param
+        index = 0;
+        getSqlParams(__FUNCTION__, sqlmaster, "select value from %s where "
+                    "regnum < 1000",
+                    PQ_DB_LDIM_TABLE_NAME);
+        rval = this->select(sqlmaster, c);
+
+        if (c.moveToFirst()) {
+            newParams->func_en          = c.getInt(0);
+            newParams->remapping_en     = c.getInt(1);
+            newParams->alpha            = c.getInt(2);
+            newParams->LPF_method       = c.getInt(3);
+            newParams->lpf_gain         = c.getInt(4);
+            newParams->lpf_res          = c.getInt(5);
+            newParams->side_blk_diff_th = c.getInt(6);
+            newParams->bbd_th           = c.getInt(7);
+            newParams->boost_gain       = c.getInt(8);
+            newParams->rgb_base         = c.getInt(9);
+            newParams->Ld_remap_bypass  = c.getInt(10);
+            newParams->LD_TF_STEP_TH    = c.getInt(11);
+            newParams->TF_BLK_FRESH_BL  = c.getInt(12);
+            newParams->TF_FRESH_BL      = c.getInt(13);
+            newParams->fw_LD_ThTF_l     = c.getInt(14);
+            newParams->fw_rgb_diff_th   = c.getInt(15);
+        }else {
+            LOGE("%s, read ldim param fail\n", __FUNCTION__);
+        }
+
+        LOGD ("%s - ldim param is func_en:%d remapping_en:%d"
+            "alpha:%d LPF_method:%d lpf_gain:%d lpf_res:%d side_blk_diff_th:%d"
+            "bbd_th:%d boost_gain:%d rgb_base:%d Ld_remap_bypass:%d LD_TF_STEP_TH:%d"
+            "TF_BLK_FRESH_BL:%d TF_FRESH_BL:%d fw_LD_ThTF_l:%d fw_rgb_diff_th:%d\n",
+            __FUNCTION__, newParams->func_en, newParams->remapping_en,
+            newParams->alpha, newParams->LPF_method, newParams->lpf_gain, newParams->lpf_res, newParams->side_blk_diff_th,
+            newParams->bbd_th, newParams->boost_gain, newParams->rgb_base, newParams->Ld_remap_bypass, newParams->LD_TF_STEP_TH,
+            newParams->TF_BLK_FRESH_BL, newParams->TF_FRESH_BL, newParams->fw_LD_ThTF_l, newParams->fw_rgb_diff_th);
+    }
+    {// bl_remap_curve
+        index = 0;
+        aa = NULL;
+        getSqlParams(__FUNCTION__, sqlmaster, "select value from %s where "
+                    "regnum = %d",
+                    PQ_DB_LDIM_TABLE_NAME, bl_remap_curve);
+
+        rval = this->select(sqlmaster, c);
+        memset(buf, 0, sizeof(buf));
+        strcpy(buf, c.getString(index).c_str());
+        LOGD ("%s - bl_remap_curve is %s\n", __FUNCTION__, buf);
+        buffer = buf;
+        while ((aa_save[index] = strtok_r(buffer, " ", &aa)) != NULL) {
+            newParams->bl_remap_curve[index] = atoi(aa_save[index]);
+            index ++;
+            if (index >= sizeof(newParams->bl_remap_curve)/sizeof(unsigned int)) {
+                break;
+            }
+            buffer = NULL;
+        }
+
+        for (index = 0; index < 16; index++) {
+            LOGD ("%s - newParams->bl_remap_curve[%d] is %d\n", __FUNCTION__, index, newParams->bl_remap_curve[index]);
+        }
+    }
+    {//for local dimming lut
+        int i = 0;
+        int lut_id = LD_remap_LUT_0;
+        for (i = 0; i < 16; i++) {
+            index = 0;
+            aa = NULL;
+            lut_id = LD_remap_LUT_0 + i;
+            getSqlParams(__FUNCTION__, sqlmaster, "select value from %s where "
+                        "regnum = %d",
+                        PQ_DB_LDIM_TABLE_NAME, lut_id);
+
+            rval = this->select(sqlmaster, c);
+            memset(buf, 0, sizeof(buf));
+            strcpy(buf, c.getString(index).c_str());
+            LOGD ("%s - LD_remap_LUT[%d] is %s\n", __FUNCTION__, i, buf);
+            buffer = buf;
+            while ((aa_save[index] = strtok_r(buffer, " ", &aa)) != NULL) {
+                if (index > 0) {
+                    newParams->Reg_LD_remap_LUT[i][index - 1] = atoi(aa_save[index]);
+                }
+                index++;
+                if (index > sizeof(newParams->Reg_LD_remap_LUT[0])/sizeof(unsigned int)) {
+                    break;
+                }
+                buffer = NULL;
+            }
+        }
+/*
+        for (index = 0; index < 16; index++) {
+            int i = 0;
+            for (i = 0; i < 32; i++) {
+                LOGD ("%s - newParams->Reg_LD_remap_LUT[%d][%d] is %d\n", __FUNCTION__, index, i, newParams->Reg_LD_remap_LUT[index][i]);
+            }
+        }
+*/
+    }
+
+    return rval;
+}
+
 int CPQdb::PQ_GetDNLPParams(source_input_param_t source_input_param, Dynamic_contrst_status_t mode, ve_dnlp_curve_param_t *newParams)
 {
     CSqlite::Cursor c;

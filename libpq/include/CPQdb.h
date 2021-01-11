@@ -32,6 +32,10 @@ typedef enum output_type_e {
     OUTPUT_TYPE_MAX,
 } output_type_t;
 
+//pq db table name
+#define PQ_DB_LDIM_TABLE_NAME        "LD_HDMI"
+
+
 class CPQdb: public CSqlite {
 public:
     CPQdb();
@@ -97,6 +101,7 @@ public:
     int PQ_GetGammaSpecialTable(vpp_gamma_curve_t gamma_curve, const char *f_name, tcon_gamma_table_t *gamma_r);
     int PQ_GetPLLParams(source_input_param_t source_input_param, am_regs_t *regs);
     int PQ_GetCVD2Params(source_input_param_t source_input_param, am_regs_t *regs);
+    int PQ_GetLDIMParams(source_input_param_t source_input_param, aml_ldim_info_s *newParams);
     int openPqDB(const char *db_path);
     int reopenDB(const char *db_path);
     int getRegValues(const char *table_name, am_regs_t *regs);

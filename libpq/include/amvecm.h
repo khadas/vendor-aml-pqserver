@@ -77,6 +77,8 @@
 
 // VPP.Local dimming command list
 #define LDIM_IOC_PARA              _IOW(AMVECM_IOC_MAGIC, 0x50, struct vpu_ldim_param_s)
+#define AML_LDIM_IOC_CMD_GET_INFO  _IOR(AMVECM_IOC_MAGIC, 0x51, struct aml_ldim_info_s)
+#define AML_LDIM_IOC_CMD_SET_INFO  _IOW(AMVECM_IOC_MAGIC, 0x52, struct aml_ldim_info_s)
 
 // VPP.display mode command list
 #define AMVECM_IOC_SET_OVERSCAN    _IOW(AMVECM_IOC_MAGIC, 0x52, struct ve_pq_load_s)
