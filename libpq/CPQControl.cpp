@@ -91,15 +91,10 @@ void CPQControl::CPQControlInit()
     SetFlagByCfg();
 
     //load DV config file
-    config_value = mPQConfigFile->GetFilePath(CFG_SECTION_PQ, CFG_PQ_DV_CONFIG_FILE_PATH, NULL);
-    if (!config_value) {
-        LOGD("%s: read dv config file path failed,use default dir:%s\n", __FUNCTION__, DV_CFG_FILE_DEFAULT_DIR);
-        sprintf(filePath1, "%s", DV_CFG_FILE_DEFAULT_DIR);
-    } else {
-        LOGD("%s: dv config file path is %s\n", __FUNCTION__, config_value);
-        sprintf(filePath1, "%s", config_value);
-    }
-    mDolbyVision = new CDolbyVision(filePath1, filePath1);
+    char dvbinpath[128] = {0};
+    char dvcfgpath[128] = {0};
+    mPQConfigFile->GetDvFilePath(dvbinpath, dvcfgpath);
+    mDolbyVision = new CDolbyVision(dvbinpath, dvcfgpath);
 
     //open DB
     mPQdb = new CPQdb();

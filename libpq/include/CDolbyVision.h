@@ -13,9 +13,6 @@
 #include "PQType.h"
 
 #define DV_DEV_PATH                "/dev/amdolby_vision"
-#define DV_BIN_FILE_DEFAULT_PATH   "/vendor/etc/tvconfig/panel/dv_config.bin"
-#define DV_CFG_FILE_DEFAULT_PATH   "/vendor/etc/tvconfig/panel/Amlogic_dv.cfg"
-#define DV_CFG_FILE_DEFAULT_DIR    "/vendor/etc/tvconfig/panel"
 
 #define HDR10_POLICY_PATH          "/sys/module/amdolby_vision/parameters/dolby_vision_hdr10_policy"
 

@@ -125,14 +125,13 @@ int CDolbyVision::DV_DeviceIOCtl( int request, ... )
 int CDolbyVision::SetDolbyCfgFile(const char *binFilePath, const char *cfgFilePath) {
     dolby_config_file_t dolbyCfgFile;
     memset(&dolbyCfgFile, 0, sizeof(dolby_config_file_t));
-
-    char filePath0[256] = {0};
-    sprintf(filePath0, "%s/dv_config.bin", binFilePath);
-    strncpy((char*)dolbyCfgFile.bin_name, filePath0, 255);
-
-    char filePath1[256] = {0};
-    sprintf(filePath1, "%s/Amlogic_dv.cfg", cfgFilePath);
-    strncpy((char*)dolbyCfgFile.cfg_name, filePath1, 255);
+    if ((binFilePath == NULL) || (cfgFilePath == NULL)) {
+        LOGD("%s: file path invalid\n", __FUNCTION__);
+        return -1;
+    } else {
+        strncpy((char*)dolbyCfgFile.bin_name, binFilePath, 255);
+        strncpy((char*)dolbyCfgFile.cfg_name, cfgFilePath, 255);
+    }
 
     LOGD("%s: bin_name=%s, cfg_name=%s.\n", __FUNCTION__, dolbyCfgFile.bin_name, dolbyCfgFile.cfg_name);
 

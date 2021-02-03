@@ -10,15 +10,20 @@
 #ifndef CONFIG_FILE_H_
 #define CONFIG_FILE_H_
 
-//for model ini
-#define CFG_SECTION_PQ_CONFIG_PATH              "PQINI_PATH"
+
+
+#define DV_BIN_FILE_DEFAULT_PATH               "/vendor/etc/tvconfig/panel/dv_config.bin"
+#define DV_CFG_FILE_DEFAULT_PATH               "/vendor/etc/tvconfig/panel/Amlogic_dv.cfg"
+
 
 //for pq config
 #define CFG_SECTION_PQ                          "PQ"
 #define CFG_PQ_DB_CONFIG_PATH                   "pq_db_config_path"
 #define CFG_PQ_SETTINGDATA_FILE_PATH            "pq_uiSettingDataFile_path"
 #define CFG_PQ_WHITEBALANCE_FILE_PATH           "pq_FactorywhiteBalance_path"
-#define CFG_PQ_DV_CONFIG_FILE_PATH              "pq_dv_cfg_path"
+#define CFG_PQ_DV_BIN_PATH                      "pq_dv_bin_path"
+#define CFG_PQ_DV_CFG_PATH                      "pq_dv_cfg_path"
+
 #define CFG_BIG_SMALL_DB_ENABLE                 "pq.BigSmallDb.en"
 #define CFG_ALL_PQ_MOUDLE_ENABLE                "pq.AllPQMoudle.en"
 #define CFG_PQ_PARAM_CHECK_SOURCE_ENABLE        "pq.ParamCheckSource.en"
@@ -115,6 +120,8 @@ public:
     CConfigFile();
     ~CConfigFile();
     static CConfigFile *GetInstance();
+    bool isFileExist(const char *file_name);
+    void GetDvFilePath(char *bin_file_path, char *cfg_file_path);
     int LoadFromFile(const char *filename);
     int SaveToFile(const char *filename = NULL);
     int SetString(const char *section, const char *key, const char *value);

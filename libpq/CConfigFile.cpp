@@ -15,6 +15,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #include "CPQLog.h"
 #include "CConfigFile.h"
 
@@ -40,6 +41,20 @@ CConfigFile::~CConfigFile()
 {
     LOGD("%\n", __FUNCTION__);
     FreeAllMem();
+}
+
+bool CConfigFile::isFileExist(const char *file_name)
+{
+    struct stat tmp_st;
+    int ret = -1;
+
+    ret = stat(file_name, &tmp_st);
+    if (ret != 0 ) {
+       LOGE("%s don't exist!\n",file_name);
+       return false;
+    } else {
+       return true;
+    }
 }
 
 int CConfigFile::LoadFromFile(const char *filename)
@@ -384,3 +399,30 @@ const char *CConfigFile::GetFilePath(const char *section, const char *key, const
 {
     return GetString(section, key, def_value);
 }
+
+void CConfigFile::GetDvFilePath(char *bin_file_path, char *cfg_file_path)
+{
+    //read dv file path from pq_default.ini
+    const char *pqdvbinPath    = NULL;
+    pqdvbinPath = GetString(CFG_SECTION_PQ, CFG_PQ_DV_BIN_PATH, DV_BIN_FILE_DEFAULT_PATH);
+
+    if (isFileExist(pqdvbinPath)) {
+        strcpy(bin_file_path, pqdvbinPath);
+    } else if (isFileExist(DV_BIN_FILE_DEFAULT_PATH)) {
+        strcpy(bin_file_path, DV_BIN_FILE_DEFAULT_PATH);
+    } else {
+        LOGE("no dv_config.bin in %s\n", DV_BIN_FILE_DEFAULT_PATH);
+    }
+
+    const char *pqdvcfgPath = NULL;
+    pqdvcfgPath = GetString(CFG_SECTION_PQ, CFG_PQ_DV_CFG_PATH, DV_CFG_FILE_DEFAULT_PATH);
+
+    if (isFileExist(pqdvcfgPath)) {
+        strcpy(cfg_file_path, pqdvcfgPath);
+    } else if (isFileExist(DV_CFG_FILE_DEFAULT_PATH)) {
+        strcpy(cfg_file_path, DV_CFG_FILE_DEFAULT_PATH);
+    } else {
+        LOGE("no Amlogic_dv.cfg in %s\n", DV_CFG_FILE_DEFAULT_PATH);
+    }
+}
+
