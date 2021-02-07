@@ -55,6 +55,19 @@ public:
     //PQ mode
     int SSMSavePictureMode(int offset, int rw_val);
     int SSMReadPictureMode(int offset, int *rw_val);
+    int SSMSaveLastPictureMode(int offset, int rw_val);
+    int SSMReadLastPictureMode(int offset, int *rw_val);
+    int SSMSaveSDRPictureMode(int offset, int rw_val);
+    int SSMReadSDRPictureMode(int offset, int *rw_val);
+    int SSMSaveHDR10PictureMode(int offset, int rw_val);
+    int SSMReadHDR10PictureMode(int offset, int *rw_val);
+    int SSMSaveHDR10PLUSPictureMode(int offset, int rw_val);
+    int SSMReadHDR10PLUSPictureMode(int offset, int *rw_val);
+    int SSMSaveHLGPictureMode(int offset, int rw_val);
+    int SSMReadHLGPictureMode(int offset, int *rw_val);
+    int SSMSaveDVPictureMode(int offset, int rw_val);
+    int SSMReadDVPictureMode(int offset, int *rw_val);
+
     //Color Temperature
     int SSMSaveColorTemperature(int offset, int rw_val);
     int SSMReadColorTemperature(int offset, int *rw_val);
@@ -100,6 +113,9 @@ public:
     //NoiseReduction
     int SSMSaveNoiseReduction(int offset, int rw_val);
     int SSMReadNoiseReduction(int offset, int *rw_val);
+    //DolbyMode
+    int SSMSaveDolbyMode(int offset, int rw_val);
+    int SSMReadDolbyMode(int offset, int *rw_val);
     //Gamma
     int SSMSaveGammaValue(int offset, int rw_val);
     int SSMReadGammaValue(int offset, int *rw_val);

@@ -436,7 +436,7 @@ int main(int argc, char **argv) {
               scanf("%d", &is_save);
               test->setValue[1] = is_save;
 
-              LOGD("please input rgb_ogo_type_t:(0~5)\n");
+              LOGD("please input rgb_ogo_type_t:(0~5)(-1:only change ColorTemperature mode)\n");
               int rgb_type = 0;
               scanf("%d", &rgb_type);
               test->setValue[2] = rgb_type;

@@ -39,7 +39,7 @@ CPQdb::~CPQdb()
 
 int CPQdb::openPqDB(const char *db_path)
 {
-    LOGD("openPqDB path = %s.\n", db_path);
+    LOGD("%s db_path = %s\n", __FUNCTION__, db_path);
     int rval;
 
     if (access(db_path, 0) < 0) {
@@ -50,17 +50,33 @@ int CPQdb::openPqDB(const char *db_path)
     closeDb();
     rval = openDb(db_path);
     if (rval == 0) {
-        std::string PQ_ToolVersion, PQ_DBVersion, PQ_DBGenerateTime, PQ_DBChipVersion, val;
-        if (PQ_GetPqVersion(PQ_ToolVersion, PQ_DBVersion, PQ_DBGenerateTime, PQ_DBChipVersion)) {
-            val = PQ_ToolVersion + " " + PQ_DBVersion + " " + PQ_DBGenerateTime+ " " + PQ_DBChipVersion;
-            mDbVersion  = atoi(PQ_DBVersion.c_str());
+        std::string attributeVal;
+        database_attribute_t databaseAttribute;
+        bool ret = PQ_GetDataBaseAttribute(&databaseAttribute);
+        if (ret) {
+            if (databaseAttribute.dbversion.length() == 0) {
+                if (databaseAttribute.ProjectVersion.length() == 0) {
+                    mDbVersion = PQ_DB_CODE_VERSION_0;
+                } else {
+                    mDbVersion = atoi(databaseAttribute.ProjectVersion.c_str());
+                }
+            } else {
+                mDbVersion = atoi(databaseAttribute.dbversion.c_str());
+            }
+
+            attributeVal = databaseAttribute.ToolVersion + " " +
+                           databaseAttribute.ProjectVersion + " " +
+                           databaseAttribute.dbversion + " " +
+                           databaseAttribute.GenerateTime + " " +
+                           databaseAttribute.ChipVersion;
         } else {
-            val = "Get PQ_DB Verion failure!!!";
+            attributeVal = "Get PQ_DB Verion failure";
         }
-        LOGD("%s = %s\n", "PQ.db.version", val.c_str());
+
+        LOGD("%s = %s\n", "PQ.db.version", attributeVal.c_str());
     }
 
-    LOGD("db-code version:%d db version:%d\n", PQ_DB_CODE_VERSION, mDbVersion);
+    LOGD("code version:%d db version:%d\n", PQ_DB_CODE_VERSION, mDbVersion);
 
     return rval;
 }
@@ -69,6 +85,78 @@ int CPQdb::reopenDB(const char *db_path)
 {
     int  rval = openDb(db_path);
     return rval;
+}
+
+bool CPQdb::PQ_GetDataBaseAttribute(database_attribute_t *DbAttribute)
+{
+    bool ret = false;
+    if (DbAttribute == NULL) {
+        LOGD("%s: DbAttribute is NULL!\n", __FUNCTION__);
+    } else {
+        CSqlite::Cursor c;
+        char sqlmaster[256];
+        bool chipVersionExist = false;
+        bool dbversionExist   = false;
+
+        if (CheckIdExistInDb("ChipVersion", PQ_DB_VERSION_TABLE_NAME)) {
+            chipVersionExist = true;
+            if (CheckIdExistInDb("dbversion", PQ_DB_VERSION_TABLE_NAME)) {
+                dbversionExist = true;
+                getSqlParams(__FUNCTION__, sqlmaster,
+                             "select ToolVersion,ProjectVersion,ChipVersion,dbversion,GenerateTime from %s;", PQ_DB_VERSION_TABLE_NAME);
+            } else {
+                dbversionExist = false;
+                getSqlParams(__FUNCTION__, sqlmaster,
+                             "select ToolVersion,ProjectVersion,ChipVersion,GenerateTime from %s;", PQ_DB_VERSION_TABLE_NAME);
+            }
+        } else {
+            chipVersionExist = false;
+            if (CheckIdExistInDb("dbversion", PQ_DB_VERSION_TABLE_NAME)) {
+                dbversionExist = true;
+                getSqlParams(__FUNCTION__, sqlmaster,
+                     "select ToolVersion,ProjectVersion,dbversion,GenerateTime from %s;", PQ_DB_VERSION_TABLE_NAME);
+            } else {
+                dbversionExist = false;
+                getSqlParams(__FUNCTION__, sqlmaster,
+                         "select ToolVersion,ProjectVersion,GenerateTime from %s;", PQ_DB_VERSION_TABLE_NAME);
+            }
+        }
+
+        int rval = this->select(sqlmaster, c);
+
+        if (!rval && c.getCount() > 0) {
+            DbAttribute->ToolVersion    = c.getString(0);
+            DbAttribute->ProjectVersion = c.getString(1);
+            if (chipVersionExist) {
+                if (dbversionExist) {
+                    DbAttribute->ChipVersion  = c.getString(2);
+                    DbAttribute->dbversion    = c.getString(3);
+                    DbAttribute->GenerateTime = c.getString(4);
+                } else {
+                    DbAttribute->ChipVersion  = c.getString(2);
+                    DbAttribute->GenerateTime = c.getString(3);
+                    DbAttribute->dbversion    = std::string("");
+                }
+            } else {
+                if (dbversionExist) {
+                    DbAttribute->dbversion    = c.getString(2);
+                    DbAttribute->GenerateTime = c.getString(3);
+                    DbAttribute->ChipVersion  = std::string("");
+                } else {
+                    DbAttribute->GenerateTime = c.getString(2);
+                    DbAttribute->ChipVersion  = std::string("");
+                    DbAttribute->dbversion    = std::string("");
+                }
+            }
+
+            ret = true;
+        } else {
+            LOGD("%s: select action failed!\n", __FUNCTION__);
+            ret = false;
+        }
+    }
+
+    return ret;
 }
 
 int CPQdb::getRegValues(const char *table_name, am_regs_t *regs)
@@ -486,19 +574,19 @@ int CPQdb::PQ_GetColorTemperatureParams(vpp_color_temperature_mode_t Tempmode, s
         rval = this->select(sqlmaster, c);
 
         if (c.moveToFirst()) {
-            params->en = c.getInt(0);
-            params->r_pre_offset = c.getInt(1);
-            params->g_pre_offset = c.getInt(2);
-            params->b_pre_offset = c.getInt(3);
-            params->r_gain = c.getInt(4);
-            params->g_gain = c.getInt(5);
-            params->b_gain = c.getInt(6);
+            params->en            = c.getInt(0);
+            params->r_pre_offset  = c.getInt(1);
+            params->g_pre_offset  = c.getInt(2);
+            params->b_pre_offset  = c.getInt(3);
+            params->r_gain        = c.getInt(4);
+            params->g_gain        = c.getInt(5);
+            params->b_gain        = c.getInt(6);
             params->r_post_offset = c.getInt(7);
             params->g_post_offset = c.getInt(8);
             params->b_post_offset = c.getInt(9);
         }
     } else {
-        LOGE("GeneralWhiteBalanceTable select error!!\n");
+        LOGE("GeneralWhiteBalanceTable select error\n");
     }
 
     return rval;
@@ -1747,85 +1835,105 @@ int CPQdb::PQ_ResetAllOverscanParams(void)
     return rval;
 }
 
-bool CPQdb::PQ_GetPqVersion(std::string& ToolVersion, std::string& ProjectVersion, std::string& GenerateTime, std::string& ChipVersion)
-{
-    bool ret = false;
-    CSqlite::Cursor c;
-    char sqlmaster[256];
-    bool chipVersionExist = false;
-    if (CheckIdExistInDb("ChipVersion", "PQ_VersionTable")) {
-        chipVersionExist = true;
-        getSqlParams(__FUNCTION__, sqlmaster,
-                     "select ToolVersion,ProjectVersion,ChipVersion,GenerateTime from PQ_VersionTable;");
-    } else {
-        chipVersionExist = false;
-        getSqlParams(__FUNCTION__, sqlmaster,
-                     "select ToolVersion,ProjectVersion,GenerateTime from PQ_VersionTable;");
-    }
-    int rval = this->select(sqlmaster, c);
-
-    if (!rval && c.getCount() > 0) {
-        ToolVersion = c.getString(0);
-        ProjectVersion = c.getString(1);
-        if (chipVersionExist) {
-            ChipVersion = c.getString(2);
-            GenerateTime = c.getString(3);
-        } else {
-            ChipVersion = std::string("");
-            GenerateTime = c.getString(2);
-        }
-        ret = true;
-    }
-
-    return ret;
-}
-
-int CPQdb::PQ_GetPQModeParams(tv_source_input_t source_input, vpp_picture_mode_t pq_mode,
+int CPQdb::PQ_GetPQModeParams(source_input_param_t source_input_param, vpp_picture_mode_t pq_mode,
                                 vpp_pq_para_t *params)
 {
     CSqlite::Cursor c;
     char sqlmaster[256];
 
     int rval = -1;
+    params->dv_pqmode  =  -1;
 
-    getSqlParams(__FUNCTION__, sqlmaster,
-                 "select Brightness, Contrast, Saturation, Hue, Sharpness, Backlight, NR from Picture_Mode where "
-                 "TVIN_PORT = %d and "
-                 "Mode = %d ;", source_input, pq_mode);
+    if (mDbVersion < PQ_DB_CODE_VERSION_2) {
+        //for before picture mode 5
+        getSqlParams(__FUNCTION__, sqlmaster,
+                     "select Brightness, Contrast, Saturation, Hue, Sharpness, Backlight, NR from Picture_Mode where "
+                     "TVIN_PORT = %d and "
+                     "Mode = %d ;", source_input_param.source_input, pq_mode);
+        rval = this->select(sqlmaster, c);
+        if (c.moveToFirst()) {
+            params->brightness = c.getInt(0);
+            params->contrast   = c.getInt(1);
+            params->saturation = c.getInt(2);
+            params->hue        = c.getInt(3);
+            params->sharpness  = c.getInt(4);
+            params->backlight  = c.getInt(5);
+            params->nr         = c.getInt(6);
+        } else {
+            LOGE("%s %d select error \n",__FUNCTION__, mDbVersion);
+            rval = -1;
+        }
+    } else if (mDbVersion >= PQ_DB_CODE_VERSION_2) {
+        //for picture mode 5
+        std::string TableName = GetTableName(PQ_DB_GENERALPICTUREMODE_TABLE_NAME, source_input_param);
+        if (TableName.length() != 0) {
+            getSqlParams(
+                __FUNCTION__,
+                sqlmaster,
+                "select Type, Value from %s where Mode = %d;", TableName.c_str(), (int)pq_mode);
 
-    rval = this->select(sqlmaster, c);
-
-    if (c.moveToFirst()) {
-        params->brightness = c.getInt(0);
-        params->contrast = c.getInt(1);
-        params->saturation = c.getInt(2);
-        params->hue = c.getInt(3);
-        params->sharpness = c.getInt(4);
-        params->backlight = c.getInt(5);
-        params->nr = c.getInt(6);
-    } else {
-        LOGE("%s error!\n",__FUNCTION__);
-        rval = -1;
+            rval = this->select(sqlmaster, c);
+            char type[50];
+            if (c.moveToFirst()) {
+                do {
+                    //if custom want to improve performance,can follow the code of before picture mode 5
+                    //LOGD("%s type:%s value:%d\n", __FUNCTION__, c.getString(0).c_str(), c.getInt(1));
+                    memset(type, 0, sizeof(type));
+                    strncpy(type, c.getString(0).c_str(), sizeof(type));
+                    if (!strcmp(type, "Brightness")) {
+                        params->brightness = c.getInt(1);
+                    } else if (!strcmp(type, "Contrast")) {
+                        params->contrast = c.getInt(1);
+                    } else if (!strcmp(type, "Saturation")) {
+                        params->saturation = c.getInt(1);
+                    } else if (!strcmp(type, "Hue")) {
+                        params->hue = c.getInt(1);
+                    } else if (!strcmp(type, "Sharpness")) {
+                        params->sharpness = c.getInt(1);
+                    } else if (!strcmp(type, "Backlight")) {
+                        params->backlight = c.getInt(1);
+                    } else if (!strcmp(type, "NR")) {
+                        params->nr = c.getInt(1);
+                    } else if (!strcmp(type, "ColorTemperature")) {
+                        params->color_temperature = c.getInt(1);
+                    } else if (!strcmp(type, "DolbyMode")) {
+                        params->dv_pqmode = c.getInt(1);
+                    }
+                } while (c.moveToNext());
+            } else {
+                LOGE("%s %d select error\n", __FUNCTION__, mDbVersion);
+                rval = -1;
+            }
+        } else {
+            LOGE("%s not find %s for source:%d, pq_mode:%d\n",
+                __FUNCTION__, PQ_DB_GENERALPICTUREMODE_TABLE_NAME, source_input_param.source_input, pq_mode);
+        }
     }
+
     return rval;
 }
 
 int CPQdb::PQ_SetPQModeParams(tv_source_input_t source_input, vpp_picture_mode_t pq_mode, vpp_pq_para_t *params)
 {
-    int rval;
+    int rval = -1;
     char sql[256];
 
-    getSqlParams(__FUNCTION__, sql,
-        "update Picture_Mode set Brightness = %d, Contrast = %d, Saturation = %d, Hue = %d, Sharpness = %d, Backlight = %d, NR= %d "
-        " where TVIN_PORT = %d and Mode = %d;", params->brightness, params->contrast,
-        params->saturation, params->hue, params->sharpness, params->backlight, params->nr,
-        source_input, pq_mode);
-    if (this->exeSql(sql)) {
-        rval = 0;
+    if (mDbVersion < PQ_DB_CODE_VERSION_2) {
+        getSqlParams(__FUNCTION__, sql,
+            "update Picture_Mode set Brightness = %d, Contrast = %d, Saturation = %d, Hue = %d, Sharpness = %d, Backlight = %d, NR= %d "
+            " where TVIN_PORT = %d and Mode = %d;", params->brightness, params->contrast,
+            params->saturation, params->hue, params->sharpness, params->backlight, params->nr,
+            source_input, pq_mode);
+        if (this->exeSql(sql)) {
+            rval = 0;
+        } else {
+            LOGE("%s exeSql error\n",__FUNCTION__);
+            rval = -1;
+        }
     } else {
-        LOGE("%s--SQL error!\n",__FUNCTION__);
-        rval = -1;
+        LOGE("%s %d error\n", __FUNCTION__, mDbVersion);
     }
+
     return rval;
 }
 
@@ -1853,19 +1961,23 @@ int CPQdb::PQ_SetPQModeParamsByName(const char *name, tv_source_input_t source_i
 
 int CPQdb::PQ_ResetAllPQModeParams(void)
 {
-    int rval;
+    int rval = -1;
     char sqlmaster[256];
 
-    getSqlParams(
-        __FUNCTION__,
-        sqlmaster,
-        "delete from Picture_Mode; insert into Picture_Mode(TVIN_PORT, Mode, Brightness, Contrast, Saturation, Hue, Sharpness, Backlight, NR) select TVIN_PORT, Mode, Brightness, Contrast, Saturation, Hue, Sharpness, Backlight, NR from picture_mode_default;");
+    if (mDbVersion < PQ_DB_CODE_VERSION_2) {
+        getSqlParams(
+            __FUNCTION__,
+            sqlmaster,
+            "delete from Picture_Mode; insert into Picture_Mode(TVIN_PORT, Mode, Brightness, Contrast, Saturation, Hue, Sharpness, Backlight, NR) select TVIN_PORT, Mode, Brightness, Contrast, Saturation, Hue, Sharpness, Backlight, NR from picture_mode_default;");
 
-    if (this->exeSql(sqlmaster)) {
-        rval = 0;
+        if (this->exeSql(sqlmaster)) {
+            rval = 0;
+        } else {
+            LOGE("%s exeSql error\n",__FUNCTION__);
+            rval = -1;
+        }
     } else {
-        LOGE("%s--SQL error!\n",__FUNCTION__);
-        rval = -1;
+        LOGE("%s %d error\n", __FUNCTION__, mDbVersion);
     }
 
     return rval;
@@ -1892,7 +2004,7 @@ int CPQdb::PQ_GetGammaSpecialTable(vpp_gamma_curve_t gamma_curve, const char *f_
             index++;
         } while (c.moveToNext());
     } else {
-        LOGE("%s, select %s error!\n", __FUNCTION__, f_name);
+        LOGE("%s, select %s error\n", __FUNCTION__, f_name);
         rval = -1;
     }
     return rval;
@@ -1941,14 +2053,46 @@ int CPQdb::PQ_GetGammaTable(int panel_id, source_input_param_t source_input_para
     return rval;
 }
 
+int CPQdb::PQ_GetGammaParams(source_input_param_t source_input_param, vpp_gamma_curve_t gamma_curve, const char *f_name,
+                                     tcon_gamma_table_t *gamma_value)
+{
+    CSqlite::Cursor c;
+    char sqlmaster[256];
+    int ret = -1;
+    //compatible before pq.db
+    if (mDbVersion < PQ_DB_CODE_VERSION_2) {
+      ret = PQ_GetGammaSpecialTable(gamma_curve, f_name, gamma_value);
+    } else if (mDbVersion >= PQ_DB_CODE_VERSION_2) {
+        std::string TableName = GetTableName(PQ_DB_GENERALGAMMA_TABLE_NAME, source_input_param);
+        if ((TableName.c_str() != NULL) && (TableName.length() != 0) ) {
+            getSqlParams(__FUNCTION__, sqlmaster, "select %s from %s;", f_name, TableName.c_str());
+            ret = this->select(sqlmaster, c);
+            if (c.moveToFirst()) {
+                int index = 0;
+                do {
+                    gamma_value->data[index] = c.getInt(0);
+                    index++;
+                } while (c.moveToNext());
+            } else {
+                LOGE("%s, select %s from %s error\n", __FUNCTION__, f_name, TableName.c_str());
+                ret = -1;
+            }
+        } else {
+            LOGD("%s: %s don't have this table\n", __FUNCTION__, PQ_DB_GENERALGAMMA_TABLE_NAME);
+            ret = -1;
+        }
+    }
+
+    return ret;
+}
+
 std::string CPQdb::GetTableName(const char *GeneralTableName, source_input_param_t source_input_param)
 {
     CSqlite::Cursor c;
     char sqlmaster[256];
     int ret = -1;
 
-    switch (mDbVersion) {
-    case PQ_DB_CODE_VERSION_0:
+    if (mDbVersion < PQ_DB_CODE_VERSION_1) {
         //for hdr case
         if ((strcmp(GeneralTableName, "GeneralBlackBlueTable") == 0) ||
             (strcmp(GeneralTableName, "GeneralSharpness0FixedTable") == 0) ||
@@ -1958,18 +2102,18 @@ std::string CPQdb::GetTableName(const char *GeneralTableName, source_input_param
             (strcmp(GeneralTableName, "GeneralCM2Table") == 0) ||
             (strcmp(GeneralTableName, "GeneralDNLPTable") == 0) ||
             (strcmp(GeneralTableName, "GeneralLocalContrastNodeTable") == 0) ||
-            (strcmp(GeneralTableName, "GeneralLocalContrastRegTable") == 0)) {
+            (strcmp(GeneralTableName, "GeneralLocalContrastRegTable") == 0) ||
+            (strcmp(GeneralTableName, PQ_DB_GENERALPICTUREMODE_TABLE_NAME) == 0)) {
             if ((mHdrType == HDR_TYPE_HDR10) ||
                 (mHdrType == HDR_TYPE_HDR10PLUS) ||
                 (mHdrType == HDR_TYPE_HLG) ||
                 (mHdrType == HDR_TYPE_DOVI)) {
                 source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HDR;
             } else {
-                LOGD("%s: SDR source!\n", __FUNCTION__);
+                LOGD("%s: SDR source\n", __FUNCTION__);
             }
         }
-        break;
-    case PQ_DB_CODE_VERSION_1:
+    } else if (mDbVersion >= PQ_DB_CODE_VERSION_1) {
         //for hdr10/hdr10plus/hlg/dolby vision
         if ((strcmp(GeneralTableName, "GeneralBlackBlueTable") == 0) ||
             (strcmp(GeneralTableName, "GeneralSharpness0FixedTable") == 0) ||
@@ -1979,7 +2123,9 @@ std::string CPQdb::GetTableName(const char *GeneralTableName, source_input_param
             (strcmp(GeneralTableName, "GeneralCM2Table") == 0) ||
             (strcmp(GeneralTableName, "GeneralDNLPTable") == 0) ||
             (strcmp(GeneralTableName, "GeneralLocalContrastNodeTable") == 0) ||
-            (strcmp(GeneralTableName, "GeneralLocalContrastRegTable") == 0)) {
+            (strcmp(GeneralTableName, "GeneralLocalContrastRegTable") == 0) ||
+            (strcmp(GeneralTableName, PQ_DB_GENERALGAMMA_TABLE_NAME) == 0) ||
+            (strcmp(GeneralTableName, PQ_DB_GENERALPICTUREMODE_TABLE_NAME) == 0)) {
             if (mHdrType == HDR_TYPE_HDR10) {
                 source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HDR10;
             } else if (mHdrType == HDR_TYPE_HDR10PLUS) {
@@ -1992,13 +2138,17 @@ std::string CPQdb::GetTableName(const char *GeneralTableName, source_input_param
                 LOGD("%s: SDR source\n", __FUNCTION__);
             }
         }
-        break;
-    default:
-        LOGD("db %d is not match version\n", mDbVersion);
-        break;
     }
 
-    if (CheckIdExistInDb(CVBS_NAME_ID, "GeneralNR2Table")) {
+    //find gamma table name
+    if (strcmp(GeneralTableName, PQ_DB_GENERALGAMMA_TABLE_NAME) == 0) {
+        getSqlParams(__FUNCTION__, sqlmaster, "select TableName from %s where "
+                     "TVIN_PORT = %d and "
+                     "TVIN_SIG_FMT = %d and "
+                     "TVIN_TRANS_FMT = %d and "
+                     "TVOUT_CVBS = %d ;", GeneralTableName, source_input_param.source_input,
+                     source_input_param.sig_fmt, source_input_param.trans_fmt, mColorTemperatureMode);
+    } else if (CheckIdExistInDb(CVBS_NAME_ID, "GeneralNR2Table")) {
         getSqlParams(__FUNCTION__, sqlmaster, "select TableName from %s where "
                      "TVIN_PORT = %d and "
                      "TVIN_SIG_FMT = %d and "
@@ -2019,11 +2169,13 @@ std::string CPQdb::GetTableName(const char *GeneralTableName, source_input_param
             LOGD("table name is %s\n", c.getString(0).c_str());
             return c.getString(0);
         } else {
-            LOGE("%s don't have this table!\n", GeneralTableName);
+            LOGE("%s don't have this table for source_input:%d, sig_fmt:%d\n",
+                GeneralTableName, source_input_param.source_input, source_input_param.sig_fmt);
             return std::string("");
         }
     } else {
-        LOGE("%s error!\n", __FUNCTION__);
+        LOGE("%s error for table:%s, source_input:%d, sig_fmt:%d\n",
+            __FUNCTION__, GeneralTableName, source_input_param.source_input, source_input_param.sig_fmt);
         return std::string("");
     }
 }
@@ -2490,30 +2642,29 @@ int CPQdb::GetFileAttrIntValue(const char *fp, int flag)
     return -1;
 }
 
-bool CPQdb::CheckCVBSParamValidStatus()
+bool CPQdb::CheckPQModeTableInDb(void)
 {
-    bool ret = false;
-    char sqlmaster[256];
-    CSqlite::Cursor tempCursor;
+     bool ret = false;
+     char sqlmaster[256];
+     CSqlite::Cursor tempCursor;
 
-    if (CheckIdExistInDb(CVBS_NAME_ID, "GeneralNR2Table")) {
-        getSqlParams(__FUNCTION__, sqlmaster, "select %s from GeneralNR2Table where "
-                     "TVIN_PORT = %d and "
-                     "TVIN_SIG_FMT = %d and "
-                     "TVIN_TRANS_FMT = %d and "
-                     "TVOUT_CVBS = %d;", TABLE_NAME_ID, SOURCE_MPEG,
-                     TVIN_SIG_FMT_HDMI_1920X1080P_60HZ, TVIN_TFMT_2D, 1);
-        if ((this->select(sqlmaster, tempCursor) == 0) && (tempCursor.moveToFirst())) {
-            ret = true;
-        } else {
-            LOGD("%s: new db, but don't have cvbs param!\n", __FUNCTION__);
-            ret = false;
-        }
-    } else {
-        LOGD("%s: old db, don't have cvbs param!\n", __FUNCTION__);
-        ret = false;
-    }
-    return ret;
+     getSqlParams(__FUNCTION__, sqlmaster,
+                  "select count(*) from sqlite_master where type = 'table' and name = '%s';", PQ_DB_GENERALPICTUREMODE_TABLE_NAME);
+
+     int retVal = this->select(sqlmaster, tempCursor);
+     if ((retVal == 0) && (tempCursor.moveToFirst())) {
+         int count = tempCursor.getInt(0);
+         if (count > 0) {
+             ret = true;
+         } else {
+             ret = false;
+         }
+     } else {
+         LOGE("%s: error\n", __FUNCTION__);
+         ret = false;
+     }
+
+     return ret;
 }
 
 bool CPQdb::CheckIdExistInDb(const char *Id, const char *TableName)
@@ -2533,15 +2684,9 @@ bool CPQdb::CheckIdExistInDb(const char *Id, const char *TableName)
             ret = false;
         }
     } else {
-        LOGE("%s: error!\n", __FUNCTION__);
+        LOGE("%s: error\n", __FUNCTION__);
         ret = false;
     }
-
-    /*if (ret) {
-        LOGE("%s: %s exist in %s!\n", __FUNCTION__, Id, TableName);
-    } else {
-        LOGE("%s: %s don't exist in %s!\n", __FUNCTION__, Id, TableName);
-    }*/
 
     return ret;
 }

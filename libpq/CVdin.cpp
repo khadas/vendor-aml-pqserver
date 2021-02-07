@@ -82,7 +82,7 @@ int CVdin::VDIN_CloseModule()
     return 0;
 }
 
-int CVdin::VDIN_DeviceIOCtl ( int request, ... )
+int CVdin::VDIN_DeviceIOCtl( int request, ... )
 {
     int tmp_ret = -1;
     va_list ap;
@@ -93,11 +93,11 @@ int CVdin::VDIN_DeviceIOCtl ( int request, ... )
     }
 
     if ( mVdin0DevFd >= 0 ) {
-        va_start ( ap, request );
-        arg = va_arg ( ap, void * );
-        va_end ( ap );
+        va_start (ap, request);
+        arg = va_arg (ap, void *);
+        va_end (ap);
 
-        tmp_ret = ioctl ( mVdin0DevFd, request, arg );
+        tmp_ret = ioctl(mVdin0DevFd, request, arg);
         return tmp_ret;
     }
 
@@ -116,7 +116,7 @@ int CVdin::VDIN_GetSignalEventInfo(struct vdin_event_info_s *SignalEventInfo)
 
 int CVdin::VDIN_GetSignalInfo(struct vdin_info_s *SignalInfo )
 {
-    int ret = VDIN_DeviceIOCtl( TVIN_IOC_G_SIG_INFO, SignalInfo );
+    int ret = VDIN_DeviceIOCtl(TVIN_IOC_G_SIG_INFO, SignalInfo );
     if ( ret < 0 ) {
         LOGE("%s failed, error(%s).\n", __FUNCTION__, strerror ( errno ));
     }
@@ -125,9 +125,9 @@ int CVdin::VDIN_GetSignalInfo(struct vdin_info_s *SignalInfo )
 
 int CVdin::VDIN_GetVdinParam(vdin_parm_s *vdinParam)
 {
-    int ret = VDIN_DeviceIOCtl ( TVIN_IOC_G_PARM, vdinParam );
+    int ret = VDIN_DeviceIOCtl(TVIN_IOC_G_PARM, vdinParam );
     if ( ret < 0 ) {
-        LOGE ( "Vdin get signal param, error(%s).\n", strerror ( errno ) );
+        LOGE( "Vdin get signal param, error(%s).\n", strerror ( errno ) );
     }
 
     return ret;
