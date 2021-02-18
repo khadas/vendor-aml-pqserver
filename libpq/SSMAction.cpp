@@ -692,6 +692,8 @@ int SSMAction::SSMReadColorSpaceStart(unsigned char *rw_val)
 int SSMAction::ReadDataFromFile(const char *file_name, int offset, int nsize, unsigned char data_buf[])
 {
     int device_fd = -1;
+    int ret = 0;
+    int bytesRead = 0;
 
     if (data_buf == NULL) {
         LOGE("data_buf is NULL!!!\n");
@@ -710,13 +712,18 @@ int SSMAction::ReadDataFromFile(const char *file_name, int offset, int nsize, un
         return -1;
     }
 
-    lseek(device_fd, offset, SEEK_SET);
-    read(device_fd, data_buf, nsize);
-
+    if ( lseek(device_fd, offset, SEEK_SET) < 0 ){
+        LOGE("lseek file \"%s\" error(%s).\n", file_name, strerror(errno));
+        ret = -1;
+    }else if ( (bytesRead = read(device_fd, data_buf, nsize)) <= 0 ) {
+        LOGE("read file \"%s\" bytesRead[%d] error(%s).\n", file_name, bytesRead, strerror(errno));
+        ret = -1;
+    }
+    
     close(device_fd);
     device_fd = -1;
 
-    return 0;
+    return ret;
 }
 
 int SSMAction::SaveDataToFile(const char *file_name, int offset, int nsize, unsigned char data_buf[])

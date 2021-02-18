@@ -1564,9 +1564,24 @@ int CPQControl::GetColorTemperatureParams(vpp_color_temperature_mode_t Tempmode,
         params->b_post_offset = suc.s;
     }
 
-    LOGD("%s, rgain[%d], ggain[%d],bgain[%d],roffset[%d],goffset[%d],boffset[%d]\n", __FUNCTION__,
+    if(ret){
+        params->r_pre_offset = 0;
+        params->g_pre_offset = 0;
+        params->b_pre_offset = 0;
+        params->r_gain = 1024;
+        params->g_gain = 1024;
+        params->b_gain = 1024;
+        params->r_post_offset = 0;
+        params->g_post_offset = 0;
+        params->b_post_offset = 0;
+
+	Cpq_RestoreColorTemperatureParamsFromDB(mCurentSourceInputInfo);
+    }
+
+    
+    LOGD("%s, rgain[%d], ggain[%d],bgain[%d],roffset[%d],goffset[%d],boffset[%d]  ret[%d]\n", __FUNCTION__,
          params->r_gain, params->g_gain, params->b_gain, params->r_post_offset,
-         params->g_post_offset, params->b_post_offset);
+         params->g_post_offset, params->b_post_offset, ret);
 
     return ret;
 }
