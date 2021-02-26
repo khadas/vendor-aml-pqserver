@@ -53,7 +53,8 @@ typedef enum ldim_lut_e {
     LD_remap_LUT_12,
     LD_remap_LUT_13,
     LD_remap_LUT_14,
-    LD_remap_LUT_15
+    LD_remap_LUT_15,
+    fw_ld_whist = 1200
 } ldim_lut_t;
 
 //////////for customer backlight local dimming
@@ -74,8 +75,10 @@ typedef struct aml_ldim_info_s {
     unsigned int TF_FRESH_BL;
     unsigned int fw_LD_ThTF_l;
     unsigned int fw_rgb_diff_th;
+    unsigned int fw_ld_thist;
     unsigned int bl_remap_curve[16];
     unsigned int Reg_LD_remap_LUT[16][32];
+    unsigned int fw_ld_whist[16];
 
     //unsigned int RGBmapping_demo;
     //unsigned int frm_width;

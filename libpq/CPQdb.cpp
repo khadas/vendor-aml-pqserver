@@ -701,6 +701,7 @@ int CPQdb::PQ_GetLDIMParams(source_input_param_t source_input_param, aml_ldim_in
             newParams->TF_FRESH_BL      = c.getInt(13);
             newParams->fw_LD_ThTF_l     = c.getInt(14);
             newParams->fw_rgb_diff_th   = c.getInt(15);
+            newParams->fw_ld_thist      = c.getInt(16);
         }else {
             LOGE("%s, read ldim param fail\n", __FUNCTION__);
         }
@@ -708,11 +709,13 @@ int CPQdb::PQ_GetLDIMParams(source_input_param_t source_input_param, aml_ldim_in
         LOGD ("%s - ldim param is func_en:%d remapping_en:%d"
             "alpha:%d LPF_method:%d lpf_gain:%d lpf_res:%d side_blk_diff_th:%d"
             "bbd_th:%d boost_gain:%d rgb_base:%d Ld_remap_bypass:%d LD_TF_STEP_TH:%d"
-            "TF_BLK_FRESH_BL:%d TF_FRESH_BL:%d fw_LD_ThTF_l:%d fw_rgb_diff_th:%d\n",
+            "TF_BLK_FRESH_BL:%d TF_FRESH_BL:%d fw_LD_ThTF_l:%d fw_rgb_diff_th:%d"
+            "fw_ld_thist:%d\n",
             __FUNCTION__, newParams->func_en, newParams->remapping_en,
             newParams->alpha, newParams->LPF_method, newParams->lpf_gain, newParams->lpf_res, newParams->side_blk_diff_th,
             newParams->bbd_th, newParams->boost_gain, newParams->rgb_base, newParams->Ld_remap_bypass, newParams->LD_TF_STEP_TH,
-            newParams->TF_BLK_FRESH_BL, newParams->TF_FRESH_BL, newParams->fw_LD_ThTF_l, newParams->fw_rgb_diff_th);
+            newParams->TF_BLK_FRESH_BL, newParams->TF_FRESH_BL, newParams->fw_LD_ThTF_l, newParams->fw_rgb_diff_th,
+            newParams->fw_ld_thist);
     }
     {// bl_remap_curve
         index = 0;
@@ -739,6 +742,32 @@ int CPQdb::PQ_GetLDIMParams(source_input_param_t source_input_param, aml_ldim_in
             LOGD ("%s - newParams->bl_remap_curve[%d] is %d\n", __FUNCTION__, index, newParams->bl_remap_curve[index]);
         }
     }
+    {// fw_ld_whist
+        index = 0;
+        aa = NULL;
+        getSqlParams(__FUNCTION__, sqlmaster, "select value from %s where "
+                    "regnum = %d",
+                    PQ_DB_LDIM_TABLE_NAME, fw_ld_whist);
+
+        rval = this->select(sqlmaster, c);
+        memset(buf, 0, sizeof(buf));
+        strcpy(buf, c.getString(index).c_str());
+        LOGD ("%s - fw_ld_whist is %s\n", __FUNCTION__, buf);
+        buffer = buf;
+        while ((aa_save[index] = strtok_r(buffer, " ", &aa)) != NULL) {
+            newParams->fw_ld_whist[index] = atoi(aa_save[index]);
+            index ++;
+            if (index >= sizeof(newParams->fw_ld_whist)/sizeof(unsigned int)) {
+                break;
+            }
+            buffer = NULL;
+        }
+
+        for (index = 0; index < 16; index++) {
+            LOGD ("%s - newParams->fw_ld_whist[%d] is %d\n", __FUNCTION__, index, newParams->fw_ld_whist[index]);
+        }
+    }
+
     {//for local dimming lut
         int i = 0;
         int lut_id = LD_remap_LUT_0;
