@@ -38,6 +38,7 @@
 // *** ENUM definitions **********
 // ***************************************************************************
 typedef enum dolby_pq_mode_e {
+    DOLBY_PQ_MODE_INVALID = -1,
     DOLBY_PQ_MODE_DARK_DV = 0,
     DOLBY_PQ_MODE_BRIGHT_DV,
     DOLBY_PQ_MODE_DYNAMIC_DV,

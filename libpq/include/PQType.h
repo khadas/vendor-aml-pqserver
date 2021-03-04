@@ -18,6 +18,27 @@
 // ***************************************************************************
 // *** enum definitions *********************************************
 // ***************************************************************************
+typedef enum output_type_e {
+    OUTPUT_TYPE_LVDS = -1,
+    OUTPUT_TYPE_PAL,
+    OUTPUT_TYPE_NTSC,
+    OUTPUT_TYPE_HDMI_4K = 10,
+    OUTPUT_TYPE_HDMI_HD_UPSCALE,
+    OUTPUT_TYPE_HDMI_SD_UPSCALE,
+    OUTPUT_TYPE_HDMI_NOSCALE,
+    OUTPUT_TYPE_HDMI_SD_4096,
+    OUTPUT_TYPE_HDMI_HD_4096,
+    OUTPUT_TYPE_MAX,
+} output_type_t;
+
+typedef enum colortemperature_type_e {
+    LVDS_COOL = 0,
+    LVDS_STD,
+    LVDS_WARM,
+    LVDS_USER,
+    COLORTEMPERATURE_TYPE_MAX,
+} colortemperature_type_t;
+
 typedef union tag_suc {
     short s;
     unsigned char c[2];
@@ -116,6 +137,8 @@ typedef struct vpp_pq_para_s {
     int sharpness;
     int backlight;
     int nr;
+    int color_temperature;
+    int dv_pqmode;
 } vpp_pq_para_t;
 
 typedef enum vpp_gamma_curve_e {
@@ -474,17 +497,21 @@ typedef enum vpp_picture_mode_e {
     VPP_PICTURE_MODE_MONITOR,
     VPP_PICTURE_MODE_GAME,
     VPP_PICTURE_MODE_SPORTS,
-    VPP_PICTURE_MODE_SONY,
-    VPP_PICTURE_MODE_SAMSUNG,
-    VPP_PICTURE_MODE_SHARP,
-    VPP_PICTURE_MODE_STORE,
-    VPP_PICTURE_MODE_DYNAMIC,
-    VPP_PICTURE_MODE_VIVID,
-    VPP_PICTURE_MODE_NORMAL,
-    VPP_PICTURE_MODE_NATURAL,
-    VPP_PICTURE_MODE_PC,
-    VPP_PICTURE_MODE_HDR,
-    VPP_PICTURE_MODE_CUSTOMER,
+    VPP_PICTURE_MODE_HDR10_VIVID,
+    VPP_PICTURE_MODE_HDR10_STANDARD,
+    VPP_PICTURE_MODE_HDR10_MOVIE,
+    VPP_PICTURE_MODE_HDR10_SPORT,
+    VPP_PICTURE_MODE_HDR10_GAME,
+    VPP_PICTURE_MODE_HDR10PLUS_VIVID,
+    VPP_PICTURE_MODE_HDR10PLUS_STANDARD,
+    VPP_PICTURE_MODE_HDR10PLUS_MOVIE,
+    VPP_PICTURE_MODE_HDR10PLUS_SPORT,
+    VPP_PICTURE_MODE_HLG_VIVID,
+    VPP_PICTURE_MODE_HLG_STANDARD,
+    VPP_PICTURE_MODE_HLG_MOVIE,
+    VPP_PICTURE_MODE_HLG_SPORT,
+    VPP_PICTURE_MODE_DV_BRIGHT,
+    VPP_PICTURE_MODE_DV_DARK,
     VPP_PICTURE_MODE_MAX,
 } vpp_picture_mode_t;
 

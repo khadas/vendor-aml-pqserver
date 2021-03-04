@@ -52,6 +52,7 @@
 #define TEST_SCREEN                      "/sys/class/video/test_screen"
 #define PQ_SET_RW_INTERFACE              "/sys/class/amvecm/pq_reg_rw"
 #define SYS_DISPLAY_MODE_PATH            "/sys/class/display/mode"
+#define HDMI_OUTPUT_CHECK_PATH           "/sys/class/amhdmitx"    //if this dir exist,is hdmi output
 #define DEMOSQUITO_MODULE_CONTROL_PATH   "/sys/module/di/parameters/dnr_dm_en"  //demosquito control
 #define DEBLOCK_MODULE_CONTROL_PATH      "/sys/module/di/parameters/dnr_en"     //deblock control
 #define NR2_MODULE_CONTROL_PATH          "sys/module/di/parameters/nr2_en"      //noisereduction control
@@ -148,6 +149,8 @@ public:
     virtual void Set_Backlight(int value);
     virtual void GetDynamicBacklighConfig(int *thtf, int *lut_mode, int *heigh_param, int *low_param);
     virtual void GetDynamicBacklighParam(dynamic_backlight_Param_t *DynamicBacklightParam);
+    int ResetPQModeSetting(tv_source_input_t source_input, vpp_picture_mode_t pq_mode);
+    vpp_picture_mode_t SetPQModeBySignal();
     int LoadPQSettings();
     int LoadCpqLdimRegs(void);
     int Cpq_LoadRegs(am_regs_t regs);
@@ -161,10 +164,24 @@ public:
     int SetPQMode(int pq_mode, int is_save);
     int GetPQMode(void);
     int SavePQMode(int pq_mode);
+    int GetLastPQMode(void);
+    int SaveLastPQMode(int pq_mode);
+    int GetSDRPQMode(void);
+    int SaveSDRPQMode(int pq_mode);
+    int GetHDR10PQMode(void);
+    int SaveHDR10PQMode(int pq_mode);
+    int GetHDR10PLUSPQMode(void);
+    int SaveHDR10PLUSPQMode(int pq_mode);
+    int GetHLGPQMode(void);
+    int SaveHLGPQMode(int pq_mode);
+    int GetDVPQMode(void);
+    int SaveDVPQMode(int pq_mode);
+
     int Cpq_SetPQMode(vpp_picture_mode_t pq_mode, source_input_param_t source_input_param);
     int SetPQParams(source_input_param_t source_input_param, vpp_picture_mode_t pq_mode, vpp_pq_para_t pq_para);
     int GetPQParams(source_input_param_t source_input_param, vpp_picture_mode_t pq_mode, vpp_pq_para_t *pq_para);
     //color Temperature
+    int SetUserGammaValue(int level, vpp_color_temperature_mode_t color_mode);
     int SetColorTemperature(int temp_mode, int is_save, rgb_ogo_type_t rgb_ogo_type = TYPE_INVALID, int value = -1);
     int GetColorTemperature(void);
     int SaveColorTemperature(int temp_mode);
@@ -376,13 +393,15 @@ private:
     void pqTransformStringToInt(const char *buf, int *val);
     unsigned int GetSharpnessRegVal(int addr);
     int Cpq_SetLocalContrastMode(local_contrast_mode_t mode);
-    output_type_t GetTxOutPutMode(void);
-    bool isCVBSParamValid(void);
+    int Cpq_GetInputVideoFrameHeight(tv_source_input_t source_input);
+    output_type_t CheckOutPutMode(tv_source_input_t source_input);
+    bool CheckPQModeTableInDb(void);
     bool isPqDatabaseMachChip();
     int Cpq_SetVadjEnableStatus(int isvadj1Enable, int isvadj2Enable);
     bool mInitialized;
     //cfg
     bool mbCpqCfg_seperate_db_enable;
+    bool mbCpqCfg_pq_enable;
     bool mbCpqCfg_amvecm_basic_enable;
     bool mbCpqCfg_amvecm_basic_withOSD_enable;
     bool mbCpqCfg_contrast_rgb_enable;

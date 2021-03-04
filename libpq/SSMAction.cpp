@@ -81,14 +81,14 @@ void SSMAction::init(char *settingDataPath, char *whiteBalanceDataPath)
     }
 
     if (m_dev_fd < 0) {
-        LOGE("%s, Open %s failed! error: %s.\n", __FUNCTION__, mSSMDataFilePath, strerror(errno));
+        LOGE("%s, Open %s failed error: %s\n", __FUNCTION__, mSSMDataFilePath, strerror(errno));
     } else {
-        LOGD("%s, Open %s success!\n", __FUNCTION__, mSSMDataFilePath);
+        LOGD("%s, Open %s success\n", __FUNCTION__, mSSMDataFilePath);
     }
     //ssm check
     if (mSSMHandler != NULL) {
         SSM_status_t SSM_status = (SSM_status_t)GetSSMStatus();
-        LOGD ("%s, Verify SSMHeader, status= %d.\n", __FUNCTION__, SSM_status);
+        LOGD("%s, Verify SSMHeader status= %d\n", __FUNCTION__, SSM_status);
         if (DeviceMarkCheck() < 0 || SSM_status == SSM_HEADER_INVALID) {
             if (mpObserver != NULL) {
                 mpObserver->resetAllUserSettingParam();
@@ -96,7 +96,7 @@ void SSMAction::init(char *settingDataPath, char *whiteBalanceDataPath)
                 mSSMHandler->SSMRecreateHeader();
                 RestoreDeviceMarkValues();
             } else {
-                LOGE ("%s: SSMActionObserver is NULL!\n", __FUNCTION__);
+                LOGE("%s: SSMActionObserver is NULL!\n", __FUNCTION__);
             }
         } else if (SSM_status == SSM_HEADER_STRUCT_CHANGE) {
             if (mpObserver != NULL) {
@@ -104,7 +104,7 @@ void SSMAction::init(char *settingDataPath, char *whiteBalanceDataPath)
                 //SSMRestoreDefault(0, true);
                 RestoreDeviceMarkValues();
             } else {
-                LOGE ("%s: SSMActionObserver is NULL!\n", __FUNCTION__);
+                LOGE("%s: SSMActionObserver is NULL\n", __FUNCTION__);
             }
         }
     }
@@ -474,6 +474,102 @@ int SSMAction::SSMReadPictureMode(int offset, int *rw_val)
     int ret = 0;
 
     ret = SSMReadNTypes(VPP_DATA_POS_PICTURE_MODE_START, 1, &tmp_val, offset);
+    *rw_val = tmp_val;
+
+    return ret;
+}
+
+int SSMAction::SSMSaveLastPictureMode(int offset, int rw_val)
+{
+    return SSMWriteNTypes(VPP_DATA_POS_LAST_PICTURE_MODE_START, 1, &rw_val, offset);
+}
+
+int SSMAction::SSMReadLastPictureMode(int offset, int *rw_val)
+{
+    int tmp_val = 0;
+    int ret = 0;
+
+    ret = SSMReadNTypes(VPP_DATA_POS_LAST_PICTURE_MODE_START, 1, &tmp_val, offset);
+    *rw_val = tmp_val;
+
+    return ret;
+}
+
+int SSMAction::SSMSaveSDRPictureMode(int offset, int rw_val)
+{
+    return SSMWriteNTypes(VPP_DATA_POS_SDR_PICTURE_MODE_START, 1, &rw_val, offset);
+}
+
+int SSMAction::SSMReadSDRPictureMode(int offset, int *rw_val)
+{
+    int tmp_val = 0;
+    int ret = 0;
+
+    ret = SSMReadNTypes(VPP_DATA_POS_SDR_PICTURE_MODE_START, 1, &tmp_val, offset);
+    *rw_val = tmp_val;
+
+    return ret;
+}
+
+int SSMAction::SSMSaveHDR10PictureMode(int offset, int rw_val)
+{
+    return SSMWriteNTypes(VPP_DATA_POS_HDR10_PICTURE_MODE_START, 1, &rw_val, offset);
+}
+
+int SSMAction::SSMReadHDR10PictureMode(int offset, int *rw_val)
+{
+    int tmp_val = 0;
+    int ret = 0;
+
+    ret = SSMReadNTypes(VPP_DATA_POS_HDR10_PICTURE_MODE_START, 1, &tmp_val, offset);
+    *rw_val = tmp_val;
+
+    return ret;
+}
+
+int SSMAction::SSMSaveHDR10PLUSPictureMode(int offset, int rw_val)
+{
+    return SSMWriteNTypes(VPP_DATA_POS_HDR10PLUS_PICTURE_MODE_START, 1, &rw_val, offset);
+}
+
+int SSMAction::SSMReadHDR10PLUSPictureMode(int offset, int *rw_val)
+{
+    int tmp_val = 0;
+    int ret = 0;
+
+    ret = SSMReadNTypes(VPP_DATA_POS_HDR10PLUS_PICTURE_MODE_START, 1, &tmp_val, offset);
+    *rw_val = tmp_val;
+
+    return ret;
+}
+
+int SSMAction::SSMSaveHLGPictureMode(int offset, int rw_val)
+{
+    return SSMWriteNTypes(VPP_DATA_POS_HLG_PICTURE_MODE_START, 1, &rw_val, offset);
+}
+
+int SSMAction::SSMReadHLGPictureMode(int offset, int *rw_val)
+{
+    int tmp_val = 0;
+    int ret = 0;
+
+    ret = SSMReadNTypes(VPP_DATA_POS_HLG_PICTURE_MODE_START, 1, &tmp_val, offset);
+    *rw_val = tmp_val;
+
+    return ret;
+}
+
+int SSMAction::SSMSaveDVPictureMode(int offset, int rw_val)
+{
+    return SSMWriteNTypes(VPP_DATA_POS_DV_PICTURE_MODE_START, 1, &rw_val, offset);
+}
+
+int SSMAction::SSMReadDVPictureMode(int offset, int *rw_val)
+{
+    int tmp_val = 0;
+    int ret = 0;
+
+    ret = SSMReadNTypes(VPP_DATA_POS_DV_PICTURE_MODE_START, 1, &tmp_val, offset);
     *rw_val = tmp_val;
 
     return ret;
@@ -851,6 +947,22 @@ int SSMAction::SSMReadNoiseReduction(int offset, int *rw_val)
     int tmp_val = 0;
     int ret = 0;
     ret = SSMReadNTypes(VPP_DATA_POS_NOISE_REDUCTION_START, 1, &tmp_val, offset);
+    *rw_val = tmp_val;
+
+    return ret;
+}
+
+//DolbyMode
+int SSMAction::SSMSaveDolbyMode(int offset, int rw_val)
+{
+    return SSMWriteNTypes(VPP_DATA_DOLBY_MODE_START, 1, &rw_val, offset);
+}
+
+int SSMAction::SSMReadDolbyMode(int offset, int *rw_val)
+{
+    int tmp_val = 0;
+    int ret = 0;
+    ret = SSMReadNTypes(VPP_DATA_DOLBY_MODE_START, 1, &tmp_val, offset);
     *rw_val = tmp_val;
 
     return ret;

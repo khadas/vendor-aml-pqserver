@@ -18,22 +18,27 @@
 #include "CPQLog.h"
 #include <string>
 
-#define PQ_DB_CODE_VERSION        20201029
+#define PQ_DB_CODE_VERSION        20201211
 
 typedef enum code_db_version_e {
     PQ_DB_CODE_VERSION_0 = 20191113,
     PQ_DB_CODE_VERSION_1 = 20201029,  //split hdr10/hdr10plus/hlg/dv
+    PQ_DB_CODE_VERSION_2 = 20201211,  //add picture mode 5,add general gamma,remove picture mode table from overscan.db to pq.db
 } code_db_version_t;
 
-typedef enum output_type_e {
-    OUTPUT_TYPE_HDMI = -1,
-    OUTPUT_TYPE_PAL,
-    OUTPUT_TYPE_NTSC,
-    OUTPUT_TYPE_MAX,
-} output_type_t;
-
 //pq db table name
-#define PQ_DB_LDIM_TABLE_NAME        "LD_HDMI"
+#define PQ_DB_VERSION_TABLE_NAME                "PQ_VersionTable"
+#define PQ_DB_LDIM_TABLE_NAME                   "LD_HDMI"
+#define PQ_DB_GENERALPICTUREMODE_TABLE_NAME     "GeneralPictureMode5Table"
+#define PQ_DB_GENERALGAMMA_TABLE_NAME           "GeneralGammaTable"
+
+typedef struct database_attribute_s {
+    std::string ToolVersion;
+    std::string ProjectVersion;
+    std::string GenerateTime;
+    std::string ChipVersion;
+    std::string dbversion;
+} database_attribute_t;
 
 
 class CPQdb: public CSqlite {
@@ -91,26 +96,27 @@ public:
     int PQ_GetOverscanParams(source_input_param_t source_input_param, vpp_display_mode_t dmode, tvin_cutwin_t *cutwin_t);
     int PQ_SetOverscanParams(source_input_param_t source_input_param, tvin_cutwin_t cutwin_t);
     int PQ_ResetAllOverscanParams(void);
-    bool PQ_GetPqVersion(std::string& ToolVersion, std::string& ProjectVersion, std::string& GenerateTime, std::string& ChipVersion);
-    int PQ_GetPQModeParams(tv_source_input_t source_input, vpp_picture_mode_t pq_mode, vpp_pq_para_t *params);
+    int PQ_GetPQModeParams(source_input_param_t source_input_param, vpp_picture_mode_t pq_mode, vpp_pq_para_t *params);
     int PQ_SetPQModeParams(tv_source_input_t source_input, vpp_picture_mode_t pq_mode, vpp_pq_para_t *params);
     int PQ_ResetAllPQModeParams(void);
     int PQ_GetGammaTableR(int panel_id, source_input_param_t source_input_param, tcon_gamma_table_t *gamma_r);
     int PQ_GetGammaTableG(int panel_id, source_input_param_t source_input_param, tcon_gamma_table_t *gamma_g);
     int PQ_GetGammaTableB(int panel_id, source_input_param_t source_input_param, tcon_gamma_table_t *gamma_b);
     int PQ_GetGammaSpecialTable(vpp_gamma_curve_t gamma_curve, const char *f_name, tcon_gamma_table_t *gamma_r);
+    int PQ_GetGammaParams(source_input_param_t source_input_param, vpp_gamma_curve_t gamma_curve, const char *f_name, tcon_gamma_table_t *gamma_value);
     int PQ_GetPLLParams(source_input_param_t source_input_param, am_regs_t *regs);
     int PQ_GetCVD2Params(source_input_param_t source_input_param, am_regs_t *regs);
     int PQ_GetLDIMParams(source_input_param_t source_input_param, aml_ldim_info_s *newParams);
     int openPqDB(const char *db_path);
     int reopenDB(const char *db_path);
+    bool PQ_GetDataBaseAttribute(database_attribute_t *DbAttribute);
     int getRegValues(const char *table_name, am_regs_t *regs);
     int getRegValuesByValue(const char *name, const char *f_name, const char *f2_name, const int val, const int val2, am_regs_t *regs);
     int getRegValuesByValue_long(const char *name, const char *f_name, const char *f2_name, const int val, const int val2, am_regs_t *regs, am_regs_t *regs_1);
     bool PQ_GetLDIM_Regs(vpu_ldim_param_s *vpu_ldim_param);
     int GetFileAttrIntValue(const char *fp, int flag);
     bool CheckHdrStatus(const char *tableName);
-    bool CheckCVBSParamValidStatus(void);
+    bool CheckPQModeTableInDb(void);
     bool CheckIdExistInDb(const char *Id, const char *TableName);
 
 private:
@@ -142,7 +148,8 @@ private:
 public:
     bool mHdrStatus = false;
     hdr_type_t mHdrType = HDR_TYPE_SDR;
-    output_type_t mOutPutType = OUTPUT_TYPE_HDMI;
+    output_type_t mOutPutType = OUTPUT_TYPE_LVDS;
+    colortemperature_type_t mColorTemperatureMode = LVDS_STD;
     unsigned int mDbVersion;
 };
 #endif

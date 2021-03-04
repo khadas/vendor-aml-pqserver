@@ -146,6 +146,8 @@ int CDolbyVision::SetDolbyCfgFile(const char *binFilePath, const char *cfgFilePa
 }
 
 int CDolbyVision::SetDolbyPQMode(dolby_pq_mode_t mode) {
+    LOGD("%s mode is %d\n", __FUNCTION__, mode);
+
     int ret = DV_DeviceIOCtl(DV_IOC_SET_DV_PIC_MODE_ID, &mode);
     if (ret < 0) {
         LOGD("%s failed!\n", __FUNCTION__);
@@ -294,8 +296,8 @@ bool CDolbyVision::isSourceCallDolbyCore(hdr_type_t hdrType)
 
 dolby_pq_mode_t CDolbyVision::MappingPQModeToDolbyVisionPQMode(hdr_type_t hdrType, vpp_picture_mode_t pq_mode)
 {
-    dolby_pq_mode_t dolbyMode = DOLBY_PQ_MODE_BRIGHT_DV;
-
+    dolby_pq_mode_t dolbyMode = DOLBY_PQ_MODE_INVALID;
+/*
     switch (hdrType) {
     case HDR_TYPE_SDR:
         if (pq_mode == VPP_PICTURE_MODE_DYNAMIC) {
@@ -393,7 +395,7 @@ dolby_pq_mode_t CDolbyVision::MappingPQModeToDolbyVisionPQMode(hdr_type_t hdrTyp
 
     LOGD("%s: curent hdr type is %d, PQmode is %d, dolby PQmode is %d.\n",
              __FUNCTION__, hdrType, pq_mode, dolbyMode);
-
+*/
     return dolbyMode;
 }
 
