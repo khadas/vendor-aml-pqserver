@@ -4941,7 +4941,9 @@ int CPQControl::SetCurrentSourceInputInfo(source_input_param_t source_input_para
         if (source_input_param.sig_fmt == TVIN_SIG_FMT_NULL) {//exit source
             mCurrentHdrType = HDR_TYPE_NONE;
             mPQdb->mHdrType = HDR_TYPE_NONE;
-            mpOverScandb->mHdrType = HDR_TYPE_NONE;
+            if (mbCpqCfg_seperate_db_enable) {
+                mpOverScandb->mHdrType = HDR_TYPE_NONE;
+            }
             mHdmiHdrInfo    = 0;
             if ((mCurentSourceInputInfo.source_input == SOURCE_MPEG)
                 || (mCurentSourceInputInfo.source_input == SOURCE_DTV)) {
@@ -4971,7 +4973,9 @@ int CPQControl::SetCurrentSourceInputInfo(source_input_param_t source_input_para
             mCurentSourceInputInfo.sig_fmt = source_input_param.sig_fmt;
             mCurrentHdrType                = newHdrType;
             mPQdb->mHdrType                = newHdrType;
-            mpOverScandb->mHdrType         = newHdrType;
+            if (mbCpqCfg_seperate_db_enable) {
+                mpOverScandb->mHdrType = newHdrType;
+            }
             LoadPQSettings();
         }
     } else {
@@ -5321,7 +5325,9 @@ int CPQControl::ResetPQModeSetting(tv_source_input_t source_input, vpp_picture_m
 
     //2. save hdr type for restore and read param from db to ssm
     savehdrtype = mPQdb->mHdrType;
-    savehdrtype = mpOverScandb->mHdrType;
+    if (mbCpqCfg_seperate_db_enable) {
+        savehdrtype = mpOverScandb->mHdrType;
+    }
 
     if ((pq_mode == VPP_PICTURE_MODE_HDR10_VIVID)
         || (pq_mode == VPP_PICTURE_MODE_HDR10_STANDARD)
@@ -5330,30 +5336,40 @@ int CPQControl::ResetPQModeSetting(tv_source_input_t source_input, vpp_picture_m
         || (pq_mode == VPP_PICTURE_MODE_HDR10_GAME)) {
         SourceInputInfo.sig_fmt = TVIN_SIG_FMT_HDMI_HDR10;
         mPQdb->mHdrType         = HDR_TYPE_HDR10;
-        mpOverScandb->mHdrType  = HDR_TYPE_HDR10;
+        if (mbCpqCfg_seperate_db_enable) {
+            mpOverScandb->mHdrType  = HDR_TYPE_HDR10;
+        }
     } else if ((pq_mode == VPP_PICTURE_MODE_HDR10PLUS_VIVID)
         || (pq_mode == VPP_PICTURE_MODE_HDR10PLUS_STANDARD)
         || (pq_mode == VPP_PICTURE_MODE_HDR10PLUS_MOVIE)
         || (pq_mode == VPP_PICTURE_MODE_HDR10PLUS_SPORT)) {
         SourceInputInfo.sig_fmt = TVIN_SIG_FMT_HDMI_HDR10PLUS;
         mPQdb->mHdrType         = HDR_TYPE_HDR10PLUS;
-        mpOverScandb->mHdrType  = HDR_TYPE_HDR10PLUS;
+        if (mbCpqCfg_seperate_db_enable) {
+            mpOverScandb->mHdrType  = HDR_TYPE_HDR10PLUS;
+        }
     } else if ((pq_mode == VPP_PICTURE_MODE_HLG_VIVID)
         || (pq_mode == VPP_PICTURE_MODE_HLG_STANDARD)
         || (pq_mode == VPP_PICTURE_MODE_HLG_MOVIE)
         || (pq_mode == VPP_PICTURE_MODE_HLG_SPORT)) {
         SourceInputInfo.sig_fmt = TVIN_SIG_FMT_HDMI_HLG;
         mPQdb->mHdrType         = HDR_TYPE_HLG;
-        mpOverScandb->mHdrType  = HDR_TYPE_HLG;
+        if (mbCpqCfg_seperate_db_enable) {
+            mpOverScandb->mHdrType  = HDR_TYPE_HLG;
+        }
     } else if ((pq_mode == VPP_PICTURE_MODE_DV_BRIGHT)
         || (pq_mode == VPP_PICTURE_MODE_DV_DARK)) {
         SourceInputInfo.sig_fmt = TVIN_SIG_FMT_HDMI_DOLBY;
         mPQdb->mHdrType         = HDR_TYPE_DOVI;
-        mpOverScandb->mHdrType  = HDR_TYPE_DOVI;
+        if (mbCpqCfg_seperate_db_enable) {
+            mpOverScandb->mHdrType  = HDR_TYPE_DOVI;
+        }
     } else {
         SourceInputInfo.sig_fmt = TVIN_SIG_FMT_HDMI_1920X1080P_60HZ;
         mPQdb->mHdrType         = HDR_TYPE_SDR;
-        mpOverScandb->mHdrType  = HDR_TYPE_SDR;
+        if (mbCpqCfg_seperate_db_enable) {
+            mpOverScandb->mHdrType  = HDR_TYPE_SDR;
+        }
     }
 
     SourceInputInfo.source_input = source_input;
@@ -5404,7 +5420,9 @@ int CPQControl::ResetPQModeSetting(tv_source_input_t source_input, vpp_picture_m
 
     //3. restore hdr type
     mPQdb->mHdrType        = savehdrtype;
-    mpOverScandb->mHdrType = savehdrtype;
+    if (mbCpqCfg_seperate_db_enable) {
+        mpOverScandb->mHdrType = savehdrtype;
+    }
 
     return ret;
 }
