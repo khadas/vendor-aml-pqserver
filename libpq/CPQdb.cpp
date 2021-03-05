@@ -1898,6 +1898,8 @@ int CPQdb::PQ_GetPQModeParams(source_input_param_t source_input_param, vpp_pictu
                         params->color_temperature = c.getInt(1);
                     } else if (!strcmp(type, "DolbyMode")) {
                         params->dv_pqmode = c.getInt(1);
+                    } else if (!strcmp(type, "ColorGamut")) {
+                        params->colorgamut_mode = c.getInt(1);
                     }
                 } while (c.moveToNext());
             } else {

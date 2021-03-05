@@ -152,6 +152,10 @@ int PqService::SetCmd(pq_moudle_param_t param)
 
             ret = mpPQcontrol->SetCurrentSource((tv_source_input_t)paramData[0]);
             break;
+        case PQ_SET_COLORGAMUT:
+            ret = mpPQcontrol->SetColorGamutMode((vpp_colorgamut_mode_t)paramData[0], paramData[1]);
+            break;
+
         //Factory cmd
         case PQ_FACTORY_RESET_PICTURE_MODE:
             ret = mpPQcontrol->FactoryResetPQMode();
@@ -238,7 +242,7 @@ int PqService::SetCmd(pq_moudle_param_t param)
             break;
         }
     } else {
-        LOGE("%s: invalid PQ cmd: %d!\n", __FUNCTION__, moudleId);
+        LOGE("%s: invalid PQ cmd: %d\n", __FUNCTION__, moudleId);
         ret = -1;
     }
 
@@ -313,6 +317,10 @@ char* PqService::GetCmd(pq_moudle_param_t param)
             source_input_param = mpPQcontrol->GetCurrentSourceInputInfo();
             sprintf(mRetBuf, "%d.%d.%d", source_input_param.source_input, source_input_param.sig_fmt, source_input_param.trans_fmt);
             break;
+        case PQ_GET_COLORGAMUT:
+            ret = mpPQcontrol->GetColorGamutMode();
+            break;
+
         //Factory cmd
         case PQ_FACTORY_GET_COLOR_TEMPERATURE_MODE:
             ret = mpPQcontrol->GetColorTemperature();
@@ -429,12 +437,12 @@ void PqService::ParserPqCommand(const char *commandData)
             ret_char = GetCmd(pqParam);
             sprintf(mRetBuf, "%s", ret_char);
         } else {
-            LOGD("%s: invalid cmd!\n", __FUNCTION__);
+            LOGD("%s: invalid cmd\n", __FUNCTION__);
             ret = 0;
             sprintf(mRetBuf, "%d", ret);
         }
     } else {
-        LOGD("%s: invalie cmdType!\n", __FUNCTION__);
+        LOGD("%s: invalie cmdType\n", __FUNCTION__);
     }
 
     LOGD("%s: mRetBuf %s\n", __FUNCTION__, mRetBuf);
@@ -443,7 +451,7 @@ void PqService::ParserPqCommand(const char *commandData)
 status_t PqService::onTransact(uint32_t code,
                                 const Parcel& data, Parcel* reply,
                                 uint32_t flags) {
-    LOGD("%s: code is %u.\n", __FUNCTION__, code);
+    LOGD("%s: code is %u\n", __FUNCTION__, code);
 
     switch (code) {
         case CMD_PQ_ACTION: {

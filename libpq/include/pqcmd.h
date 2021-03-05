@@ -44,6 +44,8 @@ typedef enum pqcmd_e {
     PQ_GET_CM                     = 230,
     PQ_SET_SOURCE_CHANNEL         = 231,
     PQ_GET_SOURCE_CHANNEL         = 232,
+    PQ_SET_COLORGAMUT             = 233,
+    PQ_GET_COLORGAMUT             = 234,
 
     PQ_MOUDLE_CMD_MAX             = 299,
     //PQ factory(300~399)

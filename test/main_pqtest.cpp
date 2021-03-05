@@ -58,7 +58,7 @@ public:
     }
 
     int SendCmd() {
-        LOGD("%s: cmd is %d.\n", __FUNCTION__, cmdID);
+        LOGD("%s: cmd is %d\n", __FUNCTION__, cmdID);
         int ret = -1;
         switch (cmdID) {
         case PQ_SET_PICTURE_MODE:
@@ -175,6 +175,14 @@ public:
             LOGD("%s: curent source info: source_input:%d sig_fmt:%d trans_fmt:%d.\n",
                 __FUNCTION__, source_param.source_input, source_param.sig_fmt, source_param.trans_fmt);
             break;
+        case PQ_SET_COLORGAMUT:
+            ret = mpPqClient->SetColorBaseMode(setValue[0], setValue[1]);
+            break;
+        case PQ_GET_COLORGAMUT:
+            ret = mpPqClient->GetColorBaseMode();
+            LOGD("%s: curent Color base mode is %d.\n", __FUNCTION__, ret);
+            break;
+        //factory API
         case PQ_FACTORY_RESET_PICTURE_MODE:
             ret = mpPqClient->FactoryResetPQMode();
             break;
@@ -329,67 +337,70 @@ int main(int argc, char **argv) {
     DisplayInit();
 
     LOGD("#### please select cmd####\n");
-    LOGD("#### select 1 to set pq mode ####\n");
-    LOGD("#### select 2 to get pq mode ####\n");
-    LOGD("#### select 3 to set ColorTemperature mode ####\n");
-    LOGD("#### select 4 to get ColorTemperature mode ####\n");
-    LOGD("#### select 5 to set Brightness ####\n");
-    LOGD("#### select 6 to get Brightness ####\n");
-    LOGD("#### select 7 to set Contrast ####\n");
-    LOGD("#### select 8 to get Contrast ####\n");
-    LOGD("#### select 9 to set Saturatioin ####\n");
-    LOGD("#### select 10 to get Saturatioin ####\n");
-    LOGD("#### select 11 to set Hue ####\n");
-    LOGD("#### select 12 to get Hue ####\n");
-    LOGD("#### select 13 to set Sharpness ####\n");
-    LOGD("#### select 14 to get Sharpness ####\n");
-    LOGD("#### select 15 to set NoiseRedution ####\n");
-    LOGD("#### select 16 to get NoiseRedution ####\n");
-    LOGD("#### select 17 to set EyeProtection ####\n");
-    LOGD("#### select 18 to get EyeProtection ####\n");
-    LOGD("#### select 19 to set Gamma ####\n");
-    LOGD("#### select 20 to get Gamma ####\n");
-    LOGD("#### select 21 to set displaymode ####\n");
-    LOGD("#### select 22 to get displaymode ####\n");
-    LOGD("#### select 23 to set backlight ####\n");
-    LOGD("#### select 24 to get backlight ####\n");
-    LOGD("#### select 25 to set DynamicBacklight ####\n");
-    LOGD("#### select 26 to get DynamicBacklight ####\n");
-    LOGD("#### select 27 to set LocalContrast ####\n");
-    LOGD("#### select 28 to get LocalContrast ####\n");
-    LOGD("#### select 29 to set CM ####\n");
-    LOGD("#### select 30 to get CM ####\n");
-    LOGD("#### select 31 to set source channel ####\n");
-    LOGD("#### select 32 to get source channel ####\n");
+    LOGD("#### select 201 to set pq mode ####\n");
+    LOGD("#### select 202 to get pq mode ####\n");
+    LOGD("#### select 203 to set ColorTemperature mode ####\n");
+    LOGD("#### select 204 to get ColorTemperature mode ####\n");
+    LOGD("#### select 205 to set Brightness ####\n");
+    LOGD("#### select 206 to get Brightness ####\n");
+    LOGD("#### select 207 to set Contrast ####\n");
+    LOGD("#### select 208 to get Contrast ####\n");
+    LOGD("#### select 209 to set Saturatioin ####\n");
+    LOGD("#### select 210 to get Saturatioin ####\n");
+    LOGD("#### select 211 to set Hue ####\n");
+    LOGD("#### select 212 to get Hue ####\n");
+    LOGD("#### select 213 to set Sharpness ####\n");
+    LOGD("#### select 214 to get Sharpness ####\n");
+    LOGD("#### select 215 to set NoiseRedution ####\n");
+    LOGD("#### select 216 to get NoiseRedution ####\n");
+    LOGD("#### select 217 to set EyeProtection ####\n");
+    LOGD("#### select 218 to get EyeProtection ####\n");
+    LOGD("#### select 219 to set Gamma ####\n");
+    LOGD("#### select 220 to get Gamma ####\n");
+    LOGD("#### select 221 to set displaymode ####\n");
+    LOGD("#### select 222 to get displaymode ####\n");
+    LOGD("#### select 223 to set backlight ####\n");
+    LOGD("#### select 224 to get backlight ####\n");
+    LOGD("#### select 225 to set DynamicBacklight ####\n");
+    LOGD("#### select 226 to get DynamicBacklight ####\n");
+    LOGD("#### select 227 to set LocalContrast ####\n");
+    LOGD("#### select 228 to get LocalContrast ####\n");
+    LOGD("#### select 229 to set CM ####\n");
+    LOGD("#### select 230 to get CM ####\n");
+    LOGD("#### select 231 to set source channel ####\n");
+    LOGD("#### select 232 to get source channel ####\n");
+    LOGD("#### select 233 to set ColorGamut ####\n");
+    LOGD("#### select 234 to get ColorGamut ####\n");
+
     LOGD("#### below is factory cmd####\n");
-    LOGD("#### select 33 to reset pq mode ####\n");
-    LOGD("#### select 34 to reset ColorTemperature ####\n");
-    LOGD("#### select 35 to set ColorTemperature ####\n");
-    LOGD("#### select 36 to get ColorTemperature ####\n");
-    LOGD("#### select 37 to set Brightness ####\n");
-    LOGD("#### select 38 to get Brightness ####\n");
-    LOGD("#### select 39 to set Contrast ####\n");
-    LOGD("#### select 40 to get Contrast ####\n");
-    LOGD("#### select 41 to set Saturatioin ####\n");
-    LOGD("#### select 42 to get Saturatioin ####\n");
-    LOGD("#### select 41 to set Hue ####\n");
-    LOGD("#### select 42 to get Hue ####\n");
-    LOGD("#### select 43 to set Sharpness ####\n");
-    LOGD("#### select 44 to get Sharpness ####\n");
-    LOGD("#### select 45 to set overscan ####\n");
-    LOGD("#### select 46 to get overscan ####\n");
-    LOGD("#### select 47 to set WB R Gain ####\n");
-    LOGD("#### select 48 to get WB R Gain ####\n");
-    LOGD("#### select 49 to set WB G Gain ####\n");
-    LOGD("#### select 50 to get WB G Gain ####\n");
-    LOGD("#### select 51 to set WB B Gain ####\n");
-    LOGD("#### select 52 to get WB B Gain ####\n");
-    LOGD("#### select 53 to set WB R OFFSET ####\n");
-    LOGD("#### select 54 to get WB R OFFSET ####\n");
-    LOGD("#### select 55 to set WB G OFFSET ####\n");
-    LOGD("#### select 56 to get WB G OFFSET ####\n");
-    LOGD("#### select 57 to set WB B OFFSET ####\n");
-    LOGD("#### select 58 to get WB B OFFSET ####\n");
+    LOGD("#### select 301 to reset pq mode ####\n");
+    LOGD("#### select 302 to reset ColorTemperature ####\n");
+    LOGD("#### select 303 to set ColorTemperature ####\n");
+    LOGD("#### select 304 to get ColorTemperature ####\n");
+    LOGD("#### select 305 to set Brightness ####\n");
+    LOGD("#### select 306 to get Brightness ####\n");
+    LOGD("#### select 307 to set Contrast ####\n");
+    LOGD("#### select 308 to get Contrast ####\n");
+    LOGD("#### select 309 to set Saturatioin ####\n");
+    LOGD("#### select 310 to get Saturatioin ####\n");
+    LOGD("#### select 311 to set Hue ####\n");
+    LOGD("#### select 312 to get Hue ####\n");
+    LOGD("#### select 313 to set Sharpness ####\n");
+    LOGD("#### select 314 to get Sharpness ####\n");
+    LOGD("#### select 315 to set overscan ####\n");
+    LOGD("#### select 316 to get overscan ####\n");
+    LOGD("#### select 317 to set WB R Gain ####\n");
+    LOGD("#### select 318 to get WB R Gain ####\n");
+    LOGD("#### select 319 to set WB G Gain ####\n");
+    LOGD("#### select 320 to get WB G Gain ####\n");
+    LOGD("#### select 321 to set WB B Gain ####\n");
+    LOGD("#### select 322 to get WB B Gain ####\n");
+    LOGD("#### select 323 to set WB R OFFSET ####\n");
+    LOGD("#### select 324 to get WB R OFFSET ####\n");
+    LOGD("#### select 325 to set WB G OFFSET ####\n");
+    LOGD("#### select 326 to get WB G OFFSET ####\n");
+    LOGD("#### select 327 to set WB B OFFSET ####\n");
+    LOGD("#### select 328 to get WB B OFFSET ####\n");
 
     LOGD("#### select 299 to exit####\n");
     LOGD("##########################\n");
@@ -407,7 +418,7 @@ int main(int argc, char **argv) {
             run = 0;
             break;
           }
-          case 1: {
+          case 201: {
               LOGD("please input pq_mode value:(0~10)\n");
               int mode = 0;
               scanf("%d", &mode);
@@ -421,11 +432,11 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_SET_PICTURE_MODE;
               break;
           }
-          case 2: {
+          case 202: {
               test->cmdID = PQ_GET_PICTURE_MODE;
               break;
           }
-          case 3: {
+          case 203: {
               LOGD("please input ColorTemperature mode value:(0~3)\n");
               int mode = 0;
               scanf("%d", &mode);
@@ -449,11 +460,11 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_SET_COLOR_TEMPERATURE_MODE;
               break;
           }
-          case 4: {
+          case 204: {
               test->cmdID = PQ_GET_COLOR_TEMPERATURE_MODE;
               break;
           }
-          case 5: {
+          case 205: {
               LOGD("please input Brightness value:(0~100)\n");
               int mode = 0;
               scanf("%d", &mode);
@@ -467,11 +478,11 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_SET_BRIGHTNESS;
               break;
           }
-          case 6: {
+          case 206: {
               test->cmdID = PQ_GET_BRIGHTNESS;
               break;
           }
-          case 7: {
+          case 207: {
               LOGD("please input Contrast value:(0~100)\n");
               int mode = 0;
               scanf("%d", &mode);
@@ -485,11 +496,11 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_SET_CONTRAST;
               break;
           }
-          case 8: {
+          case 208: {
               test->cmdID = PQ_GET_CONTRAST;
               break;
           }
-          case 9: {
+          case 209: {
               LOGD("please input Saturatioin value:(0~100)\n");
               int mode = 0;
               scanf("%d", &mode);
@@ -503,11 +514,11 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_SET_SATUATION;
               break;
           }
-          case 10: {
+          case 210: {
               test->cmdID = PQ_GET_SATUATION;
               break;
           }
-          case 11: {
+          case 211: {
               LOGD("please input Hue value:(0~100)\n");
               int mode = 0;
               scanf("%d", &mode);
@@ -521,11 +532,11 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_SET_HUE;
               break;
           }
-          case 12: {
+          case 212: {
               test->cmdID = PQ_GET_HUE;
               break;
           }
-          case 13: {
+          case 213: {
               LOGD("please input Sharpness value:(0~100)\n");
               int mode = 0;
               scanf("%d", &mode);
@@ -539,11 +550,11 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_SET_SHARPNESS;
               break;
           }
-          case 14: {
+          case 214: {
               test->cmdID = PQ_GET_SHARPNESS;
               break;
           }
-          case 15: {
+          case 215: {
               LOGD("please input NoiseRedution value:(0~4)\n");
               int mode = 0;
               scanf("%d", &mode);
@@ -557,11 +568,11 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_SET_NOISE_REDUCTION_MODE;
               break;
           }
-          case 16: {
+          case 216: {
               test->cmdID = PQ_GET_NOISE_REDUCTION_MODE;
               break;
           }
-          case 17: {
+          case 217: {
               LOGD("please input EyeProtection value:(0~1)\n");
               int mode = 0;
               scanf("%d", &mode);
@@ -570,11 +581,11 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_SET_EYE_PROTECTION_MODE;
               break;
           }
-          case 18: {
+          case 218: {
               test->cmdID = PQ_GET_EYE_PROTECTION_MODE;
               break;
           }
-          case 19: {
+          case 219: {
               LOGD("please input Gamma value:(0~11)\n");
               int mode = 0;
               scanf("%d", &mode);
@@ -588,11 +599,11 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_SET_GAMMA;
               break;
           }
-          case 20: {
+          case 220: {
               test->cmdID = PQ_GET_GAMMA;
               break;
           }
-          case 21: {
+          case 221: {
               LOGD("please input displaymode value:(0/4/5/6)\n");
               int mode = 0;
               scanf("%d", &mode);
@@ -606,11 +617,11 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_SET_DISPLAY_MODE;
               break;
           }
-          case 22: {
+          case 222: {
               test->cmdID = PQ_GET_DISPLAY_MODE;
               break;
           }
-          case 23: {
+          case 223: {
               LOGD("please input backlight value:(0~100)\n");
               int mode = 0;
               scanf("%d", &mode);
@@ -624,11 +635,11 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_SET_BACKLIGHT;
               break;
           }
-          case 24: {
+          case 224: {
               test->cmdID = PQ_GET_BACKLIGHT;
               break;
           }
-          case 25: {
+          case 225: {
               LOGD("please input DynamicBacklight value:(0~2)\n");
               int mode = 0;
               scanf("%d", &mode);
@@ -642,11 +653,11 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_SET_DYNAMICBACKLIGHT;
               break;
           }
-          case 26: {
+          case 226: {
               test->cmdID = PQ_GET_DYNAMICBACKLIGHT;
               break;
           }
-          case 27: {
+          case 227: {
               LOGD("please input LocalContrast value:(0~3)\n");
               int mode = 0;
               scanf("%d", &mode);
@@ -660,11 +671,11 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_SET_LOCALCONTRAST;
               break;
           }
-          case 28: {
+          case 228: {
               test->cmdID = PQ_GET_LOCALCONTRAST;
               break;
           }
-          case 29: {
+          case 229: {
               LOGD("please input CM value:(0~3)\n");
               int mode = 0;
               scanf("%d", &mode);
@@ -678,11 +689,11 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_SET_CM;
               break;
           }
-          case 30: {
+          case 230: {
               test->cmdID = PQ_GET_CM;
               break;
           }
-          case 31: {
+          case 231: {
               LOGD("please input source value:\n");
               int mode = 0;
               scanf("%d", &mode);
@@ -699,19 +710,38 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_SET_SOURCE_CHANNEL;
               break;
           }
-          case 32: {
+          case 232: {
               test->cmdID = PQ_GET_SOURCE_CHANNEL;
               break;
           }
-          case 33: {
+          case 233: {
+              LOGD("please input ColorGamut value:(0~2)\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              test->cmdID = PQ_SET_COLORGAMUT;
+              break;
+          }
+          case 234: {
+              test->cmdID = PQ_GET_COLORGAMUT;
+              break;
+          }
+
+          case 301: {
               test->cmdID = PQ_FACTORY_RESET_PICTURE_MODE;
               break;
           }
-          case 34: {
+          case 302: {
               test->cmdID = PQ_FACTORY_RESET_COLOR_TEMPERATURE_MODE;
               break;
           }
-          case 35: {
+          case 303: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -732,11 +762,11 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_SET_COLOR_TEMPERATURE_MODE;
               break;
           }
-          case 36: {
+          case 304: {
               test->cmdID = PQ_FACTORY_GET_COLOR_TEMPERATURE_MODE;
               break;
           }
-          case 37: {
+          case 305: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -761,7 +791,7 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_SET_BRIGHTNESS;
               break;
           }
-          case 38: {
+          case 306: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -782,7 +812,7 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_GET_BRIGHTNESS;
               break;
           }
-          case 39: {
+          case 307: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -804,7 +834,7 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_SET_CONTRAST;
               break;
           }
-          case 40: {
+          case 308: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -825,7 +855,7 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_GET_CONTRAST;
               break;
           }
-          case 41: {
+          case 309: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -850,7 +880,7 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_SET_SATUATION;
               break;
           }
-          case 42: {
+          case 310: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -871,7 +901,7 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_GET_SATUATION;
               break;
           }
-          case 43: {
+          case 311: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -897,7 +927,7 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_SET_HUE;
               break;
           }
-          case 44: {
+          case 312: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -918,7 +948,7 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_GET_HUE;
               break;
           }
-          case 45: {
+          case 313: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -944,7 +974,7 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_SET_SHARPNESS;
               break;
           }
-          case 46: {
+          case 314: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -965,7 +995,7 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_GET_SHARPNESS;
               break;
           }
-          case 47: {
+          case 315: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -999,7 +1029,7 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_SET_OVERSCAN;
               break;
           }
-          case 48: {
+          case 316: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -1016,7 +1046,7 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_GET_OVERSCAN;
               break;
           }
-          case 49: {
+          case 317: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -1042,7 +1072,7 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_SET_WB_RED_GAIN;
               break;
           }
-          case 50: {
+          case 318: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -1063,7 +1093,7 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_GET_WB_RED_GAIN;
               break;
           }
-          case 51: {
+          case 319: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -1089,7 +1119,7 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_SET_WB_GREEN_GAIN;
               break;
           }
-          case 52: {
+          case 320: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -1110,7 +1140,7 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_GET_WB_GREEN_GAIN;
               break;
           }
-          case 53: {
+          case 321: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -1136,7 +1166,7 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_SET_WB_BLUE_GAIN;
               break;
           }
-          case 54: {
+          case 322: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -1157,7 +1187,7 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_GET_WB_BLUE_GAIN;
               break;
           }
-          case 55: {
+          case 323: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -1183,7 +1213,7 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_SET_WB_RED_OFFSET;
               break;
           }
-          case 56: {
+          case 324: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -1204,7 +1234,7 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_GET_WB_RED_OFFSET;
               break;
           }
-          case 57: {
+          case 325: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -1230,7 +1260,7 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_SET_WB_GREEN_OFFSET;
               break;
           }
-          case 58: {
+          case 326: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -1251,7 +1281,7 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_GET_WB_GREEN_OFFSET;
               break;
           }
-          case 59: {
+          case 327: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);
@@ -1277,7 +1307,7 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_SET_WB_BLUE_OFFSET;
               break;
           }
-          case 60: {
+          case 328: {
               LOGD("please input source value:\n");
               int source = 0;
               scanf("%d", &source);

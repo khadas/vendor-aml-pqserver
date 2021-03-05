@@ -54,7 +54,7 @@ PqClient::~PqClient() {
 
 void PqClient::SendMethodCall(char *CmdString)
 {
-    LOGD("%s.\n", __FUNCTION__);
+    LOGD("%s\n", __FUNCTION__);
 
     Parcel send, reply;
     memset(mRetBuf, 0, sizeof(mRetBuf)/sizeof(char));
@@ -62,7 +62,7 @@ void PqClient::SendMethodCall(char *CmdString)
     if (mpqServicebinder != NULL) {
         send.writeCString(CmdString);
         if (mpqServicebinder->transact(CMD_PQ_ACTION, send, &reply) != 0) {
-            LOGE("PqClient: call %s failed.\n", CmdString);
+            LOGE("PqClient: call %s failed\n", CmdString);
             const char* tmp;
             tmp = reply.readCString();
             strcpy(mRetBuf, tmp);
@@ -73,7 +73,7 @@ void PqClient::SendMethodCall(char *CmdString)
         }
     }
 
-    LOGE("PqClient: mRetBuf %s.\n", mRetBuf);
+    LOGE("PqClient: mRetBuf %s\n", mRetBuf);
 }
 
 int PqClient::SplitRetBuf(const char *commandData)
@@ -614,6 +614,38 @@ source_input_param_t PqClient::getCurrentSourceInfo()
     source_input_param.trans_fmt    = atoi(mRet[2].c_str());
 
     return source_input_param;
+}
+
+int PqClient::SetColorGamutMode(int mode, int isSave)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d", PQ_SET_COLORGAMUT, mode, isSave);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::GetColorGamutMode()
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d", PQ_GET_COLORGAMUT);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
 }
 
 //PQ Factory cmd

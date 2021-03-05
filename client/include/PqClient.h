@@ -71,6 +71,8 @@ public:
     int GetColorBaseMode();
     int setCurrentSourceInfo(int sourceInput, int sigFmt, int transFmt);
     source_input_param_t getCurrentSourceInfo();
+    int SetColorGamutMode(int mode, int isSave);
+    int GetColorGamutMode();
 
     int FactoryResetPQMode(void);
     int FactoryResetColorTemp(void);

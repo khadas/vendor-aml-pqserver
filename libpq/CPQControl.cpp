@@ -1309,6 +1309,9 @@ int CPQControl::SetPQParams(source_input_param_t source_input_param, vpp_picture
     //set NR
     ret |= SetNoiseReductionMode(pq_para.nr, 0);
 
+    //set color gamut
+    ret |= SetColorGamutMode((vpp_colorgamut_mode_t)(pq_para.colorgamut_mode), 0);
+
     // set dobly vision picture mode
     bool isDolbyCoreSupport   = mDolbyVision->isSourceCallDolbyCore(mCurrentHdrType);
     dolby_pq_mode_t dolbyMode = (dolby_pq_mode_t)pq_para.dv_pqmode;
@@ -1338,6 +1341,7 @@ int CPQControl::GetPQParams(source_input_param_t source_input_param, vpp_picture
 
         ret |= mSSMAction->SSMReadNoiseReduction(offset, &pq_para->nr);
         ret |= mSSMAction->SSMReadDolbyMode(offset, &pq_para->dv_pqmode);
+        ret |= mSSMAction->SSMReadColorGamutMode(offset, &pq_para->colorgamut_mode);
 
         if ((pq_mode == VPP_PICTURE_MODE_MONITOR) ||
             (pq_mode == VPP_PICTURE_MODE_GAME)) {
@@ -3354,7 +3358,7 @@ int CPQControl::GetVideoPlayStatus(void)
 
 int CPQControl::SetLocalContrastMode(local_contrast_mode_t mode, int is_save)
 {
-    LOGD("%s: mode is %d!\n",__FUNCTION__, mode);
+    LOGD("%s: mode is %d\n",__FUNCTION__, mode);
     int ret = -1;
     if (mbCpqCfg_local_contrast_enable) {
         ret = Cpq_SetLocalContrastMode(mode);
@@ -3367,9 +3371,9 @@ int CPQControl::SetLocalContrastMode(local_contrast_mode_t mode, int is_save)
     }
 
     if (ret < 0) {
-        LOGE("%s failed!\n",__FUNCTION__);
+        LOGE("%s failed\n",__FUNCTION__);
     } else {
-        LOGD("%s success!\n",__FUNCTION__);
+        LOGD("%s success\n",__FUNCTION__);
     }
     return ret;
 }
@@ -3434,6 +3438,209 @@ int CPQControl::Cpq_SetLocalContrastMode(local_contrast_mode_t mode)
     }
 
     return ret;
+}
+
+int CPQControl::SetColorDemoMode(vpp_color_demomode_t demomode)
+{
+    LOGD("%s: mode is %d\n", __FUNCTION__, demomode);
+    int ret = -1;
+    cm_regmap_t regmap;
+    unsigned long *temp_regmap;
+    int i = 0;
+    vpp_display_mode_t displaymode = VPP_DISPLAY_MODE_MODE43;
+
+    switch (demomode) {
+    case VPP_COLOR_DEMO_MODE_YOFF:
+        temp_regmap = DemoColorYOffRegMap;
+        break;
+
+    case VPP_COLOR_DEMO_MODE_COFF:
+        temp_regmap = DemoColorCOffRegMap;
+        break;
+
+    case VPP_COLOR_DEMO_MODE_GOFF:
+        temp_regmap = DemoColorGOffRegMap;
+        break;
+
+    case VPP_COLOR_DEMO_MODE_MOFF:
+        temp_regmap = DemoColorMOffRegMap;
+        break;
+
+    case VPP_COLOR_DEMO_MODE_ROFF:
+        temp_regmap = DemoColorROffRegMap;
+        break;
+
+    case VPP_COLOR_DEMO_MODE_BOFF:
+        temp_regmap = DemoColorBOffRegMap;
+        break;
+
+    case VPP_COLOR_DEMO_MODE_RGBOFF:
+        temp_regmap = DemoColorRGBOffRegMap;
+        break;
+
+    case VPP_COLOR_DEMO_MODE_YMCOFF:
+        temp_regmap = DemoColorYMCOffRegMap;
+        break;
+
+    case VPP_COLOR_DEMO_MODE_ALLOFF:
+        temp_regmap = DemoColorALLOffRegMap;
+        break;
+
+    case VPP_COLOR_DEMO_MODE_ALLON:
+    default:
+        if (displaymode == VPP_DISPLAY_MODE_MODE43) {
+            temp_regmap = DemoColorSplit4_3RegMap;
+        } else {
+            temp_regmap = DemoColorSplitRegMap;
+        }
+
+        break;
+    }
+
+    for (i = 0; i < CM_REG_NUM; i++) {
+        regmap.reg[i] = temp_regmap[i];
+    }
+
+    ret = VPPDeviceIOCtl(AMSTREAM_IOC_CM_REGMAP, regmap);
+    if (ret < 0) {
+        LOGE("%s failed!\n",__FUNCTION__);
+    } else {
+        LOGD("%s success!\n",__FUNCTION__);
+    }
+
+    return ret;
+}
+
+int CPQControl::SetColorBaseMode(vpp_color_basemode_t basemode, int isSave)
+{
+    LOGD("%s: mode is %d\n", __FUNCTION__, basemode);
+    int ret = Cpq_SetColorBaseMode(basemode, mCurentSourceInputInfo);
+    if (ret < 0) {
+        LOGE("Cpq_SetColorBaseMode Failed\n");
+    } else {
+        if (isSave == 1) {
+            ret = SaveColorBaseMode(basemode);
+        } else {
+            LOGD("%s: No need save\n", __FUNCTION__);
+        }
+    }
+
+    if (ret < 0) {
+        LOGE("%s failed\n",__FUNCTION__);
+    } else {
+        LOGD("%s success\n",__FUNCTION__);
+    }
+
+    return ret;
+}
+
+vpp_color_basemode_t CPQControl::GetColorBaseMode(void)
+{
+    vpp_color_basemode_t data = VPP_COLOR_BASE_MODE_OFF;
+    unsigned char tmp_base_mode = 0;
+    mSSMAction->SSMReadColorBaseMode(&tmp_base_mode);
+    data = (vpp_color_basemode_t) tmp_base_mode;
+    if (data < VPP_COLOR_BASE_MODE_OFF || data >= VPP_COLOR_BASE_MODE_MAX) {
+        data = VPP_COLOR_BASE_MODE_OPTIMIZE;
+    }
+    LOGD("%s: mode is %d\n", __FUNCTION__, data);
+    return data;
+}
+
+int CPQControl::SaveColorBaseMode(vpp_color_basemode_t basemode)
+{
+    LOGD("%s: mode is %d\n", __FUNCTION__, basemode);
+    int ret = -1;
+    if (basemode == VPP_COLOR_BASE_MODE_DEMO) {
+        ret = 0;
+    } else {
+        ret = mSSMAction->SSMSaveColorBaseMode(basemode);
+    }
+
+    return ret;
+}
+
+int CPQControl::Cpq_SetColorBaseMode(vpp_color_basemode_t basemode, source_input_param_t source_input_param)
+{
+    int ret = -1;
+    am_regs_t regs;
+    memset(&regs, 0, sizeof(am_regs_t));
+
+    if (mbCpqCfg_cm2_enable) {
+        if (mPQdb->PQ_GetCM2Params((vpp_color_management2_t)basemode, source_input_param, &regs) == 0) {
+            ret = Cpq_LoadRegs(regs);
+        } else {
+            LOGE("PQ_GetCM2Params failed!\n");
+        }
+    } else {
+        LOGD("CM moudle disabled!\n");
+        ret = 0;
+    }
+
+    return ret;
+}
+
+int CPQControl::SetColorGamutMode(vpp_colorgamut_mode_t value, int is_save)
+{
+    int ret =0;
+    LOGD("%s, source:%d, value:%d\n",
+        __FUNCTION__, mSourceInputForSaveParam, value);
+    ret = Cpq_SetColorGamutMode(value, mCurentSourceInputInfo);
+
+    if ((ret == 0) && (is_save == 1)) {
+        ret = SaveColorGamutMode(value);
+    }
+
+    if (ret < 0) {
+        LOGE("%s failed\n",__FUNCTION__);
+    } else {
+        LOGD("%s success\n",__FUNCTION__);
+    }
+    return 0;
+}
+
+int CPQControl::GetColorGamutMode(void)
+{
+    int data = VPP_COLORGAMUT_MODE_AUTO;
+    vpp_picture_mode_t pq_mode = (vpp_picture_mode_t)GetPQMode();
+    int offset = mSourceInputForSaveParam * VPP_PICTURE_MODE_MAX + pq_mode;
+
+    mSSMAction->SSMReadColorGamutMode(offset, &data);
+
+    LOGD("%s:source:%d, pq_mode:%d, offset:%d, value:%d\n",
+        __FUNCTION__, mSourceInputForSaveParam, pq_mode, offset, data);
+
+    if (data < VPP_COLORGAMUT_MODE_SRC || data > VPP_COLORGAMUT_MODE_NATIVE) {
+        data = VPP_COLORGAMUT_MODE_AUTO;
+    }
+
+    return data;
+}
+
+int CPQControl::SaveColorGamutMode(vpp_colorgamut_mode_t value)
+{
+    int ret    = 1;
+    vpp_picture_mode_t pq_mode = (vpp_picture_mode_t)GetPQMode();
+    int offset = mSourceInputForSaveParam * VPP_PICTURE_MODE_MAX + pq_mode;
+
+    LOGD("%s:source:%d, pq_mode:%d, offset:%d, value:%d\n",
+        __FUNCTION__, mSourceInputForSaveParam, pq_mode, offset, value);
+
+    ret = mSSMAction->SSMSaveColorGamutMode(offset, value);
+    if (ret < 0) {
+        LOGE("%s failed\n",__FUNCTION__);
+    } else {
+        LOGD("%s success\n",__FUNCTION__);
+    }
+
+    return ret;
+}
+
+int CPQControl::Cpq_SetColorGamutMode(vpp_colorgamut_mode_t value, source_input_param_t source_input_param)
+{
+    char val[64] = {0};
+    sprintf(val, "%d", value);
+    return pqWriteSys(VPP_MODULE_COLORGAMUT_PATH, val);
 }
 
 int CPQControl::SetBlackExtensionParam(source_input_param_t source_input_param)
@@ -4277,147 +4484,6 @@ int CPQControl::Cpq_SetXVYCCMode(vpp_xvycc_mode_t xvycc_mode, source_input_param
 
     return ret;
 }
-
-int CPQControl::SetColorDemoMode(vpp_color_demomode_t demomode)
-{
-    LOGD("%s: mode is %d\n", __FUNCTION__, demomode);
-    int ret = -1;
-    cm_regmap_t regmap;
-    unsigned long *temp_regmap;
-    int i = 0;
-    vpp_display_mode_t displaymode = VPP_DISPLAY_MODE_MODE43;
-
-    switch (demomode) {
-    case VPP_COLOR_DEMO_MODE_YOFF:
-        temp_regmap = DemoColorYOffRegMap;
-        break;
-
-    case VPP_COLOR_DEMO_MODE_COFF:
-        temp_regmap = DemoColorCOffRegMap;
-        break;
-
-    case VPP_COLOR_DEMO_MODE_GOFF:
-        temp_regmap = DemoColorGOffRegMap;
-        break;
-
-    case VPP_COLOR_DEMO_MODE_MOFF:
-        temp_regmap = DemoColorMOffRegMap;
-        break;
-
-    case VPP_COLOR_DEMO_MODE_ROFF:
-        temp_regmap = DemoColorROffRegMap;
-        break;
-
-    case VPP_COLOR_DEMO_MODE_BOFF:
-        temp_regmap = DemoColorBOffRegMap;
-        break;
-
-    case VPP_COLOR_DEMO_MODE_RGBOFF:
-        temp_regmap = DemoColorRGBOffRegMap;
-        break;
-
-    case VPP_COLOR_DEMO_MODE_YMCOFF:
-        temp_regmap = DemoColorYMCOffRegMap;
-        break;
-
-    case VPP_COLOR_DEMO_MODE_ALLOFF:
-        temp_regmap = DemoColorALLOffRegMap;
-        break;
-
-    case VPP_COLOR_DEMO_MODE_ALLON:
-    default:
-        if (displaymode == VPP_DISPLAY_MODE_MODE43) {
-            temp_regmap = DemoColorSplit4_3RegMap;
-        } else {
-            temp_regmap = DemoColorSplitRegMap;
-        }
-
-        break;
-    }
-
-    for (i = 0; i < CM_REG_NUM; i++) {
-        regmap.reg[i] = temp_regmap[i];
-    }
-
-    ret = VPPDeviceIOCtl(AMSTREAM_IOC_CM_REGMAP, regmap);
-    if (ret < 0) {
-        LOGE("%s failed!\n",__FUNCTION__);
-    } else {
-        LOGD("%s success!\n",__FUNCTION__);
-    }
-
-    return ret;
-}
-
-int CPQControl::SetColorBaseMode(vpp_color_basemode_t basemode, int isSave)
-{
-    LOGD("%s: mode is %d\n", __FUNCTION__, basemode);
-    int ret = Cpq_SetColorBaseMode(basemode, mCurentSourceInputInfo);
-    if (ret < 0) {
-        LOGE("Cpq_SetColorBaseMode Failed!\n");
-    } else {
-        if (isSave == 1) {
-            ret = SaveColorBaseMode(basemode);
-        } else {
-            LOGD("%s: No need save!\n", __FUNCTION__);
-        }
-    }
-
-    if (ret < 0) {
-        LOGE("%s failed!\n",__FUNCTION__);
-    } else {
-        LOGD("%s success!\n",__FUNCTION__);
-    }
-
-    return ret;
-}
-
-vpp_color_basemode_t CPQControl::GetColorBaseMode(void)
-{
-    vpp_color_basemode_t data = VPP_COLOR_BASE_MODE_OFF;
-    unsigned char tmp_base_mode = 0;
-    mSSMAction->SSMReadColorBaseMode(&tmp_base_mode);
-    data = (vpp_color_basemode_t) tmp_base_mode;
-    if (data < VPP_COLOR_BASE_MODE_OFF || data >= VPP_COLOR_BASE_MODE_MAX) {
-        data = VPP_COLOR_BASE_MODE_OPTIMIZE;
-    }
-    LOGD("%s: mode is %d\n", __FUNCTION__, data);
-    return data;
-}
-
-int CPQControl::SaveColorBaseMode(vpp_color_basemode_t basemode)
-{
-    LOGD("%s: mode is %d\n", __FUNCTION__, basemode);
-    int ret = -1;
-    if (basemode == VPP_COLOR_BASE_MODE_DEMO) {
-        ret = 0;
-    } else {
-        ret = mSSMAction->SSMSaveColorBaseMode(basemode);
-    }
-
-    return ret;
-}
-
-int CPQControl::Cpq_SetColorBaseMode(vpp_color_basemode_t basemode, source_input_param_t source_input_param)
-{
-    int ret = -1;
-    am_regs_t regs;
-    memset(&regs, 0, sizeof(am_regs_t));
-
-    if (mbCpqCfg_cm2_enable) {
-        if (mPQdb->PQ_GetCM2Params((vpp_color_management2_t)basemode, source_input_param, &regs) == 0) {
-            ret = Cpq_LoadRegs(regs);
-        } else {
-            LOGE("PQ_GetCM2Params failed!\n");
-        }
-    } else {
-        LOGD("CM moudle disabled!\n");
-        ret = 0;
-    }
-
-    return ret;
-}
-
 
 int CPQControl::Cpq_SetRGBOGO(const struct tcon_rgb_ogo_s *rgbogo)
 {
@@ -5389,12 +5455,13 @@ int CPQControl::ResetPQModeSetting(tv_source_input_t source_input, vpp_picture_m
     }
 
     if (ret == 0) {
-        LOGD("%s: brightness=%d, contrast=%d, saturation=%d, hue=%d, color_temperature=%d, sharpness=%d, backlight=%d, nr=%d, dv_pqmode=%d\n",
+        LOGD("%s: brightness=%d, contrast=%d, saturation=%d, hue=%d, sharpness=%d, nr=%d\n",
             __FUNCTION__,
-            pq_para.brightness, pq_para.contrast, pq_para.saturation,
-            pq_para.hue, pq_para.color_temperature, pq_para.sharpness,
-            pq_para.backlight, pq_para.nr,
-            pq_para.dv_pqmode);
+            pq_para.brightness, pq_para.contrast, pq_para.saturation, pq_para.hue, pq_para.sharpness, pq_para.nr);
+
+        LOGD("%s: color_temperature=%d, backlight=%d, dv_pqmode=%d, colorgamut_mode=%d\n",
+            __FUNCTION__,
+            pq_para.color_temperature, pq_para.backlight, pq_para.dv_pqmode, pq_para.colorgamut_mode);
 
         //save picture mode param to ssm
         int offset = 0;
@@ -5413,6 +5480,8 @@ int CPQControl::ResetPQModeSetting(tv_source_input_t source_input, vpp_picture_m
         ret |= mSSMAction->SSMSaveNoiseReduction(offset, pq_para.nr);
         //save dolbyvision pq mdoe
         ret |= mSSMAction->SSMSaveDolbyMode(offset, pq_para.dv_pqmode);
+        //save colorgamut mode
+        ret |= mSSMAction->SSMSaveColorGamutMode(offset, pq_para.colorgamut_mode);
     } else {
         LOGD("%s: PQ_GetPQModeParams fail\n", __FUNCTION__);
         ret = -1;
@@ -5533,7 +5602,7 @@ int CPQControl::pqWriteSys(const char *path, const char *val)
 {
     int fd;
     if ((fd = open(path, O_RDWR)) < 0) {
-        LOGE("writeSys, open %s error(%s).\n", path, strerror (errno));
+        LOGE("writeSys, open %s error(%s)\n", path, strerror (errno));
         return -1;
     }
 

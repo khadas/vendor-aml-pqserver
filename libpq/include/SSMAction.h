@@ -75,6 +75,8 @@ public:
     int SSMReadColorDemoMode(unsigned char *rw_val);
     int SSMSaveColorBaseMode(unsigned char rw_val);
     int SSMReadColorBaseMode(unsigned char *rw_val);
+    int SSMSaveColorGamutMode(int offset, int rw_val);
+    int SSMReadColorGamutMode(int offset, int *rw_val);
     int SSMSaveRGBGainRStart(int offset, unsigned int rw_val);
     int SSMReadRGBGainRStart(int offset, unsigned int *rw_val);
     int SSMSaveRGBGainGStart(int offset, unsigned int rw_val);

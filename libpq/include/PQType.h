@@ -139,6 +139,7 @@ typedef struct vpp_pq_para_s {
     int nr;
     int color_temperature;
     int dv_pqmode;
+    int colorgamut_mode;
 } vpp_pq_para_t;
 
 typedef enum vpp_gamma_curve_e {
@@ -557,6 +558,13 @@ typedef enum vpp_color_basemode_e {
     VPP_COLOR_BASE_MODE_DEMO,
     VPP_COLOR_BASE_MODE_MAX,
 } vpp_color_basemode_t;
+
+typedef enum vpp_colorgamut_mode_e {
+    VPP_COLORGAMUT_MODE_SRC,
+    VPP_COLORGAMUT_MODE_AUTO,
+    VPP_COLORGAMUT_MODE_NATIVE,
+    VPP_COLORGAMUT_MODE_MAX,
+} vpp_colorgamut_mode_t;
 
 typedef enum noline_params_type_e {
     NOLINE_PARAMS_TYPE_BRIGHTNESS,

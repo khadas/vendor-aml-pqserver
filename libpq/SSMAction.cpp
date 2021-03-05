@@ -623,6 +623,21 @@ int SSMAction::SSMReadColorBaseMode(unsigned char *rw_val)
     return ret;
 }
 
+int SSMAction::SSMSaveColorGamutMode(int offset, int rw_val)
+{
+    return SSMWriteNTypes(VPP_DATA_POS_COLORGAMUT_START, 1, &rw_val, offset);
+}
+
+int SSMAction::SSMReadColorGamutMode(int offset, int *rw_val)
+{
+    int tmp_val = 0;
+    int ret = 0;
+    ret = SSMReadNTypes(VPP_DATA_POS_COLORGAMUT_START, 1, &tmp_val, offset);
+    *rw_val = tmp_val;
+
+    return ret;
+}
+
 int SSMAction::SSMSaveRGBGainRStart(int offset, unsigned int rw_val)
 {
     int tmp_val = rw_val;

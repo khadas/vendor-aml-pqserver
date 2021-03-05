@@ -55,8 +55,9 @@
 #define HDMI_OUTPUT_CHECK_PATH           "/sys/class/amhdmitx"    //if this dir exist,is hdmi output
 #define DEMOSQUITO_MODULE_CONTROL_PATH   "/sys/module/di/parameters/dnr_dm_en"  //demosquito control
 #define DEBLOCK_MODULE_CONTROL_PATH      "/sys/module/di/parameters/dnr_en"     //deblock control
-#define NR2_MODULE_CONTROL_PATH          "sys/module/di/parameters/nr2_en"      //noisereduction control
+#define NR2_MODULE_CONTROL_PATH          "/sys/module/di/parameters/nr2_en"      //noisereduction control
 #define MCDI_MODULE_CONTROL_PATH         "/sys/module/di/parameters/mcen_mode"  //mcdi control
+#define VPP_MODULE_COLORGAMUT_PATH       "/sys/module/am_vecm/parameters/primary_policy"
 
 #define TVIN_IOC_MAGIC 'T'
 #define TVIN_IOC_LOAD_REG           _IOW(TVIN_IOC_MAGIC, 0x20, struct am_regs_s)
@@ -272,6 +273,18 @@ public:
     int SetLocalContrastMode(local_contrast_mode_t mode, int is_save);
     int GetLocalContrastMode(void);
     int SaveLocalContrastMode(local_contrast_mode_t mode);
+    //color base
+    int SetColorDemoMode(vpp_color_demomode_t demomode);
+    int SetColorBaseMode(vpp_color_basemode_t basemode, int isSave);
+    vpp_color_basemode_t GetColorBaseMode(void);
+    int SaveColorBaseMode(vpp_color_basemode_t basemode);
+    int Cpq_SetColorBaseMode(vpp_color_basemode_t basemode, source_input_param_t source_input_param);
+    //color gamut
+    int SetColorGamutMode(vpp_colorgamut_mode_t value, int is_save);
+    int GetColorGamutMode(void);
+    int SaveColorGamutMode(vpp_colorgamut_mode_t value);
+    int Cpq_SetColorGamutMode(vpp_colorgamut_mode_t value, source_input_param_t source_input_param);
+
     //BlackExtension
     int SetBlackExtensionParam(source_input_param_t source_input_param);
     //Factory
@@ -316,11 +329,6 @@ public:
     int FactorySetGamma(int gamma_r_value, int gamma_g_value, int gamma_b_value);
     int FcatorySSMRestore(void);
 
-    int SetColorDemoMode(vpp_color_demomode_t demomode);
-    int SetColorBaseMode(vpp_color_basemode_t basemode, int isSave);
-    vpp_color_basemode_t GetColorBaseMode(void);
-    int SaveColorBaseMode(vpp_color_basemode_t basemode);
-    int Cpq_SetColorBaseMode(vpp_color_basemode_t basemode, source_input_param_t source_input_param);
     int Cpq_SetRGBOGO(const struct tcon_rgb_ogo_s *rgbogo);
     int Cpq_GetRGBOGO(const struct tcon_rgb_ogo_s *rgbogo);
     int Cpq_LoadGamma(vpp_gamma_curve_t gamma_curve);
