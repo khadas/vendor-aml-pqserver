@@ -1147,14 +1147,14 @@ int CPQControl::GetSDRPQMode(void)
     int mode = VPP_PICTURE_MODE_STANDARD;
     mSSMAction->SSMReadSDRPictureMode(mSourceInputForSaveParam, &mode);
     if ((mode != VPP_PICTURE_MODE_STANDARD)
-        || (mode != VPP_PICTURE_MODE_BRIGHT)
-        || (mode != VPP_PICTURE_MODE_SOFT)
-        || (mode != VPP_PICTURE_MODE_USER)
-        || (mode != VPP_PICTURE_MODE_MOVIE)
-        || (mode != VPP_PICTURE_MODE_COLORFUL)
-        || (mode != VPP_PICTURE_MODE_MONITOR)
-        || (mode != VPP_PICTURE_MODE_GAME)
-        || (mode != VPP_PICTURE_MODE_SPORTS)) {
+        && (mode != VPP_PICTURE_MODE_BRIGHT)
+        && (mode != VPP_PICTURE_MODE_SOFT)
+        && (mode != VPP_PICTURE_MODE_USER)
+        && (mode != VPP_PICTURE_MODE_MOVIE)
+        && (mode != VPP_PICTURE_MODE_COLORFUL)
+        && (mode != VPP_PICTURE_MODE_MONITOR)
+        && (mode != VPP_PICTURE_MODE_GAME)
+        && (mode != VPP_PICTURE_MODE_SPORTS)) {
         mode = VPP_PICTURE_MODE_STANDARD;
     }
 
@@ -1180,10 +1180,10 @@ int CPQControl::GetHDR10PQMode(void)
     int mode = VPP_PICTURE_MODE_HDR10_STANDARD;
     mSSMAction->SSMReadHDR10PictureMode(mSourceInputForSaveParam, &mode);
     if ((mode != VPP_PICTURE_MODE_HDR10_VIVID)
-        || (mode != VPP_PICTURE_MODE_HDR10_STANDARD)
-        || (mode != VPP_PICTURE_MODE_HDR10_MOVIE)
-        || (mode != VPP_PICTURE_MODE_HDR10_SPORT)
-        || (mode != VPP_PICTURE_MODE_HDR10_GAME)) {
+        && (mode != VPP_PICTURE_MODE_HDR10_STANDARD)
+        && (mode != VPP_PICTURE_MODE_HDR10_MOVIE)
+        && (mode != VPP_PICTURE_MODE_HDR10_SPORT)
+        && (mode != VPP_PICTURE_MODE_HDR10_GAME)) {
         mode = VPP_PICTURE_MODE_HDR10_STANDARD;
     }
 
@@ -1209,9 +1209,9 @@ int CPQControl::GetHDR10PLUSPQMode(void)
     int mode = VPP_PICTURE_MODE_HDR10PLUS_STANDARD;
     mSSMAction->SSMReadHDR10PLUSPictureMode(mSourceInputForSaveParam, &mode);
     if ((mode != VPP_PICTURE_MODE_HDR10PLUS_VIVID)
-        || (mode != VPP_PICTURE_MODE_HDR10PLUS_STANDARD)
-        || (mode != VPP_PICTURE_MODE_HDR10PLUS_MOVIE)
-        || (mode != VPP_PICTURE_MODE_HDR10PLUS_SPORT)) {
+        && (mode != VPP_PICTURE_MODE_HDR10PLUS_STANDARD)
+        && (mode != VPP_PICTURE_MODE_HDR10PLUS_MOVIE)
+        && (mode != VPP_PICTURE_MODE_HDR10PLUS_SPORT)) {
         mode = VPP_PICTURE_MODE_HDR10PLUS_STANDARD;
     }
 
@@ -1237,9 +1237,9 @@ int CPQControl::GetHLGPQMode(void)
     int mode = VPP_PICTURE_MODE_HLG_STANDARD;
     mSSMAction->SSMReadHLGPictureMode(mSourceInputForSaveParam, &mode);
     if ((mode != VPP_PICTURE_MODE_HLG_VIVID)
-        || (mode != VPP_PICTURE_MODE_HLG_STANDARD)
-        || (mode != VPP_PICTURE_MODE_HLG_MOVIE)
-        || (mode != VPP_PICTURE_MODE_HLG_SPORT)) {
+        && (mode != VPP_PICTURE_MODE_HLG_STANDARD)
+        && (mode != VPP_PICTURE_MODE_HLG_MOVIE)
+        && (mode != VPP_PICTURE_MODE_HLG_SPORT)) {
         mode = VPP_PICTURE_MODE_HLG_STANDARD;
     }
 
@@ -1265,7 +1265,7 @@ int CPQControl::GetDVPQMode(void)
     int mode = VPP_PICTURE_MODE_DV_BRIGHT;
     mSSMAction->SSMReadDVPictureMode(mSourceInputForSaveParam, &mode);
     if ((mode != VPP_PICTURE_MODE_DV_BRIGHT)
-        || (mode != VPP_PICTURE_MODE_DV_DARK)) {
+        && (mode != VPP_PICTURE_MODE_DV_DARK)) {
         mode = VPP_PICTURE_MODE_DV_BRIGHT;
     }
 
