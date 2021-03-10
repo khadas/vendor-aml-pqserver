@@ -1060,34 +1060,34 @@ int CPQControl::SavePQMode(int pq_mode)
     }
 
     //save sdr/hdr10/hdr10plus/hlg/dv pqmode except game and pc mode
-    if ((pq_mode != VPP_PICTURE_MODE_STANDARD)
-        || (pq_mode != VPP_PICTURE_MODE_BRIGHT)
-        || (pq_mode != VPP_PICTURE_MODE_SOFT)
-        || (pq_mode != VPP_PICTURE_MODE_USER)
-        || (pq_mode != VPP_PICTURE_MODE_MOVIE)
-        || (pq_mode != VPP_PICTURE_MODE_COLORFUL)
-        || (pq_mode != VPP_PICTURE_MODE_MONITOR)
-        || (pq_mode != VPP_PICTURE_MODE_GAME)
-        || (pq_mode != VPP_PICTURE_MODE_SPORTS)) {
+    if ((pq_mode == VPP_PICTURE_MODE_STANDARD)
+        || (pq_mode == VPP_PICTURE_MODE_BRIGHT)
+        || (pq_mode == VPP_PICTURE_MODE_SOFT)
+        || (pq_mode == VPP_PICTURE_MODE_USER)
+        || (pq_mode == VPP_PICTURE_MODE_MOVIE)
+        || (pq_mode == VPP_PICTURE_MODE_COLORFUL)
+        || (pq_mode == VPP_PICTURE_MODE_MONITOR)
+        || (pq_mode == VPP_PICTURE_MODE_GAME)
+        || (pq_mode == VPP_PICTURE_MODE_SPORTS)) {
         ret = SaveSDRPQMode(pq_mode);
-    } else if ((pq_mode != VPP_PICTURE_MODE_HDR10_VIVID)
-        || (pq_mode != VPP_PICTURE_MODE_HDR10_STANDARD)
-        || (pq_mode != VPP_PICTURE_MODE_HDR10_MOVIE)
-        || (pq_mode != VPP_PICTURE_MODE_HDR10_SPORT)
-        || (pq_mode != VPP_PICTURE_MODE_HDR10_GAME)) {
+    } else if ((pq_mode == VPP_PICTURE_MODE_HDR10_VIVID)
+        || (pq_mode == VPP_PICTURE_MODE_HDR10_STANDARD)
+        || (pq_mode == VPP_PICTURE_MODE_HDR10_MOVIE)
+        || (pq_mode == VPP_PICTURE_MODE_HDR10_SPORT)
+        || (pq_mode == VPP_PICTURE_MODE_HDR10_GAME)) {
         ret = SaveHDR10PQMode(pq_mode);
     } else if ((pq_mode != VPP_PICTURE_MODE_HDR10PLUS_VIVID)
-        || (pq_mode != VPP_PICTURE_MODE_HDR10PLUS_STANDARD)
-        || (pq_mode != VPP_PICTURE_MODE_HDR10PLUS_MOVIE)
-        || (pq_mode != VPP_PICTURE_MODE_HDR10PLUS_SPORT)) {
+        || (pq_mode == VPP_PICTURE_MODE_HDR10PLUS_STANDARD)
+        || (pq_mode == VPP_PICTURE_MODE_HDR10PLUS_MOVIE)
+        || (pq_mode == VPP_PICTURE_MODE_HDR10PLUS_SPORT)) {
         ret = SaveHDR10PLUSPQMode(pq_mode);
-    } else if ((pq_mode != VPP_PICTURE_MODE_HLG_VIVID)
-        || (pq_mode != VPP_PICTURE_MODE_HLG_STANDARD)
-        || (pq_mode != VPP_PICTURE_MODE_HLG_MOVIE)
-        || (pq_mode != VPP_PICTURE_MODE_HLG_SPORT)) {
+    } else if ((pq_mode == VPP_PICTURE_MODE_HLG_VIVID)
+        || (pq_mode == VPP_PICTURE_MODE_HLG_STANDARD)
+        || (pq_mode == VPP_PICTURE_MODE_HLG_MOVIE)
+        || (pq_mode == VPP_PICTURE_MODE_HLG_SPORT)) {
         ret = SaveHLGPQMode(pq_mode);
-    } else if ((pq_mode != VPP_PICTURE_MODE_DV_BRIGHT)
-        || (pq_mode != VPP_PICTURE_MODE_DV_DARK)) {
+    } else if ((pq_mode == VPP_PICTURE_MODE_DV_BRIGHT)
+        || (pq_mode == VPP_PICTURE_MODE_DV_DARK)) {
         ret = SaveDVPQMode(pq_mode);
     }
 
