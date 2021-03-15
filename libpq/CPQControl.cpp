@@ -1076,7 +1076,7 @@ int CPQControl::SavePQMode(int pq_mode)
         || (pq_mode == VPP_PICTURE_MODE_HDR10_SPORT)
         || (pq_mode == VPP_PICTURE_MODE_HDR10_GAME)) {
         ret = SaveHDR10PQMode(pq_mode);
-    } else if ((pq_mode != VPP_PICTURE_MODE_HDR10PLUS_VIVID)
+    } else if ((pq_mode == VPP_PICTURE_MODE_HDR10PLUS_VIVID)
         || (pq_mode == VPP_PICTURE_MODE_HDR10PLUS_STANDARD)
         || (pq_mode == VPP_PICTURE_MODE_HDR10PLUS_MOVIE)
         || (pq_mode == VPP_PICTURE_MODE_HDR10PLUS_SPORT)) {
