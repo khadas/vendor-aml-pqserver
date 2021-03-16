@@ -320,6 +320,9 @@ char* PqService::GetCmd(pq_moudle_param_t param)
         case PQ_GET_COLORGAMUT:
             ret = mpPQcontrol->GetColorGamutMode();
             break;
+        case PQ_GET_SOURCE_HDR_TYPE:
+            ret = mpPQcontrol->GetSourceHDRType();
+            break;
 
         //Factory cmd
         case PQ_FACTORY_GET_COLOR_TEMPERATURE_MODE:

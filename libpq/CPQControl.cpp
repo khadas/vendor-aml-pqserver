@@ -5328,6 +5328,12 @@ tvpq_databaseinfo_t CPQControl::GetDBVersionInfo(db_name_t name) {
     return pqdatabaseinfo_t;
 }
 
+int CPQControl::GetSourceHDRType()
+{
+    LOGD("%s: type is %d\n", __FUNCTION__, mCurrentHdrType);
+    return mCurrentHdrType;
+}
+
 int CPQControl::SetCurrentHdrInfo(int hdrInfo)
 {
     int ret = 0;

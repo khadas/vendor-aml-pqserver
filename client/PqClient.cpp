@@ -648,6 +648,22 @@ int PqClient::GetColorGamutMode()
     return ret;
 }
 
+int PqClient::GetSourceHDRType()
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d", PQ_GET_SOURCE_HDR_TYPE);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
 //PQ Factory cmd
 
 int PqClient::FactoryResetPQMode(void)

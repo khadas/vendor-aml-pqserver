@@ -372,6 +372,7 @@ public:
     int GetGrayPattern();
     int SetHDRMode(int mode);
     int GetHDRMode(void);
+    int GetSourceHDRType();
     tvpq_databaseinfo_t GetDBVersionInfo(db_name_t name);
     int SetCurrentHdrInfo (int hdrInfo);
     int SetDtvKitSourceEnable(bool isEnable);

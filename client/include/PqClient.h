@@ -73,6 +73,7 @@ public:
     source_input_param_t getCurrentSourceInfo();
     int SetColorGamutMode(int mode, int isSave);
     int GetColorGamutMode();
+    int GetSourceHDRType();
 
     int FactoryResetPQMode(void);
     int FactoryResetColorTemp(void);

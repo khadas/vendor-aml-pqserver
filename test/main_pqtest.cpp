@@ -176,12 +176,17 @@ public:
                 __FUNCTION__, source_param.source_input, source_param.sig_fmt, source_param.trans_fmt);
             break;
         case PQ_SET_COLORGAMUT:
-            ret = mpPqClient->SetColorBaseMode(setValue[0], setValue[1]);
+            ret = mpPqClient->SetColorGamutMode(setValue[0], setValue[1]);
             break;
         case PQ_GET_COLORGAMUT:
-            ret = mpPqClient->GetColorBaseMode();
-            LOGD("%s: curent Color base mode is %d.\n", __FUNCTION__, ret);
+            ret = mpPqClient->GetColorGamutMode();
+            LOGD("%s: curent Color gamut mode is %d\n", __FUNCTION__, ret);
             break;
+        case PQ_GET_SOURCE_HDR_TYPE:
+            ret = mpPqClient->GetSourceHDRType();
+            LOGD("%s: curent HDR type is %d\n", __FUNCTION__, ret);
+            break;
+
         //factory API
         case PQ_FACTORY_RESET_PICTURE_MODE:
             ret = mpPqClient->FactoryResetPQMode();
@@ -371,6 +376,7 @@ int main(int argc, char **argv) {
     LOGD("#### select 232 to get source channel ####\n");
     LOGD("#### select 233 to set ColorGamut ####\n");
     LOGD("#### select 234 to get ColorGamut ####\n");
+    LOGD("#### select 235 to get source fmt type ####\n");
 
     LOGD("#### below is factory cmd####\n");
     LOGD("#### select 301 to reset pq mode ####\n");
@@ -730,6 +736,10 @@ int main(int argc, char **argv) {
           }
           case 234: {
               test->cmdID = PQ_GET_COLORGAMUT;
+              break;
+          }
+          case 235: {
+              test->cmdID = PQ_GET_SOURCE_HDR_TYPE;
               break;
           }
 
