@@ -311,35 +311,17 @@ int SSMAction::SSMReadNTypes(int id, int data_len, int *data_buf, int offset)
 bool SSMAction::SSMRecovery()
 {
     bool ret = true;
-    current_ssmheader_section2_t header_cur;
 
-    ret = mSSMHandler->SSMSaveCurrentHeader(&header_cur);
+    //erase ssm data
+    EraseAllData();
 
-    int *SSMBuff = (int*) malloc(header_cur.size);
-
-    if (!SSMBuff)
-        ret = false;
-
-    if (ret) {
-        ReadBytes(0, header_cur.size, SSMBuff);
-        EraseAllData();
-
-        for (unsigned int i = 0; i < gSSMHeader_section1.count; i++) {
-            if (header_cur.header_section2_data[i].size == gSSMHeader_section2[i].size) {
-                WriteBytes(gSSMHeader_section2[i].addr,
-                           gSSMHeader_section2[i].size, SSMBuff +
-                           header_cur.header_section2_data[i].addr);
-            }
-            else {
-                SSMRestoreDefault(i, false);
-                LOGD ("id : %d size from %d -> %d", i, header_cur.header_section2_data[i].size, gSSMHeader_section2[i].size);
-            }
-        }
-
-        if (ret)
-            free (SSMBuff);
-
+    //recovery ssm data from db
+    if (mpObserver != NULL) {
+        mpObserver->resetAllUserSettingParam();
         ret = mSSMHandler->SSMRecreateHeader();
+        RestoreDeviceMarkValues();
+    } else {
+        LOGE("%s: mpObserver is NULL\n", __FUNCTION__);
     }
 
     return ret;

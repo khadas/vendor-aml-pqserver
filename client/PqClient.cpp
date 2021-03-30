@@ -664,8 +664,54 @@ int PqClient::GetSourceHDRType()
     return ret;
 }
 
-//PQ Factory cmd
+int PqClient::SetDynamicContrastMode(int mode, int isSave)
+{
+    LOGD("%s\n", __FUNCTION__);
 
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d", PQ_SET_DYNAMICCONTRAST, mode, isSave);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::GetDynamicContrastMode()
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d", PQ_GET_DYNAMICCONTRAST);
+    SendMethodCall(buf);
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::SSMRecovery(void)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d", PQ_SET_RECOVERYPQ);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+//PQ Factory cmd
 int PqClient::FactoryResetPQMode(void)
 {
     LOGD("%s\n", __FUNCTION__);

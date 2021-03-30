@@ -186,6 +186,16 @@ public:
             ret = mpPqClient->GetSourceHDRType();
             LOGD("%s: curent HDR type is %d\n", __FUNCTION__, ret);
             break;
+        case PQ_SET_DYNAMICCONTRAST:
+            ret = mpPqClient->SetDynamicContrastMode(setValue[0], setValue[1]);
+            break;
+        case PQ_GET_DYNAMICCONTRAST:
+            ret = mpPqClient->GetDynamicContrastMode();
+            LOGD("%s: curent Dynamic contrast mode is %d\n", __FUNCTION__, ret);
+            break;
+        case PQ_SET_RECOVERYPQ:
+            ret = mpPqClient->SSMRecovery();
+            break;
 
         //factory API
         case PQ_FACTORY_RESET_PICTURE_MODE:
@@ -377,6 +387,9 @@ int main(int argc, char **argv) {
     LOGD("#### select 233 to set ColorGamut ####\n");
     LOGD("#### select 234 to get ColorGamut ####\n");
     LOGD("#### select 235 to get source fmt type ####\n");
+    LOGD("#### select 236 to set DynamicContrast ####\n");
+    LOGD("#### select 237 to get DynamicContrast ####\n");
+    LOGD("#### select 238 to recovery ssm ####\n");
 
     LOGD("#### below is factory cmd####\n");
     LOGD("#### select 301 to reset pq mode ####\n");
@@ -408,7 +421,7 @@ int main(int argc, char **argv) {
     LOGD("#### select 327 to set WB B OFFSET ####\n");
     LOGD("#### select 328 to get WB B OFFSET ####\n");
 
-    LOGD("#### select 299 to exit####\n");
+    LOGD("#### select 999 to exit####\n");
     LOGD("##########################\n");
     while (run) {
         char Command[10];
@@ -742,7 +755,30 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_GET_SOURCE_HDR_TYPE;
               break;
           }
+          case 236: {
+              LOGD("please input DynamicContrast value:(0~3)\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[0] = mode;
 
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              test->cmdID = PQ_SET_DYNAMICCONTRAST;
+              break;
+          }
+          case 237: {
+              test->cmdID = PQ_GET_DYNAMICCONTRAST;
+              break;
+          }
+          case 238: {
+              test->cmdID = PQ_SET_RECOVERYPQ;
+              break;
+          }
+
+          //factory cmd
           case 301: {
               test->cmdID = PQ_FACTORY_RESET_PICTURE_MODE;
               break;

@@ -88,9 +88,9 @@ public:
     int PQ_ResetAllNoLineParams(void);
     int PQ_GetNoiseReductionParams(vpp_noise_reduction_mode_t nr_mode, source_input_param_t source_input_param, int reg_addr);
     int PQ_SetNoiseReductionParams(vpp_noise_reduction_mode_t nr_mode, source_input_param_t source_input_param, int reg_addr, int value);
-    int PQ_GetDNLPParams(source_input_param_t source_input_param, Dynamic_contrst_status_t mode, ve_dnlp_curve_param_t *newParams);
-    int PQ_SetDNLPGains(source_input_param_t source_input_param, Dynamic_contrst_status_t level, int final_gain);
-    int PQ_GetDNLPGains(source_input_param_t source_input_param, Dynamic_contrst_status_t level);
+    int PQ_GetDNLPParams(source_input_param_t source_input_param, Dynamic_contrast_mode_t mode, ve_dnlp_curve_param_t *newParams);
+    int PQ_SetDNLPGains(source_input_param_t source_input_param, Dynamic_contrast_mode_t level, int final_gain);
+    int PQ_GetDNLPGains(source_input_param_t source_input_param, Dynamic_contrast_mode_t level);
     int PQ_GetLocalContrastNodeParams(source_input_param_t source_input_param, local_contrast_mode_t mode, ve_lc_curve_parm_t *Params);
     int PQ_GetLocalContrastRegParams(source_input_param_t source_input_param, local_contrast_mode_t mode, am_regs_t *regs);
     int PQ_GetOverscanParams(source_input_param_t source_input_param, vpp_display_mode_t dmode, tvin_cutwin_t *cutwin_t);

@@ -47,6 +47,9 @@ typedef enum pqcmd_e {
     PQ_SET_COLORGAMUT             = 233,
     PQ_GET_COLORGAMUT             = 234,
     PQ_GET_SOURCE_HDR_TYPE        = 235,
+    PQ_SET_DYNAMICCONTRAST        = 236,
+    PQ_GET_DYNAMICCONTRAST        = 237,
+    PQ_SET_RECOVERYPQ             = 238,
 
     PQ_MOUDLE_CMD_MAX             = 299,
     //PQ factory(300~399)

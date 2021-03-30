@@ -140,6 +140,8 @@ typedef struct vpp_pq_para_s {
     int color_temperature;
     int dv_pqmode;
     int colorgamut_mode;
+    int localcontrast;
+    int dynamiccontrast;
 } vpp_pq_para_t;
 
 typedef enum vpp_gamma_curve_e {
@@ -489,7 +491,7 @@ typedef enum tv_source_input_e {
 } tv_source_input_t;
 
 typedef enum vpp_picture_mode_e {
-    VPP_PICTURE_MODE_STANDARD,
+    VPP_PICTURE_MODE_STANDARD = 0,
     VPP_PICTURE_MODE_BRIGHT,
     VPP_PICTURE_MODE_SOFT,
     VPP_PICTURE_MODE_USER,
@@ -498,21 +500,22 @@ typedef enum vpp_picture_mode_e {
     VPP_PICTURE_MODE_MONITOR,
     VPP_PICTURE_MODE_GAME,
     VPP_PICTURE_MODE_SPORTS,
-    VPP_PICTURE_MODE_HDR10_VIVID,
+    VPP_PICTURE_MODE_HDR10_VIVID = 9,
     VPP_PICTURE_MODE_HDR10_STANDARD,
     VPP_PICTURE_MODE_HDR10_MOVIE,
     VPP_PICTURE_MODE_HDR10_SPORT,
     VPP_PICTURE_MODE_HDR10_GAME,
-    VPP_PICTURE_MODE_HDR10PLUS_VIVID,
+    VPP_PICTURE_MODE_HDR10PLUS_VIVID = 14,
     VPP_PICTURE_MODE_HDR10PLUS_STANDARD,
     VPP_PICTURE_MODE_HDR10PLUS_MOVIE,
     VPP_PICTURE_MODE_HDR10PLUS_SPORT,
-    VPP_PICTURE_MODE_HLG_VIVID,
+    VPP_PICTURE_MODE_HLG_VIVID = 18,
     VPP_PICTURE_MODE_HLG_STANDARD,
     VPP_PICTURE_MODE_HLG_MOVIE,
     VPP_PICTURE_MODE_HLG_SPORT,
-    VPP_PICTURE_MODE_DV_BRIGHT,
+    VPP_PICTURE_MODE_DV_BRIGHT = 22,
     VPP_PICTURE_MODE_DV_DARK,
+    VPP_PICTURE_MODE_DV_USER,
     VPP_PICTURE_MODE_MAX,
 } vpp_picture_mode_t;
 
@@ -584,13 +587,13 @@ typedef enum SSM_status_e
     SSM_HEADER_STRUCT_CHANGE = 2,
 } SSM_status_t;
 
-typedef enum Dynamic_contrst_status_e
+typedef enum Dynamic_contrast_mode_e
 {
-    DYNAMIC_CONTRAST_OFF,
+    DYNAMIC_CONTRAST_OFF = 0,
     DYNAMIC_CONTRAST_LOW,
     DYNAMIC_CONTRAST_MID,
     DYNAMIC_CONTRAST_HIGH,
-} Dynamic_contrst_status_t;
+} Dynamic_contrast_mode_t;
 
 typedef enum Dynamic_backlight_status_e
 {

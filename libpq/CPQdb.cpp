@@ -808,7 +808,7 @@ int CPQdb::PQ_GetLDIMParams(source_input_param_t source_input_param, aml_ldim_in
     return rval;
 }
 
-int CPQdb::PQ_GetDNLPParams(source_input_param_t source_input_param, Dynamic_contrst_status_t mode, ve_dnlp_curve_param_t *newParams)
+int CPQdb::PQ_GetDNLPParams(source_input_param_t source_input_param, Dynamic_contrast_mode_t mode, ve_dnlp_curve_param_t *newParams)
 {
     CSqlite::Cursor c;
     CSqlite::Cursor c1;
@@ -1309,7 +1309,7 @@ int CPQdb::PQ_GetLocalContrastRegParams(source_input_param_t source_input_param,
     return ret;
 }
 
-int CPQdb::PQ_SetDNLPGains(source_input_param_t source_input_param, Dynamic_contrst_status_t level, int final_gain)
+int CPQdb::PQ_SetDNLPGains(source_input_param_t source_input_param, Dynamic_contrast_mode_t level, int final_gain)
 {
     char sqlmaster[256];
     int final_gain_reg_num = 46;
@@ -1329,7 +1329,7 @@ int CPQdb::PQ_SetDNLPGains(source_input_param_t source_input_param, Dynamic_cont
     return rval;
 }
 
-int CPQdb::PQ_GetDNLPGains(source_input_param_t source_input_param, Dynamic_contrst_status_t level)
+int CPQdb::PQ_GetDNLPGains(source_input_param_t source_input_param, Dynamic_contrast_mode_t level)
 {
     CSqlite::Cursor c;
     char sqlmaster[256];
@@ -1929,6 +1929,10 @@ int CPQdb::PQ_GetPQModeParams(source_input_param_t source_input_param, vpp_pictu
                         params->dv_pqmode = c.getInt(1);
                     } else if (!strcmp(type, "ColorGamut")) {
                         params->colorgamut_mode = c.getInt(1);
+                    } else if (!strcmp(type, "LocalContrast")) {
+                        params->localcontrast = c.getInt(1);
+                    } else if (!strcmp(type, "DynamicContrast")) {
+                        params->dynamiccontrast = c.getInt(1);
                     }
                 } while (c.moveToNext());
             } else {

@@ -287,6 +287,13 @@ public:
 
     //BlackExtension
     int SetBlackExtensionParam(source_input_param_t source_input_param);
+    //dynamic contrast
+    int SetDnlpMode(Dynamic_contrast_mode_t mode, int is_save);
+    int GetDnlpMode();
+    int SaveDnlpMode(Dynamic_contrast_mode_t mode);
+    int Cpq_SetVENewDNLP(const ve_dnlp_curve_param_t *pDNLP);
+    int Cpq_SetDNLPStatus(ve_dnlp_state_t status);
+
     //Factory
     int FactoryResetPQMode(void);
     int FactoryResetColorTemp(void);
@@ -336,10 +343,6 @@ public:
     int Cpq_SetGammaTbl_G(unsigned short green[256]);
     int Cpq_SetGammaTbl_B(unsigned short blue[256]);
     int Cpq_SetGammaOnOff(int onoff);
-    int SetDnlpMode(int level);
-    int GetDnlpMode();
-    int Cpq_SetVENewDNLP(const ve_dnlp_curve_param_t *pDNLP);
-    int Cpq_SetDNLPStatus(ve_dnlp_state_t status);
     int FactorySetDNLPCurveParams(source_input_param_t source_input_param, int level, int final_gain);
     int FactoryGetDNLPCurveParams(source_input_param_t source_input_param, int level);
     int FactorySetNoiseReductionParams(source_input_param_t source_input_param, vpp_noise_reduction_mode_t nr_mode, int addr, int val);
@@ -350,7 +353,7 @@ public:
     int Cpq_SSMWriteNTypes(int id, int data_len, int data_buf, int offset);
     int Cpq_GetSSMActualAddr(int id);
     int Cpq_GetSSMActualSize(int id);
-    int Cpq_SSMRecovery(void);
+    int SSMRecovery(void);
     int Cpq_GetSSMStatus();
     hdr_type_t Cpq_GetSourceHDRType(tv_source_input_t source_input);
     int SetFlagByCfg(void);

@@ -74,6 +74,9 @@ public:
     int SetColorGamutMode(int mode, int isSave);
     int GetColorGamutMode();
     int GetSourceHDRType();
+    int SetDynamicContrastMode(int mode, int isSave);
+    int GetDynamicContrastMode();
+    int SSMRecovery(void);
 
     int FactoryResetPQMode(void);
     int FactoryResetColorTemp(void);

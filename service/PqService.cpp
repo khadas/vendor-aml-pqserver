@@ -155,6 +155,12 @@ int PqService::SetCmd(pq_moudle_param_t param)
         case PQ_SET_COLORGAMUT:
             ret = mpPQcontrol->SetColorGamutMode((vpp_colorgamut_mode_t)paramData[0], paramData[1]);
             break;
+        case PQ_SET_DYNAMICCONTRAST:
+            ret = mpPQcontrol->SetDnlpMode((Dynamic_contrast_mode_t)paramData[0], paramData[1]);
+            break;
+        case PQ_SET_RECOVERYPQ:
+            ret = mpPQcontrol->SSMRecovery();
+            break;
 
         //Factory cmd
         case PQ_FACTORY_RESET_PICTURE_MODE:
@@ -322,6 +328,9 @@ char* PqService::GetCmd(pq_moudle_param_t param)
             break;
         case PQ_GET_SOURCE_HDR_TYPE:
             ret = mpPQcontrol->GetSourceHDRType();
+            break;
+        case PQ_GET_DYNAMICCONTRAST:
+            ret = mpPQcontrol->GetDnlpMode();
             break;
 
         //Factory cmd
