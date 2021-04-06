@@ -51,6 +51,8 @@
 #define CFG_XVYCC_ENABLE                        "pq.xvycc.en"
 //overscan moudle config
 #define CFG_DISPLAY_OVERSCAN_ENABLE             "pq.DisplayOverscan.en"
+//av decode config
+#define CFG_CVD2_ENABLE                         "pq.cvd2.en"
 
 //pq param default value
 #define CFG_PICTUREMODE_DEF                     "pq.PictureMode.def"

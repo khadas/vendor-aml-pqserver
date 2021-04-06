@@ -405,7 +405,7 @@ int CPQdb::PQ_GetCM2Params(vpp_color_management2_t basemode, source_input_param_
     if ((TableName.c_str() != NULL) && (TableName.length() != 0) ) {
         rval = getRegValuesByValue(TableName.c_str(), CM_LEVEL_NAME, "", (int) basemode, 0, regs);
     } else {
-        LOGE("GeneralCM2Table select error!!\n");
+        LOGE("GeneralCM2Table select error\n");
     }
 
     return rval;
@@ -1570,11 +1570,11 @@ int CPQdb::PQ_GetCVD2Params(source_input_param_t source_input_param, am_regs_t *
         ret = getRegValues(TableName.c_str(), regs);
         if (regs->am_reg[0].val == 0 && regs->am_reg[1].val == 0 && regs->am_reg[2].val == 0
                 && regs->am_reg[3].val == 0) {
-            LOGE("%s: db's value is all zeros, that's not OK!!!\n", __FUNCTION__);
+            LOGE("%s: db's value is all zeros, that's not OK\n", __FUNCTION__);
             return -1;
         }
     } else {
-        LOGE("%s: GeneralCVD2Table don't have this table!\n", __FUNCTION__);
+        LOGE("%s: GeneralCVD2Table don't have this table\n", __FUNCTION__);
     }
     return ret;
 }
@@ -1933,6 +1933,8 @@ int CPQdb::PQ_GetPQModeParams(source_input_param_t source_input_param, vpp_pictu
                         params->localcontrast = c.getInt(1);
                     } else if (!strcmp(type, "DynamicContrast")) {
                         params->dynamiccontrast = c.getInt(1);
+                    } else if (!strcmp(type, "CmLevel")) {
+                        params->cm_level = c.getInt(1);
                     }
                 } while (c.moveToNext());
             } else {

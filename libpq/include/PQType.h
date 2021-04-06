@@ -142,6 +142,7 @@ typedef struct vpp_pq_para_s {
     int colorgamut_mode;
     int localcontrast;
     int dynamiccontrast;
+    int cm_level;
 } vpp_pq_para_t;
 
 typedef enum vpp_gamma_curve_e {

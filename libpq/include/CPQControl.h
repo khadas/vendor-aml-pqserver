@@ -432,6 +432,7 @@ private:
     bool mbCpqCfg_dnlp_enable;
     bool mbCpqCfg_xvycc_enable;
     bool mbCpqCfg_display_overscan_enable;
+    bool mbCpqCfg_cvd2_enable;
     bool mbCpqCfg_local_contrast_enable;
     bool mbCpqCfg_hdmi_out_with_fbc_enable;
     bool mbCpqCfg_pq_param_check_source_enable;

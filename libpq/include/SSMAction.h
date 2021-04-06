@@ -71,12 +71,6 @@ public:
     //Color Temperature
     int SSMSaveColorTemperature(int offset, int rw_val);
     int SSMReadColorTemperature(int offset, int *rw_val);
-    int SSMSaveColorDemoMode(unsigned char rw_val);
-    int SSMReadColorDemoMode(unsigned char *rw_val);
-    int SSMSaveColorBaseMode(unsigned char rw_val);
-    int SSMReadColorBaseMode(unsigned char *rw_val);
-    int SSMSaveColorGamutMode(int offset, int rw_val);
-    int SSMReadColorGamutMode(int offset, int *rw_val);
     int SSMSaveRGBGainRStart(int offset, unsigned int rw_val);
     int SSMReadRGBGainRStart(int offset, unsigned int *rw_val);
     int SSMSaveRGBGainGStart(int offset, unsigned int rw_val);
@@ -136,8 +130,19 @@ public:
     //backlight
     int SSMReadBackLightVal(int *rw_val);
     int SSMSaveBackLightVal(int rw_val);
+    //dynamic contrast
     int SSMSaveDnlpMode(int offset, int rw_val);
     int SSMReadDnlpMode(int offset, int *rw_val);
+    //
+    int SSMSaveColorDemoMode(unsigned char rw_val);
+    int SSMReadColorDemoMode(unsigned char *rw_val);
+    //cm
+    int SSMSaveColorBaseMode(int offset, int rw_val);
+    int SSMReadColorBaseMode(int offset, int *rw_val);
+    //color gamut
+    int SSMSaveColorGamutMode(int offset, int rw_val);
+    int SSMReadColorGamutMode(int offset, int *rw_val);
+
     int SSMSaveDnlpGainValue(int offset, int rw_val);
     int SSMReadDnlpGainValue(int offset, int *rw_val);
     int SSMSaveEyeProtectionMode(int rw_val);

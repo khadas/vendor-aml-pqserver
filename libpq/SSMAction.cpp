@@ -336,12 +336,6 @@ int SSMAction::SSMRestoreDefault(int id, bool resetAll)
     int8_t cold_buf[6] = { -8, 0, 0, 0, 0, 0 };
     int tmp[2] = {0, 0};
 
-    if (resetAll || VPP_DATA_POS_COLOR_DEMO_MODE_START == id)
-        SSMSaveColorDemoMode ( VPP_COLOR_DEMO_MODE_ALLON);
-
-    if (resetAll || VPP_DATA_POS_COLOR_BASE_MODE_START == id)
-        SSMSaveColorBaseMode ( VPP_COLOR_BASE_MODE_OPTIMIZE);
-
     if (resetAll || VPP_DATA_POS_RGB_GAIN_R_START == id)
         SSMSaveRGBGainRStart(0, gain_r);
 
@@ -374,10 +368,6 @@ int SSMAction::SSMRestoreDefault(int id, bool resetAll)
                 SSMSaveColorSpaceStart ( VPP_COLOR_SPACE_AUTO);
             }
         }
-
-        tmp_val = VPP_COLOR_TEMPERATURE_MODE_STANDARD;
-        if (resetAll || VPP_DATA_POS_COLOR_TEMPERATURE_START == id)
-            SSMSaveColorTemperature(i, tmp_val);
 
         tmp_val = 50;
         if (resetAll || VPP_DATA_POS_BRIGHTNESS_START == id)
@@ -588,18 +578,18 @@ int SSMAction::SSMReadColorDemoMode(unsigned char *rw_val)
 
     return ret;
 }
-int SSMAction::SSMSaveColorBaseMode(unsigned char rw_val)
+
+int SSMAction::SSMSaveColorBaseMode(int offset, int rw_val)
 {
-    int tmp_val = rw_val;
-    return SSMWriteNTypes(VPP_DATA_POS_COLOR_BASE_MODE_START, 1, &tmp_val);
+    return SSMWriteNTypes(VPP_DATA_POS_COLOR_BASE_MODE_START, 1, &rw_val, offset);
 }
 
-int SSMAction::SSMReadColorBaseMode(unsigned char *rw_val)
+int SSMAction::SSMReadColorBaseMode(int offset, int *rw_val)
 {
     int tmp_val = 0;
     int ret = 0;
 
-    ret = SSMReadNTypes(VPP_DATA_POS_COLOR_BASE_MODE_START, 1, &tmp_val);
+    ret = SSMReadNTypes(VPP_DATA_POS_COLOR_BASE_MODE_START, 1, &tmp_val, offset);
     *rw_val = tmp_val;
 
     return ret;
