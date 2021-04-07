@@ -5892,7 +5892,7 @@ bool CPQControl::isPqDatabaseMachChip()
 
     if (chipVersion == MESON_CPU_VERSION_NULL) {
         LOGD("%s: database don't have chipversion!\n", __FUNCTION__);
-        matchStatus = false;
+        matchStatus = true;
     } else {
         int ret = VPPDeviceIOCtl(AMVECM_IOC_S_MESON_CPU_VER, &chipVersion);
         if (ret < 0) {
