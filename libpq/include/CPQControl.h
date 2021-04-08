@@ -51,6 +51,7 @@
 #define SSC_PATH                         "/sys/class/lcd/ss"
 #define TEST_SCREEN                      "/sys/class/video/test_screen"
 #define PQ_SET_RW_INTERFACE              "/sys/class/amvecm/pq_reg_rw"
+#define AMVECM_PC_MODE_PATH              "/sys/class/amvecm/pc_mode"
 #define SYS_DISPLAY_MODE_PATH            "/sys/class/display/mode"
 #define HDMI_OUTPUT_CHECK_PATH           "/sys/class/amhdmitx"    //if this dir exist,is hdmi output
 #define DEMOSQUITO_MODULE_CONTROL_PATH   "/sys/module/di/parameters/dnr_dm_en"  //demosquito control
@@ -177,6 +178,8 @@ public:
     int SaveHLGPQMode(int pq_mode);
     int GetDVPQMode(void);
     int SaveDVPQMode(int pq_mode);
+    int Cpq_SetPCMode(game_pc_mode_t pcStatus);
+    int Cpq_setGameMode(game_pc_mode_t gameStatus, game_pc_mode_t pcStatus);
 
     int Cpq_SetPQMode(vpp_picture_mode_t pq_mode, source_input_param_t source_input_param);
     int SetPQParams(source_input_param_t source_input_param, vpp_picture_mode_t pq_mode, vpp_pq_para_t pq_para);
@@ -396,7 +399,7 @@ private:
     int AFEDeviceIOCtl ( int request, ... );
     void stopVdin(void);
     void onSigStatusChange(void);
-    int SetCurrenSourceInfo(vdin_parm_t sig_info);
+    int SetCurrenSourceInfo(tvin_parm_t sig_info);
     tvin_sig_fmt_t getVideoResolutionToFmt();
     int GetWindowStatus(void);
     int Cpq_SetXVYCCMode(vpp_xvycc_mode_t xvycc_mode, source_input_param_t source_input_param);
@@ -437,6 +440,9 @@ private:
     bool mbCpqCfg_hdmi_out_with_fbc_enable;
     bool mbCpqCfg_pq_param_check_source_enable;
     bool mbCpqCfg_ldim_enable;
+    bool mbAllmModeCfg_enable;
+    bool mbItcontentModeCfg_enable;
+    bool mbDviModeCfg_enable;
 
     CPQdb *mPQdb;
     COverScandb *mpOverScandb;
@@ -458,8 +464,8 @@ private:
     source_input_param_t mCurentSourceInputInfo;
     tv_source_input_t mSourceInputForSaveParam;
     hdr_type_t mCurrentHdrType = HDR_TYPE_NONE;
-    unsigned int mHdmiHdrInfo = 0;
-    vdin_parm_s mCurrentSignalInfo;
+    tvin_parm_t mCurrentSignalInfo;
+    tvin_inputparam_t mCurrentTvinInfo;
     bool mbDtvKitEnable;
     bool mbDatabaseMatchChipStatus;
     bool mbVideoIsPlaying = false;//video don't playing

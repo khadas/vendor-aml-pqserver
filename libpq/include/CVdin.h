@@ -143,7 +143,7 @@ typedef enum tvin_port_e {
     TVIN_PORT_MAX     = 0x80000000,
 } tvin_port_t;
 
-typedef struct vdin_info_s {
+typedef struct tvin_info_s {
     tvin_trans_fmt    trans_fmt;
     tvin_sig_fmt_e    fmt;
     tvin_sig_status_e status;
@@ -173,10 +173,10 @@ typedef struct vdin_info_s {
     tvin_aspect_ratio_e aspect_ratio;
 } vdin_info_t;
 
-typedef struct vdin_parm_s {
+typedef struct tvin_parm_s {
     int                         index;    // index of frontend for vdin
     enum tvin_port_e            port;     // must set port in IOCTL
-    struct vdin_info_s          info;
+    struct tvin_info_s          info;
     unsigned int                hist_pow;
     unsigned int                luma_sum;
     unsigned int                pixel_sum;
@@ -187,12 +187,50 @@ typedef struct vdin_parm_s {
     bool                        h_reverse;//for vdin horizontal reverse
     bool                        v_reverse;//for vdin vertical reverse
     unsigned int                reserved;
-} vdin_parm_t;
+} tvin_parm_t;
 
 typedef struct vdin_event_info_s {
     /*enum tvin_sg_chg_flg*/
     unsigned int event_sts;
 } vdin_event_info_t;
+
+enum tvin_cn_type_e {
+    GRAPHICS,
+    PHOTO,
+    CINEMA,
+    GAME,
+};
+
+typedef struct tvin_latency_s {
+    bool allm_mode;
+    bool it_content;
+    tvin_cn_type_e cn_type;
+} tvin_latency_t;
+
+typedef struct tvin_inputparam_s {
+    unsigned int   is_dvi;
+    /*
+    * bit 30: is_dv
+    * bit 29: present_flag
+    * bit 28-26: video_format
+    *  "component", "PAL", "NTSC", "SECAM", "MAC", "unspecified"
+    * bit 25: range "limited", "full_range"
+    * bit 24: color_description_present_flag
+    * bit 23-16: color_primaries
+    *  "unknown", "bt709", "undef", "bt601", "bt470m", "bt470bg",
+    *  "smpte170m", "smpte240m", "film", "bt2020"
+    * bit 15-8: transfer_characteristic
+    *  "unknown", "bt709", "undef", "bt601", "bt470m", "bt470bg",
+    *  "smpte170m", "smpte240m", "linear", "log100", "log316",
+    *  "iec61966-2-4", "bt1361e", "iec61966-2-1", "bt2020-10",
+    *  "bt2020-12", "smpte-st-2084", "smpte-st-428"
+    * bit 7-0: matrix_coefficient
+    *  "GBR", "bt709", "undef", "bt601", "fcc", "bt470bg",
+    *  "smpte170m", "smpte240m", "YCgCo", "bt2020nc", "bt2020c"
+    */
+    unsigned int   hdr_info;
+    tvin_latency_t allmInfo;
+} tvin_inputparam_t;
 
 // ***************************************************************************
 // *** IOCTL command definition **********************************************
@@ -200,9 +238,16 @@ typedef struct vdin_event_info_s {
 
 #define TVIN_IOC_MAGIC 'T'
 //VDIN
-#define TVIN_IOC_G_PARM             _IOR(TVIN_IOC_MAGIC, 0x05, struct vdin_parm_s)
-#define TVIN_IOC_G_SIG_INFO         _IOR(TVIN_IOC_MAGIC, 0x07, struct vdin_info_s)
+#define TVIN_IOC_OPEN               _IOW(TVIN_IOC_MAGIC, 0x01, struct tvin_parm_s)
+#define TVIN_IOC_START_DEC          _IOW(TVIN_IOC_MAGIC, 0x02, struct tvin_parm_s)
+#define TVIN_IOC_STOP_DEC           _IO( TVIN_IOC_MAGIC, 0x03)
+#define TVIN_IOC_CLOSE              _IO( TVIN_IOC_MAGIC, 0x04)
+#define TVIN_IOC_G_PARM             _IOR(TVIN_IOC_MAGIC, 0x05, struct tvin_parm_s)
+#define TVIN_IOC_G_SIG_INFO         _IOR(TVIN_IOC_MAGIC, 0x07, struct tvin_info_s)
 #define TVIN_IOC_G_EVENT_INFO       _IOW(TVIN_IOC_MAGIC, 0x0a, struct vdin_event_info_s)
+#define TVIN_IOC_S_PC_MODE          _IOW(TVIN_IOC_MAGIC, 0x50, unsigned int)
+#define TVIN_IOC_GAME_MODE          _IOW(TVIN_IOC_MAGIC, 0x4b, unsigned int)
+#define TVIN_IOC_GET_LATENCY_MODE   _IOR(TVIN_IOC_MAGIC, 0X4d, struct tvin_latency_s)
 
 
 #define VDIN_DEV_PATH               "/dev/vdin0"
@@ -213,8 +258,11 @@ public:
     ~CVdin();
     static CVdin *getInstance();
     int Tvin_GetSignalEventInfo(vdin_event_info_s *SignalEventInfo);
-    int Tvin_GetSignalInfo(vdin_info_s *SignalInfo);
-    int Tvin_GetVdinParam(vdin_parm_s *vdinParam);
+    int Tvin_GetSignalInfo(tvin_info_s *SignalInfo);
+    int Tvin_GetVdinParam(tvin_parm_s *vdinParam);
+    int Tvin_GetAllmInfo(tvin_latency_s *AllmInfo);
+    int Tvin_SetPCMode(game_pc_mode_t mode);
+    int Tvin_SetGameMode(game_pc_mode_t mode);
     tv_source_input_t Tvin_PortToSourceInput (tvin_port_t port);
     tv_source_input_type_t Tvin_SourceInputToSourceInputType ( tv_source_input_t source_input );
 
@@ -223,9 +271,16 @@ private:
     int VDIN_OpenModule();
     int VDIN_CloseModule();
     int VDIN_DeviceIOCtl(int request, ...);
+    int VDIN_OpenPort(tvin_port_t port);
+    int VDIN_ClosePort();
+    int VDIN_StartDec(const tvin_parm_t *vdinParam);
+    int VDIN_StopDec();
     int VDIN_GetSignalEventInfo(vdin_event_info_s *SignalEventInfo);
-    int VDIN_GetSignalInfo(vdin_info_s *SignalInfo);
-    int VDIN_GetVdinParam(vdin_parm_s *vdinParam);
+    int VDIN_GetSignalInfo(tvin_info_s *SignalInfo);
+    int VDIN_GetVdinParam(tvin_parm_s *vdinParam);
+    int VDIN_GetAllmInfo(tvin_latency_s *AllmInfo);
+    int VDIN_SetPCMode(game_pc_mode_t mode);
+    int VDIN_SetGameMode(game_pc_mode_t mode);
     void Tvin_LoadPortToSourceInputMap();
     unsigned int Tvin_TransPortStringToValue(const char *port_str);
     const char *ConfigGetStr(const char *section,  const char *key, const char *def_value);

@@ -531,6 +531,13 @@ typedef enum tvpq_data_type_e {
     TVPQ_DATA_MAX,
 } tvpq_data_type_t;
 
+typedef enum game_pc_mode_e
+{
+    MODE_OFF = 0,
+    MODE_ON,
+    MODE_STABLE,
+} game_pc_mode_t;
+
 typedef enum vpp_test_pattern_e {
     VPP_TEST_PATTERN_NONE,
     VPP_TEST_PATTERN_RED,

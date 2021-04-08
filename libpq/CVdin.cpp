@@ -47,7 +47,7 @@ CVdin::CVdin()
         LOGD("%s: read tvconfig file path failed use default path:%s\n", __FUNCTION__, CONFIG_FILE_PATH_DEF);
         tvConfigFilePath = CONFIG_FILE_PATH_DEF;
     } else {
-        LOGD("%s: tvconfig file path is %s!\n", __FUNCTION__, tvConfigFilePath);
+        LOGD("%s: tvconfig file path is %s\n", __FUNCTION__, tvConfigFilePath);
     }
     LoadConfigFile(tvConfigFilePath);
 
@@ -62,10 +62,10 @@ CVdin::~CVdin()
 
 int CVdin::VDIN_OpenModule()
 {
-    int fd = open (VDIN_DEV_PATH, O_RDWR );
+    int fd = open(VDIN_DEV_PATH, O_RDWR );
 
     if ( fd < 0 ) {
-        LOGE("Open %s error(%s)!\n", VDIN_DEV_PATH, strerror(errno));
+        LOGE("Open %s error(%s)\n", VDIN_DEV_PATH, strerror(errno));
         return -1;
     }
 
@@ -104,40 +104,175 @@ int CVdin::VDIN_DeviceIOCtl( int request, ... )
     return -1;
 }
 
+int CVdin::VDIN_OpenPort(tvin_port_t port)
+{
+    tvin_parm_t vdinParam;
+
+    vdinParam.port = port;
+    vdinParam.index = 0;
+    int ret = VDIN_DeviceIOCtl(TVIN_IOC_OPEN, &vdinParam );
+    if (ret < 0) {
+        LOGE("%s failed, error(%s)\n", __FUNCTION__, strerror(errno));
+    }
+
+    return ret;
+}
+
+int CVdin::VDIN_ClosePort()
+{
+    int ret = VDIN_DeviceIOCtl(TVIN_IOC_CLOSE);
+    if (ret < 0) {
+        LOGE("%s failed, error(%s)\n", __FUNCTION__, strerror(errno));
+    }
+
+    return ret;
+}
+
+int CVdin::VDIN_StartDec(const tvin_parm_t *vdinParam)
+{
+    if ( vdinParam == NULL ) {
+        return -1;
+    }
+
+    LOGD("VDIN_StartDec: index = [%d] port = [0x%x] format = [0x%x]\n",
+        vdinParam->index, (unsigned int)vdinParam->port, (unsigned int)(vdinParam->info.fmt));
+
+    int ret = VDIN_DeviceIOCtl(TVIN_IOC_START_DEC, vdinParam);
+    if (ret < 0) {
+        LOGE("%s failed, error(%s)\n", __FUNCTION__, strerror(errno));
+    }
+
+    return ret;
+}
+
+int CVdin::VDIN_StopDec()
+{
+    int ret = VDIN_DeviceIOCtl(TVIN_IOC_STOP_DEC);
+    if (ret < 0) {
+        LOGE("%s failed, error(%s)\n", __FUNCTION__, strerror(errno));
+    }
+
+    return ret;
+}
+
 int CVdin::VDIN_GetSignalEventInfo(struct vdin_event_info_s *SignalEventInfo)
 {
     int ret = VDIN_DeviceIOCtl(TVIN_IOC_G_EVENT_INFO, SignalEventInfo);
     if (ret < 0) {
-        LOGE("%s error(%s), ret = %d.\n", __FUNCTION__, strerror(errno), ret);
+        LOGE("%s failed, error(%s)\n", __FUNCTION__, strerror(errno));
     }
 
     return ret;
 }
 
-int CVdin::VDIN_GetSignalInfo(struct vdin_info_s *SignalInfo )
+int CVdin::VDIN_GetSignalInfo(struct tvin_info_s *SignalInfo )
 {
-    int ret = VDIN_DeviceIOCtl(TVIN_IOC_G_SIG_INFO, SignalInfo );
+    int ret = VDIN_DeviceIOCtl(TVIN_IOC_G_SIG_INFO, SignalInfo);
     if ( ret < 0 ) {
-        LOGE("%s failed, error(%s).\n", __FUNCTION__, strerror ( errno ));
+        LOGE("%s failed, error(%s)\n", __FUNCTION__, strerror(errno));
     }
     return ret;
 }
 
-int CVdin::VDIN_GetVdinParam(vdin_parm_s *vdinParam)
+int CVdin::VDIN_GetVdinParam(tvin_parm_s *vdinParam)
 {
-    int ret = VDIN_DeviceIOCtl(TVIN_IOC_G_PARM, vdinParam );
+    int ret = VDIN_DeviceIOCtl(TVIN_IOC_G_PARM, vdinParam);
     if ( ret < 0 ) {
-        LOGE( "Vdin get signal param, error(%s).\n", strerror ( errno ) );
+        LOGE( "%s failed, error(%s)\n", __FUNCTION__, strerror(errno));
     }
 
     return ret;
 }
 
-int CVdin::Tvin_GetVdinParam(vdin_parm_s *vdinParam)
+int CVdin::VDIN_GetAllmInfo(tvin_latency_s *AllmInfo)
+{
+    int ret = -1;
+    if (AllmInfo == NULL) {
+        LOGE("%s: param is NULL\n", __FUNCTION__);
+    } else {
+        ret = VDIN_DeviceIOCtl(TVIN_IOC_GET_LATENCY_MODE, AllmInfo);
+        if (ret < 0) {
+            LOGE("%s failed, error(%s)\n", __FUNCTION__, strerror(errno));
+        }
+    }
+
+    return ret;
+}
+
+int CVdin::VDIN_SetPCMode(game_pc_mode_t mode)
+{
+    LOGD("%s: pc mode: %d\n", __FUNCTION__, mode);
+
+    int ret = -1;
+    unsigned int status = 0;
+    if (mode == MODE_ON) {
+        status = 1;
+    } else {
+        status = 0;
+    }
+    ret = VDIN_DeviceIOCtl(TVIN_IOC_S_PC_MODE, &status);
+    if (ret < 0) {
+        LOGE("%s failed, error(%s)", __FUNCTION__, strerror(errno));
+    }
+
+    return ret;
+}
+
+int CVdin::VDIN_SetGameMode(game_pc_mode_t mode)
+{
+    LOGD("%s: game mode: %d\n", __FUNCTION__, mode);
+
+    int ret = -1;
+    unsigned int status = 0;
+    if (mode == MODE_ON) {
+        status = 1;
+    } else {
+        status = 0;
+    }
+    ret = VDIN_DeviceIOCtl(TVIN_IOC_GAME_MODE, &status);
+    if (ret < 0) {
+        LOGE("%s failed, error(%s)", __FUNCTION__, strerror(errno));
+    }
+
+    return ret;
+}
+
+int CVdin::Tvin_SetPCMode(game_pc_mode_t mode)
+{
+    int ret = -1;
+
+    ret = VDIN_SetPCMode(mode);
+
+    return ret;
+}
+
+int CVdin::Tvin_SetGameMode(game_pc_mode_t mode)
+{
+    int ret = -1;
+
+    ret = VDIN_SetGameMode(mode);
+
+    return ret;
+}
+
+int CVdin::Tvin_GetAllmInfo(tvin_latency_s *AllmInfo)
+{
+    int ret = -1;
+
+    if (AllmInfo == NULL) {
+        LOGE("%s AllmInfo is NULL\n", __FUNCTION__);
+    } else {
+        ret = VDIN_GetAllmInfo(AllmInfo);
+    }
+
+    return ret;
+}
+
+int CVdin::Tvin_GetVdinParam(tvin_parm_s *vdinParam)
 {
     int ret = -1;
     if (vdinParam == NULL) {
-        LOGE("Tvin_GetVdinParam: vdinParam is NULL.\n");
+        LOGE("%s vdinParam is NULL\n", __FUNCTION__);
     } else {
         ret = VDIN_GetVdinParam(vdinParam);
     }
@@ -149,7 +284,7 @@ int CVdin::Tvin_GetSignalEventInfo(vdin_event_info_s *SignalEventInfo)
 {
     int ret = -1;
     if (SignalEventInfo == NULL) {
-        LOGE("Tvin_GetSignalEventInfo: SignalEventInfo is NULL.\n");
+        LOGE("%s SignalEventInfo is NULL\n", __FUNCTION__);
     } else {
         ret = VDIN_GetSignalEventInfo(SignalEventInfo);
     }
@@ -157,11 +292,11 @@ int CVdin::Tvin_GetSignalEventInfo(vdin_event_info_s *SignalEventInfo)
     return ret;
 }
 
-int CVdin::Tvin_GetSignalInfo(vdin_info_s *SignalInfo)
+int CVdin::Tvin_GetSignalInfo(tvin_info_s *SignalInfo)
 {
     int ret = -1;
     if (SignalInfo == NULL) {
-        LOGE("Tvin_GetSignalInfo: SignalInfo is NULL.\n");
+        LOGE("%s SignalInfo is NULL\n", __FUNCTION__);
     } else {
         ret = VDIN_GetSignalInfo(SignalInfo);
     }
@@ -298,7 +433,7 @@ tv_source_input_t CVdin::Tvin_PortToSourceInput ( tvin_port_t port )
 {
     for ( int i = SOURCE_TV; i < SOURCE_MAX; i++ ) {
         if ( mPortToSourceInputMap[i] == (int)port ) {
-            LOGI("%s port=0x%x tv_source_input_t=%d.\n", __FUNCTION__, (int)port, i);
+            LOGI("%s port=0x%x tv_source_input_t=%d\n", __FUNCTION__, (int)port, i);
             return (tv_source_input_t)i;
         }
     }

@@ -418,10 +418,6 @@ int SSMAction::SSMRestoreDefault(int id, bool resetAll)
             SSMSaveDnlpGainValue(i, tmp_val);
     }
 
-    tmp_val = DEFAULT_BACKLIGHT_BRIGHTNESS;
-    if (resetAll || VPP_DATA_POS_BACKLIGHT_START == id)
-        SSMSaveBackLightVal(tmp_val);
-
     if (resetAll || VPP_DATA_POS_DDR_SSC_START == id)
         SSMSaveDDRSSC(0);
 
@@ -1134,20 +1130,20 @@ int SSMAction::SSMReadDisplayMode(int offset, int *rw_val)
     return ret;
 }
 
-int SSMAction::SSMReadBackLightVal(int *rw_val)
+int SSMAction::SSMReadBackLightVal(int offset, int *rw_val)
 {
     int tmp_ret = 0;
     int ret = 0;
 
-    ret = SSMReadNTypes(VPP_DATA_POS_BACKLIGHT_START, 1, &tmp_ret);
+    ret = SSMReadNTypes(VPP_DATA_POS_BACKLIGHT_START, 1, &tmp_ret, offset);
     *rw_val = tmp_ret;
 
     return ret;
 }
 
-int SSMAction::SSMSaveBackLightVal(int rw_val)
+int SSMAction::SSMSaveBackLightVal(int offset, int rw_val)
 {
-    return SSMWriteNTypes(VPP_DATA_POS_BACKLIGHT_START, 1, &rw_val);
+    return SSMWriteNTypes(VPP_DATA_POS_BACKLIGHT_START, 1, &rw_val, offset);
 }
 
 int SSMAction::SSMSaveAutoAspect(int offset, int rw_val) {

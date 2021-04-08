@@ -91,6 +91,9 @@
 #define CFG_HDCP_SWITCHER_DEF                   "hdmi.hdcp.switcher.def"
 #define CFG_COLOR_RANGE_MODE_DEF                "hdmi.color.range.mode.def"
 #define CFG_HDMI_OUT_WITH_FBC_ENABLE            "hdmi.out.with.fbc.en"
+#define CGF_HDMI_AUTOSWITCH_ALLM_EN             "hdmi.autoswitch.allm.en"
+#define CGF_HDMI_AUTOSWITCH_ITCONTENT_EN        "hdmi.autoswitch.itcontent.en"
+#define CGF_HDMI_AUTOSWITCH_DVI_EN              "hdmi.autoswitch.dvi.en"
 
 static const int MAX_CONFIG_FILE_LINE_LEN = 512;
 

@@ -410,7 +410,7 @@ char* PqService::GetCmd(pq_moudle_param_t param)
     }
 
     if ((moudleId != PQ_GET_SOURCE_CHANNEL)
-        || (moudleId != PQ_FACTORY_GET_OVERSCAN)) {
+        && (moudleId != PQ_FACTORY_GET_OVERSCAN)) {
         sprintf(mRetBuf, "%d", ret);
     }
 
