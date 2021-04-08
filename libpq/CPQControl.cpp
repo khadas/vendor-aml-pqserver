@@ -5534,6 +5534,21 @@ int CPQControl::ResetPQModeSetting(tv_source_input_t source_input, vpp_picture_m
     vpp_pq_para_t pq_para;
     memset(&pq_para, 0, sizeof(vpp_pq_para_t));
 
+    //2.1 compatible pq.db before picturemode5
+    int config_val = 0;
+    config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_COLORTEMPTUREMODE_DEF, VPP_COLOR_TEMPERATURE_MODE_STANDARD);
+    pq_para.color_temperature = config_val;
+
+    config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_DNLPLEVEL_DEF, DYNAMIC_CONTRAST_MID);
+    pq_para.dynamiccontrast = config_val;
+
+    config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_LOCALCONTRASTMODE_DEF, 2);
+    pq_para.localcontrast = config_val;
+
+    config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_COLORBASEMODE_DEF, VPP_COLOR_DEMO_MODE_ALLON);
+    pq_para.cm_level = config_val;
+
+    //2.2 read param from db
     if (mbCpqCfg_seperate_db_enable) {
         if (CheckPQModeTableInDb()) {
             ret = mPQdb->PQ_GetPQModeParams(SourceInputInfo, pq_mode, &pq_para);
@@ -5544,6 +5559,7 @@ int CPQControl::ResetPQModeSetting(tv_source_input_t source_input, vpp_picture_m
         ret = mPQdb->PQ_GetPQModeParams(SourceInputInfo, pq_mode, &pq_para);
     }
 
+    //2.3 save param to ssm_data
     if (ret == 0) {
         LOGD("%s: brightness=%d, contrast=%d, saturation=%d, hue=%d, sharpness=%d, nr=%d\n",
             __FUNCTION__,
@@ -5624,6 +5640,9 @@ void CPQControl::resetAllUserSettingParam()
         config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_DNLPGAIN_DEF, 0);
         mSSMAction->SSMSaveDnlpGainValue(i, config_val);
     }
+
+    config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_COLORDEMOMODE_DEF, VPP_COLOR_DEMO_MODE_ALLON);
+    mSSMAction->SSMSaveColorDemoMode(config_val);
 
     config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_RGBGAIN_R_DEF, 0);
     mSSMAction->SSMSaveRGBGainRStart(0, config_val);
