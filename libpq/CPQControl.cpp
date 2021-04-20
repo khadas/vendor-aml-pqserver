@@ -3852,8 +3852,10 @@ int CPQControl::SetColorGamutMode(vpp_colorgamut_mode_t value, int is_save)
     int ret =0;
     ret = Cpq_SetColorGamutMode(value, mCurentSourceInputInfo);
 
-    if ((ret == 0) && (is_save == 1)) {
+    if ((ret >= 0) && (is_save == 1)) {
         ret = SaveColorGamutMode(value);
+    } else {
+        LOGE("Cpq_SetColorGamutMode failed:%d\n", ret);
     }
 
     if (ret < 0) {
