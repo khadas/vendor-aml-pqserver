@@ -1024,6 +1024,101 @@ int CPQControl::Cpq_SetDIModuleParam(source_input_param_t source_input_param)
     return ret;
 }
 
+bool CPQControl::isSDRMode(vpp_picture_mode_t pq_mode)
+{
+    bool ret = false;
+    if (pq_mode >= VPP_PICTURE_MODE_STANDARD &&
+        pq_mode < VPP_PICTURE_MODE_HDR10_STANDARD) {
+        ret = true;
+    }
+
+    return ret;
+}
+
+bool CPQControl::isHDR10Mode(vpp_picture_mode_t pq_mode)
+{
+    bool ret = false;
+    if (pq_mode >= VPP_PICTURE_MODE_HDR10_STANDARD &&
+        pq_mode < VPP_PICTURE_MODE_HDR10PLUS_STANDARD) {
+        ret = true;
+    }
+
+    return ret;
+}
+
+bool CPQControl::isHDR10PlusMode(vpp_picture_mode_t pq_mode)
+{
+    bool ret = false;
+    if (pq_mode >= VPP_PICTURE_MODE_HDR10PLUS_STANDARD &&
+        pq_mode < VPP_PICTURE_MODE_HLG_STANDARD) {
+        ret = true;
+    }
+
+    return ret;
+}
+
+bool CPQControl::isHLGMode(vpp_picture_mode_t pq_mode)
+{
+    bool ret = false;
+    if (pq_mode >= VPP_PICTURE_MODE_HLG_STANDARD &&
+        pq_mode < VPP_PICTURE_MODE_DV_BRIGHT) {
+        ret = true;
+    }
+
+    return ret;
+}
+
+bool CPQControl::isDVMode(vpp_picture_mode_t pq_mode)
+{
+    bool ret = false;
+    if (pq_mode >= VPP_PICTURE_MODE_DV_BRIGHT &&
+        pq_mode < VPP_PICTURE_MODE_MAX) {
+        ret = true;
+    }
+
+    return ret;
+}
+
+bool CPQControl::isSupportValidPictureMode(tv_source_input_t source_input, vpp_picture_mode_t pq_mode)
+{
+    bool ret = false;
+    //1. skip not include case to save time
+    //1.1 skip not use source case
+    if ((source_input == SOURCE_YPBPR1)
+        || (source_input == SOURCE_YPBPR2)
+        || (source_input == SOURCE_VGA)
+        || (source_input == SOURCE_SVIDEO)
+        || (source_input == SOURCE_IPTV)
+        || (source_input == SOURCE_DUMMY)
+        || (source_input == SOURCE_SPDIF)
+        || (source_input == SOURCE_ADTV)) {
+        ret = false;
+    }
+    //1.2 support case
+    if ((((source_input == SOURCE_TV)
+        || (source_input == SOURCE_AV1)
+        || (source_input == SOURCE_AV2))
+        && (pq_mode >= VPP_PICTURE_MODE_STANDARD && pq_mode <= VPP_PICTURE_MODE_SPORTS))
+        ||
+        (((source_input == SOURCE_HDMI1)
+        || (source_input == SOURCE_HDMI2)
+        || (source_input == SOURCE_HDMI3)
+        || (source_input == SOURCE_HDMI4)
+        || (source_input == SOURCE_MPEG)
+        || (source_input == SOURCE_DTV))
+        && ((pq_mode >= VPP_PICTURE_MODE_STANDARD && pq_mode <= VPP_PICTURE_MODE_SPORTS)
+        ||  (pq_mode >= VPP_PICTURE_MODE_HDR10_STANDARD && pq_mode <= VPP_PICTURE_MODE_HDR10_DV_DARK)
+        ||  (pq_mode >= VPP_PICTURE_MODE_HDR10PLUS_STANDARD && pq_mode <= VPP_PICTURE_MODE_HDR10PLUS_SPORT)
+        ||  (pq_mode >= VPP_PICTURE_MODE_HLG_STANDARD && pq_mode <= VPP_PICTURE_MODE_HLG_DV_DARK)
+        ||  (pq_mode >= VPP_PICTURE_MODE_DV_BRIGHT && pq_mode <= VPP_PICTURE_MODE_DV_USER)))) {
+        ret = true;
+    }
+
+    //1.3 project can opimize for save time when checkout project branch
+    // to do
+    return ret;
+}
+
 int CPQControl::SetPQMode(int pq_mode, int is_save)
 {
     LOGD("%s, source: %d, pq_mode: %d\n", __FUNCTION__, mCurentSourceInputInfo.source_input, pq_mode);
@@ -1079,35 +1174,15 @@ int CPQControl::SavePQMode(int pq_mode)
     }
 
     //save sdr/hdr10/hdr10plus/hlg/dv pqmode except game and pc mode
-    if ((pq_mode == VPP_PICTURE_MODE_STANDARD)
-        || (pq_mode == VPP_PICTURE_MODE_BRIGHT)
-        || (pq_mode == VPP_PICTURE_MODE_SOFT)
-        || (pq_mode == VPP_PICTURE_MODE_USER)
-        || (pq_mode == VPP_PICTURE_MODE_MOVIE)
-        || (pq_mode == VPP_PICTURE_MODE_COLORFUL)
-        || (pq_mode == VPP_PICTURE_MODE_MONITOR)
-        || (pq_mode == VPP_PICTURE_MODE_GAME)
-        || (pq_mode == VPP_PICTURE_MODE_SPORTS)) {
+    if (isSDRMode((vpp_picture_mode_t)pq_mode)) {
         ret = SaveSDRPQMode(pq_mode);
-    } else if ((pq_mode == VPP_PICTURE_MODE_HDR10_VIVID)
-        || (pq_mode == VPP_PICTURE_MODE_HDR10_STANDARD)
-        || (pq_mode == VPP_PICTURE_MODE_HDR10_MOVIE)
-        || (pq_mode == VPP_PICTURE_MODE_HDR10_SPORT)
-        || (pq_mode == VPP_PICTURE_MODE_HDR10_GAME)) {
+    } else if (isHDR10Mode((vpp_picture_mode_t)pq_mode)) {
         ret = SaveHDR10PQMode(pq_mode);
-    } else if ((pq_mode == VPP_PICTURE_MODE_HDR10PLUS_VIVID)
-        || (pq_mode == VPP_PICTURE_MODE_HDR10PLUS_STANDARD)
-        || (pq_mode == VPP_PICTURE_MODE_HDR10PLUS_MOVIE)
-        || (pq_mode == VPP_PICTURE_MODE_HDR10PLUS_SPORT)) {
+    } else if (isHDR10PlusMode((vpp_picture_mode_t)pq_mode)) {
         ret = SaveHDR10PLUSPQMode(pq_mode);
-    } else if ((pq_mode == VPP_PICTURE_MODE_HLG_VIVID)
-        || (pq_mode == VPP_PICTURE_MODE_HLG_STANDARD)
-        || (pq_mode == VPP_PICTURE_MODE_HLG_MOVIE)
-        || (pq_mode == VPP_PICTURE_MODE_HLG_SPORT)) {
+    } else if (isHLGMode((vpp_picture_mode_t)pq_mode)) {
         ret = SaveHLGPQMode(pq_mode);
-    } else if ((pq_mode == VPP_PICTURE_MODE_DV_BRIGHT)
-        || (pq_mode == VPP_PICTURE_MODE_DV_DARK)
-        || (pq_mode == VPP_PICTURE_MODE_DV_USER)) {
+    } else if (isDVMode((vpp_picture_mode_t)pq_mode)) {
         ret = SaveDVPQMode(pq_mode);
     }
 
@@ -1245,15 +1320,7 @@ int CPQControl::GetSDRPQMode(void)
 {
     int mode = VPP_PICTURE_MODE_STANDARD;
     mSSMAction->SSMReadSDRPictureMode(mCurentSourceInputInfo.source_input, &mode);
-    if ((mode != VPP_PICTURE_MODE_STANDARD)
-        && (mode != VPP_PICTURE_MODE_BRIGHT)
-        && (mode != VPP_PICTURE_MODE_SOFT)
-        && (mode != VPP_PICTURE_MODE_USER)
-        && (mode != VPP_PICTURE_MODE_MOVIE)
-        && (mode != VPP_PICTURE_MODE_COLORFUL)
-        && (mode != VPP_PICTURE_MODE_MONITOR)
-        && (mode != VPP_PICTURE_MODE_GAME)
-        && (mode != VPP_PICTURE_MODE_SPORTS)) {
+    if (!isSDRMode((vpp_picture_mode_t)mode)) {
         mode = VPP_PICTURE_MODE_STANDARD;
     }
 
@@ -1278,11 +1345,7 @@ int CPQControl::GetHDR10PQMode(void)
 {
     int mode = VPP_PICTURE_MODE_HDR10_STANDARD;
     mSSMAction->SSMReadHDR10PictureMode(mCurentSourceInputInfo.source_input, &mode);
-    if ((mode != VPP_PICTURE_MODE_HDR10_VIVID)
-        && (mode != VPP_PICTURE_MODE_HDR10_STANDARD)
-        && (mode != VPP_PICTURE_MODE_HDR10_MOVIE)
-        && (mode != VPP_PICTURE_MODE_HDR10_SPORT)
-        && (mode != VPP_PICTURE_MODE_HDR10_GAME)) {
+    if (!isHDR10Mode((vpp_picture_mode_t)mode)) {
         mode = VPP_PICTURE_MODE_HDR10_STANDARD;
     }
 
@@ -1307,10 +1370,7 @@ int CPQControl::GetHDR10PLUSPQMode(void)
 {
     int mode = VPP_PICTURE_MODE_HDR10PLUS_STANDARD;
     mSSMAction->SSMReadHDR10PLUSPictureMode(mCurentSourceInputInfo.source_input, &mode);
-    if ((mode != VPP_PICTURE_MODE_HDR10PLUS_VIVID)
-        && (mode != VPP_PICTURE_MODE_HDR10PLUS_STANDARD)
-        && (mode != VPP_PICTURE_MODE_HDR10PLUS_MOVIE)
-        && (mode != VPP_PICTURE_MODE_HDR10PLUS_SPORT)) {
+    if (!isHDR10PlusMode((vpp_picture_mode_t)mode)) {
         mode = VPP_PICTURE_MODE_HDR10PLUS_STANDARD;
     }
 
@@ -1335,10 +1395,7 @@ int CPQControl::GetHLGPQMode(void)
 {
     int mode = VPP_PICTURE_MODE_HLG_STANDARD;
     mSSMAction->SSMReadHLGPictureMode(mCurentSourceInputInfo.source_input, &mode);
-    if ((mode != VPP_PICTURE_MODE_HLG_VIVID)
-        && (mode != VPP_PICTURE_MODE_HLG_STANDARD)
-        && (mode != VPP_PICTURE_MODE_HLG_MOVIE)
-        && (mode != VPP_PICTURE_MODE_HLG_SPORT)) {
+    if (!isHLGMode((vpp_picture_mode_t)mode)) {
         mode = VPP_PICTURE_MODE_HLG_STANDARD;
     }
 
@@ -1363,9 +1420,7 @@ int CPQControl::GetDVPQMode(void)
 {
     int mode = VPP_PICTURE_MODE_DV_BRIGHT;
     mSSMAction->SSMReadDVPictureMode(mCurentSourceInputInfo.source_input, &mode);
-    if ((mode != VPP_PICTURE_MODE_DV_BRIGHT)
-        && (mode != VPP_PICTURE_MODE_DV_DARK)
-        && (mode != VPP_PICTURE_MODE_DV_USER)) {
+    if (!isDVMode((vpp_picture_mode_t)mode)) {
         mode = VPP_PICTURE_MODE_DV_BRIGHT;
     }
 
@@ -5621,37 +5676,7 @@ int CPQControl::ResetPQModeSetting(tv_source_input_t source_input, vpp_picture_m
     hdr_type_t savehdrtype = HDR_TYPE_SDR;
 
     //1. skip not include case to save time
-    //1.1 skip not use source case
-    if ((source_input == SOURCE_YPBPR1)
-        || (source_input == SOURCE_YPBPR2)
-        || (source_input == SOURCE_VGA)
-        || (source_input == SOURCE_SVIDEO)
-        || (source_input == SOURCE_IPTV)
-        || (source_input == SOURCE_DUMMY)
-        || (source_input == SOURCE_SPDIF)
-        || (source_input == SOURCE_ADTV)) {
-        return ret;
-    }
-    //1.2 skip not use souce and pq mode case
-    if (((source_input == SOURCE_TV)
-        || (source_input == SOURCE_AV1)
-        || (source_input == SOURCE_AV2))
-        && ((pq_mode == VPP_PICTURE_MODE_HDR10_VIVID)
-        || (pq_mode == VPP_PICTURE_MODE_HDR10_STANDARD)
-        || (pq_mode == VPP_PICTURE_MODE_HDR10_MOVIE)
-        || (pq_mode == VPP_PICTURE_MODE_HDR10_SPORT)
-        || (pq_mode == VPP_PICTURE_MODE_HDR10_GAME)
-        || (pq_mode == VPP_PICTURE_MODE_HDR10PLUS_VIVID)
-        || (pq_mode == VPP_PICTURE_MODE_HDR10PLUS_STANDARD)
-        || (pq_mode == VPP_PICTURE_MODE_HDR10PLUS_MOVIE)
-        || (pq_mode == VPP_PICTURE_MODE_HDR10PLUS_SPORT)
-        || (pq_mode == VPP_PICTURE_MODE_HLG_VIVID)
-        || (pq_mode == VPP_PICTURE_MODE_HLG_STANDARD)
-        || (pq_mode == VPP_PICTURE_MODE_HLG_MOVIE)
-        || (pq_mode == VPP_PICTURE_MODE_HLG_SPORT)
-        || (pq_mode == VPP_PICTURE_MODE_DV_BRIGHT)
-        || (pq_mode == VPP_PICTURE_MODE_DV_DARK)
-        || (pq_mode == VPP_PICTURE_MODE_DV_USER))) {
+    if (!isSupportValidPictureMode(source_input, pq_mode)) {
         return ret;
     }
 
@@ -5661,37 +5686,25 @@ int CPQControl::ResetPQModeSetting(tv_source_input_t source_input, vpp_picture_m
         savehdrtype = mpOverScandb->mHdrType;
     }
 
-    if ((pq_mode == VPP_PICTURE_MODE_HDR10_VIVID)
-        || (pq_mode == VPP_PICTURE_MODE_HDR10_STANDARD)
-        || (pq_mode == VPP_PICTURE_MODE_HDR10_MOVIE)
-        || (pq_mode == VPP_PICTURE_MODE_HDR10_SPORT)
-        || (pq_mode == VPP_PICTURE_MODE_HDR10_GAME)) {
+    if (isHDR10Mode(pq_mode)) {
         SourceInputInfo.sig_fmt = TVIN_SIG_FMT_HDMI_HDR10;
         mPQdb->mHdrType         = HDR_TYPE_HDR10;
         if (mbCpqCfg_seperate_db_enable) {
             mpOverScandb->mHdrType  = HDR_TYPE_HDR10;
         }
-    } else if ((pq_mode == VPP_PICTURE_MODE_HDR10PLUS_VIVID)
-        || (pq_mode == VPP_PICTURE_MODE_HDR10PLUS_STANDARD)
-        || (pq_mode == VPP_PICTURE_MODE_HDR10PLUS_MOVIE)
-        || (pq_mode == VPP_PICTURE_MODE_HDR10PLUS_SPORT)) {
+    } else if (isHDR10PlusMode(pq_mode)) {
         SourceInputInfo.sig_fmt = TVIN_SIG_FMT_HDMI_HDR10PLUS;
         mPQdb->mHdrType         = HDR_TYPE_HDR10PLUS;
         if (mbCpqCfg_seperate_db_enable) {
             mpOverScandb->mHdrType  = HDR_TYPE_HDR10PLUS;
         }
-    } else if ((pq_mode == VPP_PICTURE_MODE_HLG_VIVID)
-        || (pq_mode == VPP_PICTURE_MODE_HLG_STANDARD)
-        || (pq_mode == VPP_PICTURE_MODE_HLG_MOVIE)
-        || (pq_mode == VPP_PICTURE_MODE_HLG_SPORT)) {
+    } else if (isHLGMode(pq_mode)) {
         SourceInputInfo.sig_fmt = TVIN_SIG_FMT_HDMI_HLG;
         mPQdb->mHdrType         = HDR_TYPE_HLG;
         if (mbCpqCfg_seperate_db_enable) {
             mpOverScandb->mHdrType  = HDR_TYPE_HLG;
         }
-    } else if ((pq_mode == VPP_PICTURE_MODE_DV_BRIGHT)
-        || (pq_mode == VPP_PICTURE_MODE_DV_DARK)
-        || (pq_mode == VPP_PICTURE_MODE_DV_USER)) {
+    } else if (isDVMode(pq_mode)) {
         SourceInputInfo.sig_fmt = TVIN_SIG_FMT_HDMI_DOLBY;
         mPQdb->mHdrType         = HDR_TYPE_DOVI;
         if (mbCpqCfg_seperate_db_enable) {

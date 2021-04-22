@@ -410,6 +410,12 @@ private:
     int Cpq_SetLocalContrastMode(local_contrast_mode_t mode);
     int Cpq_GetInputVideoFrameHeight(tv_source_input_t source_input);
     output_type_t CheckOutPutMode(tv_source_input_t source_input);
+    bool isSDRMode(vpp_picture_mode_t pq_mode);
+    bool isHDR10Mode(vpp_picture_mode_t pq_mode);
+    bool isHDR10PlusMode(vpp_picture_mode_t pq_mode);
+    bool isHLGMode(vpp_picture_mode_t pq_mode);
+    bool isDVMode(vpp_picture_mode_t pq_mode);
+    bool isSupportValidPictureMode(tv_source_input_t source_input, vpp_picture_mode_t pq_mode);
     bool CheckPQModeTableInDb(void);
     bool isPqDatabaseMachChip();
     int Cpq_SetVadjEnableStatus(int isvadj1Enable, int isvadj2Enable);

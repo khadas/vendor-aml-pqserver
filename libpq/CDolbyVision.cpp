@@ -156,7 +156,6 @@ int CDolbyVision::SetDolbyPQMode(dolby_pq_mode_t mode) {
     }
 
     return ret;
-
 }
 
 dolby_pq_mode_t CDolbyVision::GetDolbyPQMode(void) {
