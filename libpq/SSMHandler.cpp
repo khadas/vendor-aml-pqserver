@@ -77,13 +77,9 @@ SSM_status_t SSMHandler::SSMSection1Verify()
 
     if (ssize != sizeof (SSMHeader_section1_t) ||
         mSSMHeader_section1.magic != gSSMHeader_section1.magic ||
-        mSSMHeader_section1.count != gSSMHeader_section1.count) {
-        ret = SSM_HEADER_INVALID;
-    }
-
-    if (ret != SSM_HEADER_INVALID &&
+        mSSMHeader_section1.count != gSSMHeader_section1.count ||
         mSSMHeader_section1.version != gSSMHeader_section1.version) {
-        ret = SSM_HEADER_STRUCT_CHANGE;
+        ret = SSM_HEADER_INVALID;
     }
 
     return ret;

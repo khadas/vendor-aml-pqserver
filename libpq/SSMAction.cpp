@@ -67,16 +67,18 @@ void SSMAction::init(char *settingDataPath, char *whiteBalanceDataPath)
     mSSMHandlerFilePath = filePath2;
     LOGD("%s: mSSMHandlerFilePath:%s\n", __FUNCTION__, mSSMHandlerFilePath);
 
-    //check ssm file exist!
-    bool FileExist = isFileExist(mSSMDataFilePath);
-    //open SSM handler!
+    //check file exist or not
+    bool ssm_data_FileExist    = isFileExist(mSSMDataFilePath);
+    bool ssm_handler_FileExist = isFileExist(mSSMHandlerFilePath);
+    bool cri_data_FileExist    = isFileExist(mWhiteBalanceFilePath);
+    //open SSM handler
     mSSMHandler = SSMHandler::GetSingletonInstance(mSSMHandlerFilePath);
-    //open ssm file!
-    if (!FileExist) {
-        LOGD("%s, %s don't exist,create and open!\n", __FUNCTION__, mSSMDataFilePath);
+    //open ssm file
+    if (!ssm_data_FileExist) {
+        LOGD("%s, %s don't exist,create and open\n", __FUNCTION__, mSSMDataFilePath);
         m_dev_fd = open(mSSMDataFilePath, O_RDWR | O_SYNC | O_CREAT, S_IRUSR | S_IWUSR);
     } else {
-        LOGD("open %s file!\n",mSSMDataFilePath);
+        LOGD("open %s file\n",mSSMDataFilePath);
         m_dev_fd = open(mSSMDataFilePath, O_RDWR | O_SYNC | O_CREAT, S_IRUSR | S_IWUSR);
     }
 
@@ -96,16 +98,10 @@ void SSMAction::init(char *settingDataPath, char *whiteBalanceDataPath)
                 mSSMHandler->SSMRecreateHeader();
                 RestoreDeviceMarkValues();
             } else {
-                LOGE("%s: SSMActionObserver is NULL!\n", __FUNCTION__);
-            }
-        } else if (SSM_status == SSM_HEADER_STRUCT_CHANGE) {
-            if (mpObserver != NULL) {
-                mpObserver->resetAllUserSettingParam();
-                //SSMRestoreDefault(0, true);
-                RestoreDeviceMarkValues();
-            } else {
                 LOGE("%s: SSMActionObserver is NULL\n", __FUNCTION__);
             }
+        } else {
+            LOGD("%s, Verify ssm_data and ssmhandler is ok\n", __FUNCTION__);
         }
     }
 }
@@ -117,7 +113,7 @@ bool SSMAction::isFileExist(const char *file_name)
 
     ret = stat(file_name, &tmp_st);
     if (ret != 0 ) {
-       LOGE("%s, %s don't exist!\n", __FUNCTION__, file_name);
+       LOGE("%s, %s don't exist\n", __FUNCTION__, file_name);
        return false;
     } else {
        return true;
@@ -173,14 +169,14 @@ int SSMAction::DeviceMarkCheck()
     for (i = 0; i < 3; i++) {
         tmp_ch = 0;
         if (SSMReadNTypes(mark_offset[i], 1, &tmp_ch, 0) < 0) {
-            LOGE("%s, DeviceMarkCheck Read Mark failed!!!\n", __FUNCTION__);
+            LOGE("%s, Read Mark failed\n", __FUNCTION__);
             break;
         }
 
         if ((unsigned char)tmp_ch != mark_values[i]) {
             failed_count += 1;
             LOGE(
-                "%s, DeviceMarkCheck Mark[%d]'s offset = %d, Mark[%d]'s Value = %d, read value = %d.\n",
+                "%s, Mark[%d]'s offset = %d, Mark[%d]'s Value = %d, read value = %d\n",
                 __FUNCTION__, i, mark_offset[i], i, mark_values[i], tmp_ch);
         }
     }
