@@ -191,9 +191,11 @@ public:
     int SaveHLGPQModeAllSrc(int pq_mode);
     int GetDVPQMode(void);
     int SaveDVPQMode(int pq_mode);
+    int Cpq_SetVppPCMode(game_pc_mode_t pcStatus);
+    int Cpq_SetVdinPCMode(game_pc_mode_t pcStatus);
     int Cpq_SetPCMode(game_pc_mode_t pcStatus);
-    int Cpq_setGameMode(game_pc_mode_t gameStatus, game_pc_mode_t pcStatus);
-
+    int Cpq_SetVdinGameMode(game_pc_mode_t gameStatus);
+    int Cpq_SetGameMode(game_pc_mode_t gameStatus);
     int Cpq_SetPQMode(vpp_picture_mode_t pq_mode, source_input_param_t source_input_param);
     int SetPQParams(source_input_param_t source_input_param, vpp_picture_mode_t pq_mode, vpp_pq_para_t pq_para);
     int GetPQParams(source_input_param_t source_input_param, vpp_picture_mode_t pq_mode, vpp_pq_para_t *pq_para);
@@ -511,6 +513,7 @@ private:
     hdr_type_t mCurrentHdrType = HDR_TYPE_NONE;
     tvin_parm_t mCurrentSignalInfo;
     tvin_inputparam_t mCurrentTvinInfo;
+    game_pc_mode_t mGamemode = MODE_OFF;
     bool mbDtvKitEnable;
     bool mbDatabaseMatchChipStatus;
     bool mbVideoIsPlaying = false;//video don't playing

@@ -796,6 +796,7 @@ int CPQControl::LoadPQSettings()
         //save new mode for pq setting
         SavePQMode(new_mode);
 
+        //load pq setting
         ret |= Cpq_SetPQMode(new_mode, mCurentSourceInputInfo);
     }
 
@@ -1374,7 +1375,7 @@ int CPQControl::SaveLastPQMode(int pq_mode)
     return ret;
 }
 
-int CPQControl::Cpq_SetPCMode(game_pc_mode_t pcStatus)
+int CPQControl::Cpq_SetVppPCMode(game_pc_mode_t pcStatus)
 {
     char val[64] = {0};
 
@@ -1390,26 +1391,42 @@ int CPQControl::Cpq_SetPCMode(game_pc_mode_t pcStatus)
     return pqWriteSys(AMVECM_PC_MODE_PATH, val);
 }
 
-int CPQControl::Cpq_setGameMode(game_pc_mode_t gameStatus, game_pc_mode_t pcStatus)
+int CPQControl::Cpq_SetVdinPCMode(game_pc_mode_t pcStatus)
 {
-    LOGD("%s: gameStatus:%d, pcStatus:%d\n", __FUNCTION__, gameStatus, pcStatus);
+    mpVdin->Tvin_SetPCMode(pcStatus);
+}
+
+int CPQControl::Cpq_SetPCMode(game_pc_mode_t pcStatus)
+{
+    LOGD("%s: pcStatus:%d\n", __FUNCTION__, pcStatus);
 
     int ret = 0;
 
     //pc mode
-    if (pcStatus == MODE_ON) {
-        Cpq_SetPCMode(MODE_ON);
-        mpVdin->Tvin_SetPCMode(MODE_ON);
-    } else if (pcStatus == MODE_OFF) {
-        Cpq_SetPCMode(MODE_OFF);
-        mpVdin->Tvin_SetPCMode(MODE_OFF);
-    } else {
-        LOGD("%s: not about pc mode\n", __FUNCTION__);
+    if ((pcStatus == MODE_ON)
+        || (pcStatus == MODE_OFF)) {
+        Cpq_SetVdinPCMode(pcStatus);
+        Cpq_SetVppPCMode(pcStatus);
     }
 
+    return ret;
+}
+
+int CPQControl::Cpq_SetVdinGameMode(game_pc_mode_t gameStatus)
+{
+    mpVdin->Tvin_SetGameMode(gameStatus);
+}
+
+int CPQControl::Cpq_SetGameMode(game_pc_mode_t gameStatus)
+{
+    LOGD("%s: gameStatus:%d\n", __FUNCTION__, gameStatus);
+
+    int ret = 0;
+
     //game mode
-    if (gameStatus != MODE_STABLE) {
-        mpVdin->Tvin_SetGameMode(gameStatus);
+    if (gameStatus != mGamemode) {
+        mGamemode = gameStatus;
+        Cpq_SetVdinGameMode(gameStatus);
     }
 
     return ret;
@@ -1427,33 +1444,43 @@ int CPQControl::Cpq_SetPQMode(vpp_picture_mode_t pq_mode, source_input_param_t s
         (mCurentSourceInputInfo.source_input == SOURCE_HDMI4)) {//HDMI source;
         int last_pq_mode = GetLastPQMode();
         if (last_pq_mode == VPP_PICTURE_MODE_GAME) {
-            if (pq_mode == VPP_PICTURE_MODE_GAME) {
-                Cpq_setGameMode(MODE_ON, MODE_OFF);//game mode on and monitor mode off;
-            } else if (pq_mode == VPP_PICTURE_MODE_MONITOR) {
-                Cpq_setGameMode(MODE_OFF, MODE_ON);//game mode off and monitor mode on;
-            } else {
-                Cpq_setGameMode(MODE_OFF, MODE_OFF);//game mode off and monitor mode off;
+            if (pq_mode == VPP_PICTURE_MODE_GAME) {//game mode on and monitor mode off;
+                Cpq_SetGameMode(MODE_ON);
+                Cpq_SetPCMode(MODE_OFF);
+            } else if (pq_mode == VPP_PICTURE_MODE_MONITOR) {//game mode off and monitor mode on;
+                Cpq_SetGameMode(MODE_OFF);
+                Cpq_SetPCMode(MODE_ON);
+            } else {//game mode off and monitor mode off;
+                Cpq_SetGameMode(MODE_OFF);
+                Cpq_SetPCMode(MODE_OFF);
             }
         } else if (last_pq_mode == VPP_PICTURE_MODE_MONITOR) {
-            if (pq_mode == VPP_PICTURE_MODE_MONITOR) {
-                Cpq_setGameMode(MODE_OFF, MODE_ON);//game mode off and monitor mode on;
-            } else if (pq_mode == VPP_PICTURE_MODE_GAME) {
-                Cpq_setGameMode(MODE_ON, MODE_OFF);//game mode on and monitor mode off;
-            } else {
-                Cpq_setGameMode(MODE_OFF, MODE_OFF);//game mode off and monitor mode off;
+            if (pq_mode == VPP_PICTURE_MODE_MONITOR) {//game mode off and monitor mode on;
+                Cpq_SetGameMode(MODE_OFF);
+                Cpq_SetPCMode(MODE_ON);
+            } else if (pq_mode == VPP_PICTURE_MODE_GAME) {//game mode on and monitor mode off;
+                Cpq_SetGameMode(MODE_ON);
+                Cpq_SetPCMode(MODE_OFF);
+            } else {//game mode off and monitor mode off;
+                Cpq_SetGameMode(MODE_OFF);
+                Cpq_SetPCMode(MODE_OFF);
             }
         } else {
-            if (pq_mode == VPP_PICTURE_MODE_GAME) {
-                ret = Cpq_setGameMode(MODE_ON, MODE_OFF);//game mode on and monitor mode off;
-            } else if (pq_mode == VPP_PICTURE_MODE_MONITOR) {
-                ret = Cpq_setGameMode(MODE_OFF, MODE_ON);//game mode off and monitor mode on;
-            } else {
-                Cpq_setGameMode(MODE_OFF, MODE_OFF);//game mode off and monitor mode off;
+            if (pq_mode == VPP_PICTURE_MODE_GAME) {//game mode on and monitor mode off;
+                Cpq_SetGameMode(MODE_ON);
+                Cpq_SetPCMode(MODE_OFF);
+            } else if (pq_mode == VPP_PICTURE_MODE_MONITOR) {//game mode off and monitor mode on;
+                Cpq_SetGameMode(MODE_OFF);
+                Cpq_SetPCMode(MODE_ON);
+            } else {//game mode off and monitor mode off;
+                Cpq_SetGameMode(MODE_OFF);
+                Cpq_SetPCMode(MODE_OFF);
             }
         }
-    } else {//other source;
+    } else {//other source, game mode off and monitor mode off;
         if (mInitialized) {
-            Cpq_setGameMode(MODE_OFF, MODE_OFF);
+            Cpq_SetGameMode(MODE_OFF);
+            Cpq_SetPCMode(MODE_OFF);
         }
     }
 
