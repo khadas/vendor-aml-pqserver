@@ -491,6 +491,14 @@ typedef enum tv_source_input_e {
     SOURCE_MAX,
 } tv_source_input_t;
 
+typedef enum vpp_picture_mode_offset_e {
+   VPP_PICTURE_MODE_SDR_OFFSET       = 0,
+   VPP_PICTURE_MODE_HDR10_OFFSET     = 20,
+   VPP_PICTURE_MODE_HDR10PLUS_OFFSET = 40,
+   VPP_PICTURE_MODE_HLG_OFFSET       = 60,
+   VPP_PICTURE_MODE_DV_OFFSET        = 80,
+} vpp_picture_mode_offset_t;
+
 typedef enum vpp_picture_mode_e {
     VPP_PICTURE_MODE_STANDARD = 0,
     VPP_PICTURE_MODE_BRIGHT,

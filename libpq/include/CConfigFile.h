@@ -26,7 +26,10 @@
 
 #define CFG_BIG_SMALL_DB_ENABLE                 "pq.BigSmallDb.en"
 #define CFG_ALL_PQ_MOUDLE_ENABLE                "pq.AllPQMoudle.en"
-#define CFG_PQ_PARAM_CHECK_SOURCE_ENABLE        "pq.ParamCheckSource.en"
+#define CFG_PQ_MODE_CHECK_SOURCE_ENABLE         "pq.pqmodeCheckSource.en"
+#define CFG_PQ_MODE_CHECK_HDR_ENABLE            "pq.pqmodeCheckHDRType.en"
+#define CFG_PQ_PARAM_CHECK_SOURCE_ENABLE        "pq.pqparamCheckSource.en"
+#define CFG_PQ_PARAM_CHECK_HDR_ENABLE           "pq.pqparamCheckHDRType.en"
 #define CFG_TVHAL_ENABLE                        "pq.tvhal.en"
 //di moudle config
 #define CFG_DI_ENABLE                           "pq.di.en"
