@@ -93,6 +93,7 @@ void SSMAction::init(char *settingDataPath, char *whiteBalanceDataPath)
         LOGD("%s, Verify SSMHeader status= %d\n", __FUNCTION__, SSM_status);
         if (DeviceMarkCheck() < 0 || SSM_status == SSM_HEADER_INVALID) {
             if (mpObserver != NULL) {
+                EraseAllData();
                 mpObserver->resetAllUserSettingParam();
                 //SSMRestoreDefault(0, true);
                 mSSMHandler->SSMRecreateHeader();
