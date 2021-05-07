@@ -664,6 +664,49 @@ int CPQdb::PQ_ResetAllColorTemperatureParams(void)
     return rval;
 }
 
+int CPQdb::PQ_GetLCDHDRInfoParams(source_input_param_t source_input_param, lcd_optical_info_t *newParams)
+{
+    CSqlite::Cursor c;
+    char sqlmaster[256];
+    int rval = -1;
+
+    memset(newParams, 0, sizeof(lcd_optical_info_t));
+
+    {// for param
+        getSqlParams(__FUNCTION__, sqlmaster, "select Value from %s;", PQ_DB_LCD_HDRINFO_TABLE_NAME);
+        rval = this->select(sqlmaster, c);
+
+        if (c.moveToFirst()) {
+            newParams->hdr_support    = c.getInt(0);
+            newParams->features       = c.getInt(1);
+            newParams->primaries_r_x  = c.getInt(2);
+            newParams->primaries_r_y  = c.getInt(3);
+            newParams->primaries_g_x  = c.getInt(4);
+            newParams->primaries_g_y  = c.getInt(5);
+            newParams->primaries_b_x  = c.getInt(6);
+            newParams->primaries_b_y  = c.getInt(7);
+            newParams->white_point_x  = c.getInt(8);
+            newParams->white_point_y  = c.getInt(9);
+            newParams->luma_max       = c.getInt(10);
+            newParams->luma_min       = c.getInt(11);
+            newParams->luma_avg       = c.getInt(12);
+        }else {
+            LOGE("%s, read lcd hdr info fail\n", __FUNCTION__);
+        }
+
+        LOGD ("%s - lcd hdr info is hdr_support:%d features:%d"
+            "primaries_r_x:%d primaries_r_y:%d primaries_g_x:%d primaries_g_y:%d"
+            "primaries_b_x:%d primaries_b_y:%d white_point_x:%d white_point_y:%d"
+            "luma_max:%d luma_min:%d luma_avg:%d\n",
+            __FUNCTION__, newParams->hdr_support, newParams->features,
+            newParams->primaries_r_x, newParams->primaries_r_y, newParams->primaries_g_x, newParams->primaries_g_y,
+            newParams->primaries_b_x, newParams->primaries_b_y, newParams->white_point_x, newParams->white_point_y,
+            newParams->luma_max, newParams->luma_min, newParams->luma_avg);
+    }
+
+    return rval;
+}
+
 int CPQdb::PQ_GetLDIMParams(source_input_param_t source_input_param, aml_ldim_info_s *newParams)
 {
     CSqlite::Cursor c;

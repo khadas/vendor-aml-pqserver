@@ -51,6 +51,7 @@ void CPQControl::CPQControlInit()
     mAmvideoFd     = -1;
     mDiFd          = -1;
     mLCDLdimFd     = -1;
+	mLCDFd         = -1;
     mbDtvKitEnable = false;
 
     //init source
@@ -196,6 +197,19 @@ void CPQControl::CPQControlInit()
 
     mInitialized = true;
 
+    //LCD hdr info
+    if (mbCpqCfg_lcd_hdrinfo_enable) {
+        mLCDFd = LCDOpenModule();
+        if (mLCDFd < 0) {
+            LOGE("Open lcd failed\n");
+        } else {
+            LOGD("Open lcd success\n");
+            SetLCDhdrinfo();
+        }
+    } else {
+        LOGD("lcd hdr info disable\n");
+    }
+
     //auto backlight
     if (isFileExist(LDIM_PATH)) {
         mLCDLdimFd = LCDLdimOpenModule();
@@ -222,7 +236,8 @@ void CPQControl::CPQControlUnInit()
     DICloseModule();
     //close lcd ldim
     LCDLdimCloseModule();
-
+    //close lcd
+    LCDCloseModule();
     //close vdin
     if (mpVdin != NULL) {
         delete mpVdin;
@@ -393,6 +408,43 @@ int CPQControl::LCDLdimDeviceIOCtl(int request, ...)
     arg = va_arg ( ap, void * );
     va_end(ap);
     ret = ioctl(mLCDLdimFd, request, arg);
+    return ret;
+}
+
+int CPQControl::LCDOpenModule(void)
+{
+    if (mLCDFd < 0) {
+        mLCDFd = open(LCD_PATH, O_RDWR);
+        LOGD("lcd module path: %s\n", LCD_PATH);
+        if (mLCDFd < 0) {
+            LOGE("Open lcd module, error(%s)\n", strerror(errno));
+            return -1;
+        }
+    } else {
+        LOGD("lcd module has been opened before\n");
+    }
+
+    return mLCDFd;
+}
+
+int CPQControl::LCDCloseModule(void)
+{
+    if (mLCDFd >= 0) {
+        close( mLCDFd);
+        mLCDFd = -1;
+    }
+    return 0;
+}
+
+int CPQControl::LCDDeviceIOCtl(int request, ...)
+{
+    int ret = -1;
+    va_list ap;
+    void *arg;
+    va_start(ap, request);
+    arg = va_arg ( ap, void * );
+    va_end(ap);
+    ret = ioctl(mLCDFd, request, arg);
     return ret;
 }
 
@@ -3985,6 +4037,44 @@ int CPQControl::SetLdim(void)
     return ret;
 }
 
+//lcd hdr info
+int CPQControl::Cpq_SetHdrInfo(const lcd_optical_info_t *plcd_hdrinfo)
+{
+    int ret = 0;
+
+    ret = LCDDeviceIOCtl(LCD_IOC_CMD_SET_HDR_INFO, plcd_hdrinfo);
+    if (ret < 0) {
+        LOGE("%s error(%s)\n", __FUNCTION__, strerror(errno));
+    }
+
+    return ret;
+}
+
+int CPQControl::SetLCDhdrinfo(void)
+{
+    int ret = -1;
+    lcd_optical_info_t lcd_hdrinfo;
+
+    if (mbCpqCfg_lcd_hdrinfo_enable) {
+        if (mPQdb->PQ_GetLCDHDRInfoParams(mCurentSourceInputInfo, &lcd_hdrinfo) == 0) {
+            ret = Cpq_SetHdrInfo(&lcd_hdrinfo);
+        } else {
+            LOGE("mPQdb->PQ_GetLCDHDRInfoParams failed\n");
+        }
+    } else {
+        LOGD("LCD hdr info disabled\n");
+        ret = 0;
+    }
+
+    if (ret < 0) {
+        LOGE("%s failed\n", __FUNCTION__);
+    } else {
+        LOGD("%s success\n", __FUNCTION__);
+    }
+
+    return ret;
+}
+
 //Backlight
 int CPQControl::SetBacklight(int value, int is_save)
 {
@@ -6086,6 +6176,13 @@ int CPQControl::SetFlagByCfg(void)
         mbCpqCfg_ldim_enable = true;
     } else {
         mbCpqCfg_ldim_enable = false;
+    }
+
+    config_value = mPQConfigFile->GetString(CFG_SECTION_BACKLIGHT, CFG_LCD_HDR_INFO_ENABLE, "disable");
+    if (strcmp(config_value, "enable") == 0) {
+        mbCpqCfg_lcd_hdrinfo_enable = true;
+    } else {
+        mbCpqCfg_lcd_hdrinfo_enable = false;
     }
 
     config_value = mPQConfigFile->GetString(CFG_SECTION_PQ, CFG_CVD2_ENABLE, "enable");

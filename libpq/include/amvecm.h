@@ -112,5 +112,13 @@
 /*cpu version ioc*/
 #define AMVECM_IOC_S_MESON_CPU_VER _IOW(AMVECM_IOC_MAGIC, 0x6b, enum meson_cpu_ver_e)
 
+//LCD command list
+#define LCD_IOC_TYPE               'C'
+#define LCD_IOC_NR_GET_HDR_INFO    0x0
+#define LCD_IOC_NR_SET_HDR_INFO    0x1
+
+#define LCD_IOC_CMD_GET_HDR_INFO   _IOR(LCD_IOC_TYPE, LCD_IOC_NR_GET_HDR_INFO, struct lcd_optical_info_s)
+#define LCD_IOC_CMD_SET_HDR_INFO   _IOW(LCD_IOC_TYPE, LCD_IOC_NR_SET_HDR_INFO, struct lcd_optical_info_s)
+
 #endif /* __AMVECM_H */
 

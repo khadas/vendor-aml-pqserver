@@ -31,6 +31,7 @@ typedef enum code_db_version_e {
 #define PQ_DB_LDIM_TABLE_NAME                   "LD_HDMI"
 #define PQ_DB_GENERALPICTUREMODE_TABLE_NAME     "GeneralPictureMode5Table"
 #define PQ_DB_GENERALGAMMA_TABLE_NAME           "GeneralGammaTable"
+#define PQ_DB_LCD_HDRINFO_TABLE_NAME            "Panel"
 
 typedef struct database_attribute_s {
     std::string ToolVersion;
@@ -106,6 +107,7 @@ public:
     int PQ_GetGammaParams(source_input_param_t source_input_param, vpp_gamma_curve_t gamma_curve, const char *f_name, tcon_gamma_table_t *gamma_value);
     int PQ_GetPLLParams(source_input_param_t source_input_param, am_regs_t *regs);
     int PQ_GetCVD2Params(source_input_param_t source_input_param, am_regs_t *regs);
+    int PQ_GetLCDHDRInfoParams(source_input_param_t source_input_param, lcd_optical_info_t *newParams);
     int PQ_GetLDIMParams(source_input_param_t source_input_param, aml_ldim_info_s *newParams);
     int openPqDB(const char *db_path);
     int reopenDB(const char *db_path);

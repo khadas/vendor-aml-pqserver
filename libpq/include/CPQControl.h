@@ -32,6 +32,7 @@
 
 #define LDIM_PATH                        "/dev/aml_ldim"
 #define LDIM_CONTROL_PATH                "/sys/class/aml_ldim/func_en"
+#define LCD_PATH                         "/dev/lcd"
 #define VPP_DEV_PATH                     "/dev/amvecm"
 #define DI_DEV_PATH                      "/dev/di0"
 #define AFE_DEV_PATH                     "/dev/tvafe0"
@@ -290,9 +291,13 @@ public:
     int Cpq_GetScreenModeValue(vpp_display_mode_t display_mode);
     int Cpq_SetVideoCrop(int Voffset0, int Hoffset0, int Voffset1, int Hoffset1);
     int Cpq_SetNonLinearFactor(int value);
-    //Backlight
+    //LCD HDR INFO
+    int SetLCDhdrinfo(void);
+    int Cpq_SetHdrInfo(const lcd_optical_info_t *plcd_hdrinfo);
+    //Local dimming
     int SetLdim(void);
     int Cpq_SetLdim(const aml_ldim_info_s *pldim);
+    //Backlight
     int SetBacklight(int value, int is_save);
     int GetBacklight(void);
     int SaveBacklightToSSM(int value, vpp_picture_mode_t pq_mode, tv_source_input_t srcInput);
@@ -432,6 +437,9 @@ private:
     int LCDLdimOpenModule(void);
     int LCDLdimCloseModule(void);
     int LCDLdimDeviceIOCtl(int request, ...);
+    int LCDOpenModule(void);
+    int LCDCloseModule(void);
+    int LCDDeviceIOCtl(int request, ...);
     int VDINOpenModule(void);
     int VDINCloseModule(void);
     int VDINDeviceIOCtl(int request, ...);
@@ -488,6 +496,7 @@ private:
     bool mbCpqCfg_pq_param_check_source_enable;
     bool mbCpqCfg_pq_param_check_hdr_enable;
     bool mbCpqCfg_ldim_enable;
+    bool mbCpqCfg_lcd_hdrinfo_enable;
     bool mbAllmModeCfg_enable;
     bool mbItcontentModeCfg_enable;
     bool mbDviModeCfg_enable;
@@ -504,6 +513,7 @@ private:
     int mAmvideoFd;
     int mDiFd;
     int mLCDLdimFd;
+    int mLCDFd;
 
     CVdin *mpVdin;
     CDolbyVision *mDolbyVision;

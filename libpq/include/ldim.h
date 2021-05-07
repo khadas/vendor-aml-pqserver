@@ -97,5 +97,24 @@ typedef struct aml_ldim_info_s {
     //unsigned int litgain;
 }aml_ldim_info_t;
 
+/* **********************************
+ * LCD HDR info define
+ * **********************************
+ */
+typedef struct lcd_optical_info_s {
+    unsigned int hdr_support;
+    unsigned int features;
+    unsigned int primaries_r_x;
+    unsigned int primaries_r_y;
+    unsigned int primaries_g_x;
+    unsigned int primaries_g_y;
+    unsigned int primaries_b_x;
+    unsigned int primaries_b_y;
+    unsigned int white_point_x;
+    unsigned int white_point_y;
+    unsigned int luma_max;
+    unsigned int luma_min;
+    unsigned int luma_avg;
+} lcd_optical_info_t;
 
 #endif
