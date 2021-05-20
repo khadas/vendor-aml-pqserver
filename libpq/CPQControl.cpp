@@ -1445,7 +1445,7 @@ int CPQControl::Cpq_SetVppPCMode(game_pc_mode_t pcStatus)
 
 int CPQControl::Cpq_SetVdinPCMode(game_pc_mode_t pcStatus)
 {
-    mpVdin->Tvin_SetPCMode(pcStatus);
+    return mpVdin->Tvin_SetPCMode(pcStatus);
 }
 
 int CPQControl::Cpq_SetPCMode(game_pc_mode_t pcStatus)
@@ -1466,7 +1466,7 @@ int CPQControl::Cpq_SetPCMode(game_pc_mode_t pcStatus)
 
 int CPQControl::Cpq_SetVdinGameMode(game_pc_mode_t gameStatus)
 {
-    mpVdin->Tvin_SetGameMode(gameStatus);
+    return mpVdin->Tvin_SetGameMode(gameStatus);
 }
 
 int CPQControl::Cpq_SetGameMode(game_pc_mode_t gameStatus)
