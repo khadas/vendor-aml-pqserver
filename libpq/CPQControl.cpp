@@ -816,7 +816,6 @@ vpp_picture_mode_t CPQControl::SetPQModeBySignal()
 int CPQControl::LoadPQSettings()
 {
     int ret = 0;
-    int displayWindowStatus = GetWindowStatus();
 
     if (!mbCpqCfg_pq_enable) {
         LOGD("All PQ moudle disabled\n");
@@ -842,7 +841,6 @@ int CPQControl::LoadPQSettings()
         //set pq mode
         vpp_picture_mode_t new_mode = SetPQModeBySignal();
         int cur_mode  = GetPQMode();
-        int last_mode = GetLastPQMode();
         //save cur_mode
         SaveLastPQMode(cur_mode);
         //save new mode for pq setting
@@ -4605,6 +4603,8 @@ int CPQControl::SaveDnlpMode(Dynamic_contrast_mode_t mode)
     } else {
         LOGD("%s success\n", __FUNCTION__);
     }
+
+    return ret;
 }
 
 int CPQControl::Cpq_SetVENewDNLP(const ve_dnlp_curve_param_t *pDNLP)
@@ -4803,6 +4803,8 @@ int CPQControl::SaveColorBaseMode(vpp_color_basemode_t basemode)
     } else {
         LOGD("%s success\n", __FUNCTION__);
     }
+
+    return ret;
 }
 
 int CPQControl::Cpq_SetColorBaseMode(vpp_color_basemode_t basemode, source_input_param_t source_input_param)
@@ -4931,6 +4933,8 @@ int CPQControl::SaveColorGamutMode(vpp_colorgamut_mode_t value)
     } else {
         LOGD("%s success\n", __FUNCTION__);
     }
+
+    return ret;
 }
 
 int CPQControl::Cpq_SetColorGamutMode(vpp_colorgamut_mode_t value, source_input_param_t source_input_param)

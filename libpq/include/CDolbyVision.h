@@ -107,9 +107,9 @@ typedef struct dolby_full_pq_info_s {
 }  __attribute__ ((aligned (8))) dolby_full_pq_info_t;
 
 typedef struct dolby_config_file_s {
-	unsigned char bin_name[256];
-	unsigned char cfg_name[256];
-} __attribute__ ((__aligned(8))) dolby_config_file_t;
+    unsigned char bin_name[256];
+    unsigned char cfg_name[256];
+} __attribute__ ((aligned(8))) dolby_config_file_t;
 
 // ***************************************************************************
 // *** IOCTL definitions **********

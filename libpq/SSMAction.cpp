@@ -71,6 +71,7 @@ void SSMAction::init(char *settingDataPath, char *whiteBalanceDataPath)
     bool ssm_data_FileExist    = isFileExist(mSSMDataFilePath);
     bool ssm_handler_FileExist = isFileExist(mSSMHandlerFilePath);
     bool cri_data_FileExist    = isFileExist(mWhiteBalanceFilePath);
+    LOGD("%s, ssm_handler_FileExist:%d cri_data_FileExist:%d\n", __FUNCTION__, ssm_handler_FileExist, cri_data_FileExist);
     //open SSM handler
     mSSMHandler = SSMHandler::GetSingletonInstance(mSSMHandlerFilePath);
     //open ssm file
