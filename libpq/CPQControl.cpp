@@ -7005,15 +7005,17 @@ output_type_t CPQControl::CheckOutPutMode(tv_source_input_t source_input)
             } else if(strstr(outputModeBuf, "576cvbs")) {//PAL output
                 OutPutType = OUTPUT_TYPE_PAL;
             } else {//HDMI output
-                char tempBuf[32] = {0};
-                int outputModeStrSize = strlen(outputModeBuf);
-                strncpy(tempBuf, outputModeBuf, (outputModeStrSize-4));//delete "xxhz"
-                if (strstr(tempBuf, "smpte")) {
+                //get output height
+                if (strstr(outputModeBuf, "smpte")) {
                     outputFrameHeight = 4096;
                 } else {
-                    memset(tempBuf,0, sizeof(tempBuf));
-                    strncpy(tempBuf, outputModeBuf, (outputModeStrSize - 5));//delete "pxxhz"
-                    outputFrameHeight = atoi(tempBuf);
+                    const char delim[2] = "p";
+                    char *token;
+
+                    token = strtok(outputModeBuf, delim);
+                    if (token != NULL) {
+                        outputFrameHeight = atoi(token);
+                    }
                 }
                 LOGD("%s: outputFrameHeight: %d\n", __FUNCTION__, outputFrameHeight);
                 //check outputmode

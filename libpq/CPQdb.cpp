@@ -1951,7 +1951,7 @@ int CPQdb::PQ_GetPQModeParams(source_input_param_t source_input_param, vpp_pictu
                     //if custom want to improve performance,can follow the code of before picture mode 5
                     //LOGD("%s type:%s value:%d\n", __FUNCTION__, c.getString(0).c_str(), c.getInt(1));
                     memset(type, 0, sizeof(type));
-                    strncpy(type, c.getString(0).c_str(), sizeof(type));
+                    strncpy(type, c.getString(0).c_str(), sizeof(type) - 1);
                     if (!strcmp(type, "Brightness")) {
                         params->brightness = c.getInt(1);
                     } else if (!strcmp(type, "Contrast")) {
