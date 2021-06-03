@@ -94,6 +94,7 @@ int SSMHandler::SSMSaveCurrentHeader(current_ssmheader_section2_t *header_cur)
 {
     std::vector<SSMHeader_section2_t> vsection2;
     unsigned int size = 0;
+    int rd_size;
 
     LOGD ("%s --- line:%d\n", __FUNCTION__, __LINE__);
 
@@ -102,7 +103,10 @@ int SSMHandler::SSMSaveCurrentHeader(current_ssmheader_section2_t *header_cur)
     for (unsigned int i = 0; i < gSSMHeader_section1.count; i++) {
         SSMHeader_section2_t temp;
 
-        read (mFd, &temp, sizeof (SSMHeader_section2_t));
+        rd_size = read(mFd, &temp, sizeof (SSMHeader_section2_t));
+        if (rd_size < 0) {
+            LOGE("read error = %s\n", strerror(errno));
+        }
         vsection2.push_back(temp);
         size += temp.size;
     }
@@ -120,15 +124,27 @@ int SSMHandler::SSMSaveCurrentHeader(current_ssmheader_section2_t *header_cur)
 bool SSMHandler::SSMRecreateHeader()
 {
     bool ret = true;
+    int wr_size;
+    int size;
 
     LOGD ("%s ---.\n", __FUNCTION__);
 
-    ftruncate(mFd, 0);
+    size = ftruncate(mFd, 0);
+    if (size < 0) {
+        LOGE("ftruncate error = %s\n", strerror(errno));
+    }
     lseek (mFd, 0, SEEK_SET);
 
     //cal Addr and write
-    write (mFd, &gSSMHeader_section1, sizeof (SSMHeader_section1_t));
-    write (mFd, gSSMHeader_section2, gSSMHeader_section1.count * sizeof (SSMHeader_section2_t));
+    size = write(mFd, &gSSMHeader_section1, sizeof (SSMHeader_section1_t));
+    if (size < 0) {
+        LOGE("write error = %s\n", strerror(errno));
+    }
+
+    wr_size = write(mFd, gSSMHeader_section2, gSSMHeader_section1.count * sizeof (SSMHeader_section2_t));
+    if (wr_size < 0) {
+        LOGE("write error = %s\n", strerror(errno));
+    }
 
     return ret;
 }

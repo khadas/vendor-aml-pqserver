@@ -5,7 +5,7 @@
 ################################################################################
 LOCAL_PATH = $(shell pwd)
 LDFLAGS += -Wl,--no-as-needed -lstdc++ -lpthread -lz -ldl -lrt -L$(STAGING_DIR)/usr/lib
-CFLAGS += -Wall -Werror -Wno-unknown-pragmas -Wno-format \
+CFLAGS += -Wall -Werror -Wno-unknown-pragmas -Wno-format -Wno-format-security -Wno-error=unused-result \
           -O3 -fexceptions -fnon-call-exceptions -D_GNU_SOURCE -I$(STAGING_DIR)/usr/include
 
 LIBBINDER_LDFLAGS = -lbinder -llog

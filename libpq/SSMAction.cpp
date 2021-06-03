@@ -217,22 +217,37 @@ int SSMAction::RestoreDeviceMarkValues()
 
 int SSMAction::WriteBytes(int offset, int size, int *buf)
 {
+    int wr_size;
+
     lseek(m_dev_fd, offset, SEEK_SET);
-    write(m_dev_fd, buf, size);
+    wr_size = write(m_dev_fd, buf, size);
+    if (wr_size < 0) {
+        LOGE("write error = %s\n", strerror(errno));
+    }
 
     return 0;
 }
 int SSMAction::ReadBytes(int offset, int size, int *buf)
 {
+    int rd_size;
 
     lseek(m_dev_fd, offset, SEEK_SET);
-    read(m_dev_fd, buf, size);
+    rd_size = read(m_dev_fd, buf, size);
+    if (rd_size < 0) {
+        LOGE("read error = %s\n", strerror(errno));
+    }
 
     return 0;
 }
 int SSMAction::EraseAllData()
 {
-    ftruncate(m_dev_fd, 0);
+    int ret;
+
+    ret = ftruncate(m_dev_fd, 0);
+    if (ret < 0) {
+        LOGE("ftruncate error = %s\n", strerror(errno));
+    }
+
     lseek (m_dev_fd, 0, SEEK_SET);
 
     return 0;
@@ -806,6 +821,7 @@ int SSMAction::ReadDataFromFile(const char *file_name, int offset, int nsize, un
 int SSMAction::SaveDataToFile(const char *file_name, int offset, int nsize, unsigned char data_buf[])
 {
     int device_fd = -1;
+    int wr_size;
 
     if (data_buf == NULL) {
         LOGE("%s, data_buf is NULL!!!\n", __FUNCTION__);
@@ -824,7 +840,11 @@ int SSMAction::SaveDataToFile(const char *file_name, int offset, int nsize, unsi
     }
 
     lseek(device_fd, offset, SEEK_SET);
-    write(device_fd, data_buf, nsize);
+    wr_size = write(device_fd, data_buf, nsize);
+    if (wr_size < 0) {
+        LOGE("write error = %s\n", strerror(errno));
+    }
+
     fsync(device_fd);
 
     close(device_fd);

@@ -3967,6 +3967,7 @@ int CPQControl::Cpq_SetVideoScreenMode(int value)
 int CPQControl::Cpq_SetVideoCrop(int Voffset0, int Hoffset0, int Voffset1, int Hoffset1)
 {
     char set_str[32];
+    int wr_size;
 
     LOGD("Cpq_SetVideoCrop value: %d %d %d %d\n", Voffset0, Hoffset0, Voffset1, Hoffset1);
     int fd = open(CROP_PATH, O_RDWR);
@@ -3977,7 +3978,11 @@ int CPQControl::Cpq_SetVideoCrop(int Voffset0, int Hoffset0, int Voffset1, int H
 
     memset(set_str, 0, 32);
     sprintf(set_str, "%d %d %d %d", Voffset0, Hoffset0, Voffset1, Hoffset1);
-    write(fd, set_str, strlen(set_str));
+    wr_size = write(fd, set_str, strlen(set_str));
+    if (wr_size < 0) {
+        LOGE("write error = %s\n", strerror(errno));
+    }
+
     close(fd);
 
     return 0;
@@ -6492,6 +6497,7 @@ int CPQControl::SetGrayPattern(int value) {
 
 int CPQControl::GetGrayPattern() {
     int value = 0;
+    int arg_num;
 
     FILE *fp = fopen(TEST_SCREEN, "r+");
     if (fp == NULL) {
@@ -6499,7 +6505,10 @@ int CPQControl::GetGrayPattern() {
         return -1;
     }
 
-    fscanf(fp, "%x", &value);
+    arg_num = fscanf(fp, "%x", &value);
+    if (arg_num < 0) {
+        LOGE("arg_num: %d\n", arg_num);
+    }
 
     LOGD("GetGrayPattern /sys/class/video/test_screen %x", value);
     fclose(fp);

@@ -171,13 +171,19 @@ int CPQFile::PQ_DeleteFile()
 int CPQFile::PQ_GetFileAttrValue(const char *path)
 {
     int value;
+    int size;
 
     int fd = open(path, O_RDONLY);
     if (fd <= 0) {
         LOGE("open  (%s)ERROR!!error = %s.\n", path, strerror ( errno ));
     }
+
     char s[8];
-    read(fd, s, sizeof(s));
+    size = read(fd, s, sizeof(s));
+    if (size < 0) {
+        LOGE("read (%s)ERROR!!error = %s\n", path, strerror(errno));
+    }
+
     close(fd);
     value = atoi(s);
     return value;
