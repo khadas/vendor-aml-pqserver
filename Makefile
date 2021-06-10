@@ -15,14 +15,6 @@ LDFLAGS += $(LIBBINDER_LDFLAGS)
 ################################################################################
 # libpq.so - src files
 ################################################################################
-CSV_RET=$(shell ($(LOCAL_PATH)/libpq/csvAnalyze.sh > /dev/zero;echo $$?))
-ifeq ($(CSV_RET), 1)
-  $(error "Csv file or common.h file is not exist!!!!")
-else ifeq ($(CSV_RET), 2)
-  $(error "Csv file's Id must be integer")
-else ifeq ($(CSV_RET), 3)
-  $(error "Csv file's Size must be integer or defined in common.h")
-endif
 
 pq_SRCS = \
   $(LOCAL_PATH)/libpq/CPQdb.cpp \

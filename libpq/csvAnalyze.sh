@@ -13,7 +13,7 @@ function Prepare() {
     CsvPath=`echo ${CsvPath%/*}`
 	echo "CsvPath: $CsvPath"
 
-    definePath=`find ${rootPath}/../libpq/include -name PQType.h`
+    definePath=`find ${rootPath} -name PQType.h`
     definePath=`echo ${definePath%/*}`
     echo "definePath: $definePath"
 
@@ -130,6 +130,6 @@ if [ $ret -ne 0 ];then
 fi
 
 AutoGenSrcFiles > ${CsvPath}/SSMHeader.cpp
-Generate_Setting_Cfg > ${CsvPath}/include/PQSettingCfg.h
+Generate_Setting_Cfg > ${CsvPath}/PQSettingCfg.h
 
 exit 0
