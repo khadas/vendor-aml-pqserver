@@ -419,6 +419,8 @@ typedef struct ve_dnlp_curve_param_s {
     unsigned int ve_reg_adp_ofset_20[20];
     unsigned int ve_reg_mono_protect[6];
     unsigned int ve_reg_trend_wht_expand_lut8[9];
+    unsigned int ve_c_hist_gain[65];
+    unsigned int ve_s_hist_gain[65];
     unsigned int param[100];
 }ve_dnlp_curve_param_t;
 
@@ -435,6 +437,8 @@ typedef enum dnlp_curve_e {
     reg_adp_ofset_20,
     reg_mono_protect,
     reg_trend_wht_expand_lut8,
+    c_hist_gain = 1019,
+    s_hist_gain,
 } dnlp_curve_t;
 
 //local contrast

@@ -1150,6 +1150,50 @@ int CPQdb::PQ_GetDNLPParams(source_input_param_t source_input_param, Dynamic_con
                 buffer = NULL;
             }
          }
+         { // for ve_c_hist_gain
+               index = 0;
+               aa = NULL;
+               getSqlParams(__FUNCTION__, sqlmaster, "select value from %s where "
+                           "regnum = %d and "
+                           "level = %d;",
+                           TableName.c_str(), c_hist_gain, mode);
+
+               rval = this->select(sqlmaster, c1);
+               memset(buf, 0, sizeof(buf));
+               strcpy(buf, c1.getString(index).c_str());
+               //LOGD ("%s - c_hist_gain is %s+++++++++++++++++", __FUNCTION__, buf);
+               buffer = buf;
+               while ((aa_save[index] = strtok_r(buffer, " ", &aa)) != NULL) {
+                   newParams->ve_c_hist_gain[index] = atoi(aa_save[index]);
+                   index ++;
+                   if (index >= sizeof(newParams->ve_c_hist_gain)/sizeof(unsigned int)) {
+                       break;
+                   }
+                   buffer = NULL;
+               }
+         }
+         { // for ve_s_hist_gain
+               index = 0;
+               aa = NULL;
+               getSqlParams(__FUNCTION__, sqlmaster, "select value from %s where "
+                           "regnum = %d and "
+                           "level = %d;",
+                           TableName.c_str(), s_hist_gain, mode);
+
+               rval = this->select(sqlmaster, c1);
+               memset(buf, 0, sizeof(buf));
+               strcpy(buf, c1.getString(index).c_str());
+               //LOGD ("%s - s_hist_gain is %s+++++++++++++++++", __FUNCTION__, buf);
+               buffer = buf;
+               while ((aa_save[index] = strtok_r(buffer, " ", &aa)) != NULL) {
+                   newParams->ve_s_hist_gain[index] = atoi(aa_save[index]);
+                   index ++;
+                   if (index >= sizeof(newParams->ve_s_hist_gain)/sizeof(unsigned int)) {
+                       break;
+                   }
+                   buffer = NULL;
+               }
+         }
     } else {
         LOGE("%s, GeneralDNLPTable don't have this table!\n", __FUNCTION__);
         rval = -1;

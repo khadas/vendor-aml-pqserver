@@ -1779,7 +1779,7 @@ int CPQControl::SetPQParams(source_input_param_t source_input_param, vpp_picture
     //set NR
     ret |= SetNoiseReductionMode(pq_para.nr, 0);
     //set color gamut
-    ret |= SetColorGamutMode((vpp_colorgamut_mode_t)(pq_para.colorgamut_mode), 0);
+    //ret |= SetColorGamutMode((vpp_colorgamut_mode_t)(pq_para.colorgamut_mode), 0);
     //set cm
     ret |= SetColorBaseMode((vpp_color_basemode_t)(pq_para.cm_level), 0);
     //set backlight
@@ -4946,7 +4946,7 @@ int CPQControl::Cpq_SetColorGamutMode(vpp_colorgamut_mode_t value, source_input_
 {
     char val[64] = {0};
     sprintf(val, "%d", value);
-    return pqWriteSys(VPP_MODULE_COLORGAMUT_PATH, val);
+    return 0;//pqWriteSys(VPP_MODULE_COLORGAMUT_PATH, val);
 }
 
 int CPQControl::SetBlackExtensionParam(source_input_param_t source_input_param)

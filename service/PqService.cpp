@@ -447,7 +447,10 @@ void PqService::ParserPqCommand(const char *commandData)
             sprintf(mRetBuf, "%d", ret);
         } else if (strcmp(mPqCommand[1].c_str(), "get") == 0) {
             ret_char = GetCmd(pqParam);
-            sprintf(mRetBuf, "%s", ret_char);
+            if (ret_char != NULL) {
+                LOGD("%s: ret_char %s\n", __FUNCTION__, ret_char);
+            }
+            //sprintf(mRetBuf, "%s", ret_char);
         } else {
             LOGD("%s: invalid cmd\n", __FUNCTION__);
             ret = 0;
