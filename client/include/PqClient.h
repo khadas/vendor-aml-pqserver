@@ -11,6 +11,7 @@
 
 #include <map>
 #include <memory>
+#include <array>
 
 #include <binder/Binder.h>
 #include <binder/Parcel.h>
@@ -116,7 +117,7 @@ private:
     void SendMethodCall(char *CmdString);
     int SplitRetBuf(const char *commandData);
     char mRetBuf[128] = {0};
-    std::string  mRet[10];
+    std::array<std::string, 10> mRet;
 
     sp<IBinder> mpqServicebinder;
     virtual status_t onTransact(uint32_t code,
