@@ -9,7 +9,7 @@ CFLAGS += -Wall -Werror -Wno-unknown-pragmas -Wno-format -Wno-format-security -W
           -O3 -fexceptions -fnon-call-exceptions -D_GNU_SOURCE -I$(STAGING_DIR)/usr/include
 
 MIN_GCC_VERSION = "10"
-GCC_VERSION := "`$(CC) -dumpversion`"
+GCC_VERSION := "`$(CC) -dumpversion | cut -f1 -d'.'`"
 IS_GCC_ABOVE_MIN_VERSION := $(shell expr "$(GCC_VERSION)" ">=" "$(MIN_GCC_VERSION)")
 ifeq "$(IS_GCC_ABOVE_MIN_VERSION)" "1"
 CFLAGS += -std=gnu++20
