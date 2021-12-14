@@ -823,7 +823,7 @@ int CPQControl::LoadPQSettings()
         memset(&pqControlVal, 0, sizeof(pq_ctrl_t));
         vpp_pq_ctrl_t amvecmConfigVal;
         amvecmConfigVal.length = 14;//this is the count of pq_ctrl_s option
-        amvecmConfigVal.ptr    = (long long)&pqControlVal;
+        amvecmConfigVal.ptr    = &pqControlVal;
         ret = VPPDeviceIOCtl(AMVECM_IOC_S_PQ_CTRL, &amvecmConfigVal);
         if (ret < 0) {
             LOGE("%s error: %s\n", __FUNCTION__, strerror(errno));
@@ -1040,7 +1040,7 @@ int CPQControl::Cpq_SetDIModuleParam(source_input_param_t source_input_param)
     }
 
     if (mbCpqCfg_demoSquito_enable) {
-        if (mPQdb->PQ_GetDemoSquitoParams(source_input_param, &regs) == 0) {
+        if (mPQdb->PQ_GetDemoSquitoParams(VPP_DEMOSQUITO_MODE_OFF, source_input_param, &regs) == 0) {
             di_regs.table_name |= TABLE_NAME_DEMOSQUITO;
         } else {
             LOGE("%s GetDemoSquitoParams failed!\n",__FUNCTION__);
@@ -1059,7 +1059,7 @@ int CPQControl::Cpq_SetDIModuleParam(source_input_param_t source_input_param)
               tmp_buf[i].val  = regs.am_reg[i].val;
         }
 
-        di_regs.table_ptr = (long long)tmp_buf;
+        di_regs.table_ptr = tmp_buf;
 
         ret = DI_LoadRegs(di_regs);
     } else {
@@ -3602,12 +3602,15 @@ int CPQControl::Cpq_SetNoiseReductionMode(vpp_noise_reduction_mode_t nr_mode, so
                   tmp_buf[i].type = regs.am_reg[i].type;
                   tmp_buf[i].val  = regs.am_reg[i].val;
             }
-            di_regs.table_ptr = (long long)tmp_buf;
+            di_regs.table_ptr = tmp_buf;
 
             ret = DI_LoadRegs(di_regs);
         } else {
             LOGE("PQ_GetNR2Params failed\n");
         }
+    } else {
+        ret = 0;
+        LOGE("NoiseReduction is disabled\n");
     }
 
     if (ret < 0) {
@@ -6203,7 +6206,7 @@ int CPQControl::SetFlagByCfg(void)
 
     vpp_pq_ctrl_t amvecmConfigVal;
     amvecmConfigVal.length = 14;//this is the count of pq_ctrl_s option
-    amvecmConfigVal.ptr = (long long)&pqControlVal;
+    amvecmConfigVal.ptr = &pqControlVal;
     int ret = VPPDeviceIOCtl(AMVECM_IOC_S_PQ_CTRL, &amvecmConfigVal);
     if (ret < 0) {
         LOGE("%s error: %s!\n", __FUNCTION__, strerror(errno));

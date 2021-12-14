@@ -480,7 +480,10 @@ typedef struct pq_ctrl_s {
 
 typedef struct vpp_pq_ctrl_s {
     unsigned int length;
-    long long ptr;        /*point to pq_ctrl_s*/
+    union {
+        void *ptr;/*point to pq_ctrl_s*/
+        long long ptr_length;
+    };
 } vpp_pq_ctrl_t;
 
 // ***************************************************************************

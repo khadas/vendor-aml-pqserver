@@ -192,8 +192,14 @@ typedef struct am_regs_s {
 typedef struct am_pq_param_s {
     unsigned int table_name;
     unsigned int table_len;
-    long long table_ptr;
-    long long reserved0;
+    union {
+        void *table_ptr;
+        long long l_table;
+    };
+    union {
+        void *reserved;
+        long long l_reserved;
+    };
 } am_pq_param_t;
 
 /*overscan load regs

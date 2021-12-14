@@ -477,12 +477,12 @@ int CPQdb::PQ_GetNR2Params(vpp_noise_reduction_mode_t nr_mode, source_input_para
     return rval;
 }
 
-int CPQdb::PQ_GetDemoSquitoParams(source_input_param_t source_input_param,  am_regs_t *regs)
+int CPQdb::PQ_GetDemoSquitoParams(vpp_DemoSquito_mode_e dem_mode, source_input_param_t source_input_param,  am_regs_t *regs)
 {
     int rval = -1;
     std::string TableName = GetTableName("GeneralDemosquitoTable", source_input_param);
     if ((TableName.c_str() != NULL) && (TableName.length() != 0) ) {
-        rval = getDIRegValuesByValue(TableName.c_str(), "", "", 0, 0, regs);
+        rval = getDIRegValuesByValue(TableName.c_str(), LEVEL_NAME, "", (int) dem_mode, 0, regs);
     } else {
         LOGE("GeneralDemosquitoTable select error!!\n");
     }
@@ -2272,19 +2272,31 @@ std::string CPQdb::GetTableName(const char *GeneralTableName, source_input_param
                      "TVIN_TRANS_FMT = %d and "
                      "TVOUT_CVBS = %d ;", GeneralTableName, source_input_param.source_input,
                      source_input_param.sig_fmt, source_input_param.trans_fmt, mColorTemperatureMode);
-    } else if (CheckIdExistInDb(CVBS_NAME_ID, "GeneralNR2Table")) {
+    } else if ((strcmp(GeneralTableName, "GeneralSharpness0FixedTable") == 0)
+        || (strcmp(GeneralTableName, "GeneralSharpness0VariableTable") == 0)
+        || (strcmp(GeneralTableName, "GeneralSharpness1FixedTable") == 0)
+        || (strcmp(GeneralTableName, "GeneralSharpness1VariableTable") == 0)) {
+        if (mOutPutType == OUTPUT_TYPE_LVDS) {//TV
+            getSqlParams(__FUNCTION__, sqlmaster, "select TableName from %s where "
+                         "TVIN_PORT = %d and "
+                         "TVIN_SIG_FMT = %d and "
+                         "TVIN_TRANS_FMT = %d ;", GeneralTableName, source_input_param.source_input,
+                         source_input_param.sig_fmt, source_input_param.trans_fmt);
+        } else {//HDMI OUTPUT
+            getSqlParams(__FUNCTION__, sqlmaster, "select TableName from %s where "
+                         "TVIN_PORT = %d and "
+                         "TVIN_SIG_FMT = %d and "
+                         "TVIN_TRANS_FMT = %d and "
+                         "TVOUT_CVBS = %d ;", GeneralTableName, source_input_param.source_input,
+                         source_input_param.sig_fmt, source_input_param.trans_fmt, mOutPutType);
+        }
+    } else {
         getSqlParams(__FUNCTION__, sqlmaster, "select TableName from %s where "
                      "TVIN_PORT = %d and "
                      "TVIN_SIG_FMT = %d and "
                      "TVIN_TRANS_FMT = %d and "
                      "TVOUT_CVBS = %d ;", GeneralTableName, source_input_param.source_input,
-                     source_input_param.sig_fmt, source_input_param.trans_fmt, mOutPutType);
-    } else {
-        getSqlParams(__FUNCTION__, sqlmaster, "select TableName from %s where "
-                     "TVIN_PORT = %d and "
-                     "TVIN_SIG_FMT = %d and "
-                     "TVIN_TRANS_FMT = %d ;", GeneralTableName, source_input_param.source_input,
-                     source_input_param.sig_fmt, source_input_param.trans_fmt);
+                     source_input_param.sig_fmt, source_input_param.trans_fmt, OUTPUT_TYPE_LVDS);
     }
 
     ret = this->select(sqlmaster, c);

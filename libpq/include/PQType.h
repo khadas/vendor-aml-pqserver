@@ -69,6 +69,14 @@ typedef enum vpp_deblock_mode_e {
     VPP_DEBLOCK_MODE_AUTO,
 } vpp_deblock_mode_t;
 
+typedef enum vpp_DemoSquito_mode_e {
+    VPP_DEMOSQUITO_MODE_OFF,
+    VPP_DEMOSQUITO_MODE_LOW,
+    VPP_DEMOSQUITO_MODE_MIDDLE,
+    VPP_DEMOSQUITO_MODE_HIGH,
+    VPP_DEMOSQUITO_MODE_AUTO,
+} vpp_DemoSquito_mode_t;
+
 typedef enum vpp_color_space_type_e {
     VPP_COLOR_SPACE_AUTO,
     VPP_COLOR_SPACE_YUV,
