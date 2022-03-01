@@ -79,6 +79,8 @@
 #define LDIM_IOC_PARA              _IOW(AMVECM_IOC_MAGIC, 0x50, struct vpu_ldim_param_s)
 #define AML_LDIM_IOC_CMD_GET_INFO  _IOR(AMVECM_IOC_MAGIC, 0x51, struct aml_ldim_info_s)
 #define AML_LDIM_IOC_CMD_SET_INFO  _IOW(AMVECM_IOC_MAGIC, 0x52, struct aml_ldim_info_s)
+#define AML_LDIM_IOC_CMD_GET_INFO_NEW  _IOR(AMVECM_IOC_MAGIC, 0x53, struct aml_ldim_pq_s)
+#define AML_LDIM_IOC_CMD_SET_INFO_NEW  _IOW(AMVECM_IOC_MAGIC, 0x54, struct aml_ldim_pq_s)
 
 // VPP.display mode command list
 #define AMVECM_IOC_SET_OVERSCAN    _IOW(AMVECM_IOC_MAGIC, 0x52, struct ve_pq_load_s)
@@ -98,19 +100,42 @@
 #define AMVECM_IOC_G_PIC_MODE      _IOR(AMVECM_IOC_MAGIC, 0x59, struct am_pic_mode_s)
 #define AMVECM_IOC_S_PIC_MODE      _IOW(AMVECM_IOC_MAGIC, 0x60, struct am_pic_mode_s)
 
-// VPP.DI IOCTL command list
-#define _DI_    'D'
-#define AMDI_IOC_SET_PQ_PARM       _IOW(_DI_, 0x51, struct am_pq_param_s)
+/*HDR TYPE command list*/
+#define AMVECM_IOC_G_HDR_TYPE      _IOR(AMVECM_IOC_MAGIC, 0x61, enum hdr_type_e)
 
 /*Local contrast command list*/
 #define AMVECM_IOC_S_LC_CURVE      _IOW(AMVECM_IOC_MAGIC, 0x62, struct ve_lc_curve_parm_s)
 
+// VPP.DI IOCTL command list
+#define _DI_    'D'
+#define AMDI_IOC_SET_PQ_PARM       _IOW(_DI_, 0x51, struct am_pq_param_s)
+
+/*Skin_tone_control command list*/
+#define AMVECM_IOC_S_CMS_LUMA      _IOW(AMVECM_IOC_MAGIC, 0x65, struct cms_data_s)
+#define AMVECM_IOC_S_CMS_SAT       _IOW(AMVECM_IOC_MAGIC, 0x66, struct cms_data_s)
+#define AMVECM_IOC_S_CMS_HUE       _IOW(AMVECM_IOC_MAGIC, 0x67, struct cms_data_s)
+#define AMVECM_IOC_S_CMS_HUE_HS    _IOW(AMVECM_IOC_MAGIC, 0x68, struct cms_data_s)
+
 //moudle control for amvecm
 #define AMVECM_IOC_S_PQ_CTRL       _IOW(AMVECM_IOC_MAGIC, 0x69, struct vpp_pq_ctrl_s)
 #define AMVECM_IOC_G_PQ_CTRL       _IOR(AMVECM_IOC_MAGIC, 0x6a, struct vpp_pq_ctrl_s)
-
 /*cpu version ioc*/
 #define AMVECM_IOC_S_MESON_CPU_VER _IOW(AMVECM_IOC_MAGIC, 0x6b, enum meson_cpu_ver_e)
+/*AI PIC param load IOCTL command*/
+#define AMVECM_IOC_S_AIPQ_TABLE    _IOW(AMVECM_IOC_MAGIC, 0x6c, struct ai_pic_table_s)
+
+#define AMVECM_IOC_S_HDR_TM        _IOW(AMVECM_IOC_MAGIC, 0x63, struct hdr_tone_mapping_s)
+#define AMVECM_IOC_G_HDR_TM        _IOR(AMVECM_IOC_MAGIC, 0x64, struct hdr_tone_mapping_s)
+
+/*hdr10_tmo ioc*/
+#define AMVECM_IOC_S_HDR_TMO   _IOW(AMVECM_IOC_MAGIC, 0x74, struct hdr_tmo_sw_s)
+#define AMVECM_IOC_G_HDR_TMO   _IOR(AMVECM_IOC_MAGIC, 0x75, struct hdr_tmo_sw_s)
+
+/*cabc command list*/
+#define AMVECM_IOC_S_CABC_PARAM    _IOW(AMVECM_IOC_MAGIC, 0x76, struct db_cabc_param_s)
+
+/*aad command list*/
+#define AMVECM_IOC_S_AAD_PARAM     _IOW(AMVECM_IOC_MAGIC, 0x77, struct db_aad_param_s)
 
 //LCD command list
 #define LCD_IOC_TYPE               'C'

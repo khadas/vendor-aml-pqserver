@@ -305,103 +305,55 @@ std::string COverScandb::GetTableName(const char *GeneralTableName, source_input
     }
 }
 
-int COverScandb::PQ_GetPQModeParams(source_input_param_t source_input_param, vpp_picture_mode_t pq_mode,
+int COverScandb::PQ_GetPQModeParams(tv_source_input_t source_input, vpp_picture_mode_t pq_mode,
                                 vpp_pq_para_t *params)
 {
     CSqlite::Cursor c;
     char sqlmaster[256];
 
     int rval = -1;
-    params->dv_pqmode  =  -1;
 
-    if (mOverScanDbVersion < OVERSCAN_DB_CODE_VERSION_2) {
-        //for before picture mode 5
-        getSqlParams(__FUNCTION__, sqlmaster,
-                     "select Brightness, Contrast, Saturation, Hue, Sharpness, Backlight, NR from Picture_Mode where "
-                     "TVIN_PORT = %d and "
-                     "Mode = %d ;", source_input_param.source_input, pq_mode);
-        rval = this->select(sqlmaster, c);
-        if (c.moveToFirst()) {
-            params->brightness = c.getInt(0);
-            params->contrast   = c.getInt(1);
-            params->saturation = c.getInt(2);
-            params->hue        = c.getInt(3);
-            params->sharpness  = c.getInt(4);
-            params->backlight  = c.getInt(5);
-            params->nr         = c.getInt(6);
-        } else {
-            LOGE("%s %d select error \n",__FUNCTION__, mOverScanDbVersion);
-            rval = -1;
-        }
-    } else if (mOverScanDbVersion >= OVERSCAN_DB_CODE_VERSION_2) {
-        //for picture mode 5
-        std::string TableName = GetTableName(OVERSCAN_DB_GENERALPICTUREMODE_TABLE_NAME, source_input_param);
-        if (TableName.length() != 0 ) {
-            getSqlParams(
-                __FUNCTION__,
-                sqlmaster,
-                "select Type, Value from %s where Mode = %d;", TableName.c_str(), (int)pq_mode);
+    getSqlParams(__FUNCTION__, sqlmaster,
+                 "select Brightness, Contrast, Saturation, Hue, Sharpness, Backlight, NR from Picture_Mode where "
+                 "TVIN_PORT = %d and "
+                 "Mode = %d ;", source_input, pq_mode);
 
-            rval = this->select(sqlmaster, c);
-            char type[50];
-            if (c.moveToFirst()) {
-                do {
-                    //LOGD("%s type:%s value:%d\n", __FUNCTION__, c.getString(0).c_str(), c.getInt(1));
-                    memset(type, 0, sizeof(type));
-                    strncpy(type, c.getString(0).c_str(), sizeof(type) - 1);
-                    if (!strcmp(type, "Brightness")) {
-                        params->brightness = c.getInt(1);
-                    } else if (!strcmp(type, "Contrast")) {
-                        params->contrast = c.getInt(1);
-                    } else if (!strcmp(type, "Saturation")) {
-                        params->saturation = c.getInt(1);
-                    } else if (!strcmp(type, "Hue")) {
-                        params->hue = c.getInt(1);
-                    } else if (!strcmp(type, "Sharpness")) {
-                        params->sharpness = c.getInt(1);
-                    } else if (!strcmp(type, "Backlight")) {
-                        params->backlight = c.getInt(1);
-                    } else if (!strcmp(type, "NR")) {
-                        params->nr = c.getInt(1);
-                    }
-                } while (c.moveToNext());
-            } else {
-                LOGE("%s %d select error\n", __FUNCTION__, mOverScanDbVersion);
-                rval = -1;
-            }
-        } else {
-            LOGE("%s not find %s for source:%d, pq_mode:%d\n",
-                __FUNCTION__, OVERSCAN_DB_GENERALPICTUREMODE_TABLE_NAME, source_input_param.source_input, pq_mode);
-        }
+    rval = this->select(sqlmaster, c);
+
+    if (c.moveToFirst()) {
+        params->brightness = c.getInt(0);
+        params->contrast = c.getInt(1);
+        params->saturation = c.getInt(2);
+        params->hue = c.getInt(3);
+        params->sharpness = c.getInt(4);
+        params->backlight = c.getInt(5);
+        params->nr = c.getInt(6);
+    } else {
+        LOGE("%s error!\n",__FUNCTION__);
+        rval = -1;
     }
-
     return rval;
-
 }
 
 int COverScandb::PQ_SetPQModeParams(tv_source_input_t source_input, vpp_picture_mode_t pq_mode, vpp_pq_para_t *params)
 {
-    int rval = -1;
+    int rval;
     char sql[256];
 
-    if (mOverScanDbVersion < OVERSCAN_DB_CODE_VERSION_2) {
-        getSqlParams(__FUNCTION__, sql,
-            "update Picture_Mode set Brightness = %d, Contrast = %d, Saturation = %d, Hue = %d, Sharpness = %d, Backlight = %d, NR= %d "
-            " where TVIN_PORT = %d and Mode = %d;", params->brightness, params->contrast,
-            params->saturation, params->hue, params->sharpness, params->backlight, params->nr,
-            source_input, pq_mode);
-        if (this->exeSql(sql)) {
-            rval = 0;
-        } else {
-            LOGE("%s exeSql error\n",__FUNCTION__);
-            rval = -1;
-        }
+    getSqlParams(__FUNCTION__, sql,
+        "update Picture_Mode set Brightness = %d, Contrast = %d, Saturation = %d, Hue = %d, Sharpness = %d, Backlight = %d, NR= %d "
+        " where TVIN_PORT = %d and Mode = %d;", params->brightness, params->contrast,
+        params->saturation, params->hue, params->sharpness, params->backlight, params->nr,
+        source_input, pq_mode);
+    if (this->exeSql(sql)) {
+        rval = 0;
     } else {
-        LOGE("%s %d error\n", __FUNCTION__, mOverScanDbVersion);
+        LOGE("%s--SQL error!\n",__FUNCTION__);
+        rval = -1;
     }
-
     return rval;
 }
+
 
 int COverScandb::PQ_SetPQModeParamsByName(const char *name, tv_source_input_t source_input,
                                       vpp_picture_mode_t pq_mode, vpp_pq_para_t *params)

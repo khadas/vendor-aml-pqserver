@@ -196,6 +196,100 @@ public:
         case PQ_SET_RECOVERYPQ:
             ret = mpPqClient->SSMRecovery();
             break;
+        case PQ_GET_HAS_MEMC:
+            ret = mpPqClient->HasMemcFunc();
+            LOGD("%s: curent hasmemc is %d\n", __FUNCTION__, ret);
+            break;
+        case PQ_SET_MEMCMODE:
+            ret = mpPqClient->SetMemcMode(setValue[0], setValue[1]);
+            break;
+        case PQ_GET_MEMCMODE:
+            ret = mpPqClient->GetMemcMode();
+            LOGD("%s: curent Memc mode is %d\n", __FUNCTION__, ret);
+            break;
+        case PQ_SET_MEMC_DEBLUR:
+            ret = mpPqClient->SetMemcDeBlurLevel(setValue[0], setValue[1]);
+            break;
+        case PQ_GET_MEMC_DEBLUR:
+            ret = mpPqClient->GetMemcDeBlurLevel();
+            LOGD("%s: curent Memc DeBlurLevel level is %d\n", __FUNCTION__, ret);
+            break;
+        case PQ_SET_MEMC_DEJUDDER:
+            ret = mpPqClient->SetMemcDeJudderLevel(setValue[0], setValue[1]);
+            break;
+        case PQ_GET_MEMC_DEJUDDER:
+            ret = mpPqClient->GetMemcDeJudderLevel();
+            LOGD("%s: curent Memc DeJudderLevel level is %d\n", __FUNCTION__, ret);
+            break;
+        case PQ_SET_DECONTOUR:
+            ret = mpPqClient->SetDecontourMode(setValue[0], setValue[1]);
+            break;
+        case PQ_GET_DECONTOUR:
+            ret = mpPqClient->GetDecontourMode();
+            LOGD("%s: curent Memc Decontour Mode is %d\n", __FUNCTION__, ret);
+            break;
+        case PQ_SET_DEBLOCK:
+            ret = mpPqClient->SetDeBlockMode(setValue[0], setValue[1]);
+            break;
+        case PQ_GET_DEBLOCK:
+            ret = mpPqClient->GetDeBlockMode();
+            LOGD("%s: curent DeBlock Mode is %d\n", __FUNCTION__, ret);
+            break;
+        case PQ_SET_DEMOSQUITO:
+            ret = mpPqClient->SetDeMosquitoMode(setValue[0], setValue[1]);
+            break;
+        case PQ_GET_DEMOSQUITO:
+            ret = mpPqClient->GetDeMosquitoMode();
+            LOGD("%s: curent DeMosquito Mode is %d\n", __FUNCTION__, ret);
+            break;
+        case PQ_SET_BLACKSTRETCH:
+            ret = mpPqClient->SetBlackStretch(setValue[0], setValue[1]);
+            break;
+        case PQ_GET_BLACKSTRETCH:
+            ret = mpPqClient->GetBlackStretch();
+            LOGD("%s: curent BlackStretch Mode is %d\n", __FUNCTION__, ret);
+            break;
+        case PQ_SET_BLUESTRETCH:
+            ret = mpPqClient->SetBlueStretch(setValue[0], setValue[1]);
+            break;
+        case PQ_GET_BLUESTRETCH:
+            ret = mpPqClient->GetBlueStretch();
+            LOGD("%s: curent BlueStretch Mode is %d\n", __FUNCTION__, ret);
+            break;
+        case PQ_GET_HAS_AIPQ:
+            ret = mpPqClient->HasAipqFunc();
+            break;
+        case PQ_SET_AIPQ:
+            ret = mpPqClient->SetAipqEnable(setValue[0]);
+            break;
+        case PQ_GET_AIPQ:
+            ret = mpPqClient->GetAipqEnable();
+            LOGD("%s: curent Aipq Enable is %d\n", __FUNCTION__, ret);
+            break;
+        case PQ_GET_HAS_AISR:
+            ret = mpPqClient->HasAisrFunc();
+            break;
+        case PQ_SET_AISR:
+            ret = mpPqClient->SetAiSrEnable(setValue[0]);
+            break;
+        case PQ_GET_AISR:
+            ret = mpPqClient->GetAiSrEnable();
+            LOGD("%s: curent AiSr Enable is %d\n", __FUNCTION__, ret);
+            break;
+        case PQ_SET_LDIM:
+            ret = mpPqClient->SetLdim(setValue[0], setValue[1]);
+            break;
+        case PQ_GET_LDIM:
+            ret = mpPqClient->GetLdim();
+            LOGD("%s: curent LDIM mode is %d\n", __FUNCTION__, ret);
+            break;
+        case PQ_SET_MPEGNR:
+            ret = mpPqClient->SetMpegNr(setValue[0], setValue[1]);
+            break;
+        case PQ_GET_MPEGNR:
+            ret = mpPqClient->GetMpegNr();
+            LOGD("%s: curent MPEG NR mode is %d\n", __FUNCTION__, ret);
+            break;
 
         //factory API
         case PQ_FACTORY_RESET_PICTURE_MODE:
@@ -390,6 +484,33 @@ int main(int argc, char **argv) {
     LOGD("#### select 236 to set DynamicContrast ####\n");
     LOGD("#### select 237 to get DynamicContrast ####\n");
     LOGD("#### select 238 to recovery ssm ####\n");
+    LOGD("#### select 239 to get has memc ####\n");
+    LOGD("#### select 240 to set Memc ####\n");
+    LOGD("#### select 241 to get Memc ####\n");
+    LOGD("#### select 242 to set Memc DeBlur ####\n");
+    LOGD("#### select 243 to get Memc DeBlur ####\n");
+    LOGD("#### select 244 to set Memc DeJudder ####\n");
+    LOGD("#### select 245 to get Memc DeJudder ####\n");
+    LOGD("#### select 246 to set DeContour ####\n");
+    LOGD("#### select 247 to get DeContour ####\n");
+    LOGD("#### select 248 to set DeBlock ####\n");
+    LOGD("#### select 249 to get DeBlock ####\n");
+    LOGD("#### select 250 to set DeMosquito ####\n");
+    LOGD("#### select 251 to get DeMosquito ####\n");
+    LOGD("#### select 252 to set BlackStretch ####\n");
+    LOGD("#### select 253 to get BlackStretch ####\n");
+    LOGD("#### select 254 to set BlueStretch ####\n");
+    LOGD("#### select 255 to get BlueStretch ####\n");
+    LOGD("#### select 256 to get has aipq ####\n");
+    LOGD("#### select 257 to set aipq ####\n");
+    LOGD("#### select 258 to get aipq ####\n");
+    LOGD("#### select 259 to get has aisr ####\n");
+    LOGD("#### select 260 to set aisr ####\n");
+    LOGD("#### select 261 to get aisr ####\n");
+    LOGD("#### select 262 to set LocalDimming ####\n");
+    LOGD("#### select 263 to get LocalDimming ####\n");
+    LOGD("#### select 264 to set MpegNr ####\n");
+    LOGD("#### select 265 to get MpegNr ####\n");
 
     LOGD("#### below is factory cmd####\n");
     LOGD("#### select 301 to reset pq mode ####\n");
@@ -775,6 +896,214 @@ int main(int argc, char **argv) {
           }
           case 238: {
               test->cmdID = PQ_SET_RECOVERYPQ;
+              break;
+          }
+          case 239: {
+              test->cmdID = PQ_GET_HAS_MEMC;
+              break;
+          }
+          case 240: {
+              LOGD("please input Memc mode value:(0~3)\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              test->cmdID = PQ_SET_MEMCMODE;
+              break;
+          }
+          case 241: {
+              test->cmdID = PQ_GET_MEMCMODE;
+              break;
+          }
+          case 242: {
+              LOGD("please input Memc DeBlur mode value:(0~3)\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              test->cmdID = PQ_SET_MEMC_DEBLUR;
+              break;
+          }
+          case 243: {
+              test->cmdID = PQ_GET_MEMC_DEBLUR;
+              break;
+          }
+          case 244: {
+              LOGD("please input Memc DeJudder mode value:(0~3)\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              test->cmdID = PQ_SET_MEMC_DEJUDDER;
+              break;
+          }
+          case 245: {
+              test->cmdID = PQ_GET_MEMC_DEJUDDER;
+              break;
+          }
+          case 246: {
+              LOGD("please input DeContour value:(0~3)\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              test->cmdID = PQ_SET_DECONTOUR;
+              break;
+          }
+          case 247: {
+              test->cmdID = PQ_GET_DECONTOUR;
+              break;
+          }
+          case 248: {
+              LOGD("please input DeBlock value:(0~4)\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              test->cmdID = PQ_SET_DEBLOCK;
+              break;
+          }
+          case 249: {
+              test->cmdID = PQ_GET_DEBLOCK;
+              break;
+          }
+          case 250: {
+              LOGD("please input DeMosquito value:(0~4)\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              test->cmdID = PQ_SET_DEMOSQUITO;
+              break;
+          }
+          case 251: {
+              test->cmdID = PQ_GET_DEMOSQUITO;
+              break;
+          }
+          case 252: {
+              LOGD("please input BlackStretch value:(0~3)\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              test->cmdID = PQ_SET_BLACKSTRETCH;
+              break;
+          }
+          case 253: {
+              test->cmdID = PQ_GET_BLACKSTRETCH;
+              break;
+          }
+          case 254: {
+              LOGD("please input BlueStretch value:(0~3)\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              LOGD("please input is save:(0~1)\n");
+              int is_save = 0;
+              scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              test->cmdID = PQ_SET_BLUESTRETCH;
+              break;
+          }
+          case 255: {
+              test->cmdID = PQ_GET_BLUESTRETCH;
+              break;
+          }
+          case 256: {
+              test->cmdID = PQ_GET_HAS_AIPQ;
+              break;
+          }
+          case 257: {
+              LOGD("please input aipq on off value:(0~1)\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              test->cmdID = PQ_SET_AIPQ;
+              break;
+          }
+          case 258: {
+              test->cmdID = PQ_GET_AIPQ;
+              break;
+          }
+          case 259: {
+              test->cmdID = PQ_GET_HAS_AISR;
+              break;
+          }
+          case 260: {
+              LOGD("please input aisr on off:(0~1)\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              test->cmdID = PQ_SET_AISR;
+              break;
+          }
+          case 261: {
+              test->cmdID = PQ_SET_AISR;
+              break;
+          }
+          case 262: {
+              LOGD("please input Ldim:(0~3)\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              test->cmdID = PQ_SET_LDIM;
+              break;
+          }
+          case 263: {
+              test->cmdID = PQ_GET_LDIM;
+              break;
+          }
+          case 264: {
+              LOGD("please input MpegNr:(0~3)\n");
+              int mode = 0;
+              scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              test->cmdID = PQ_SET_MPEGNR;
+              break;
+          }
+          case 265: {
+              test->cmdID = PQ_GET_MPEGNR;
               break;
           }
 

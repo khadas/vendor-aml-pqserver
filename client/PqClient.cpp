@@ -711,6 +711,424 @@ int PqClient::SSMRecovery(void)
     return ret;
 }
 
+int PqClient::HasMemcFunc()
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d", PQ_GET_HAS_MEMC);
+    SendMethodCall(buf);
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+
+}
+
+int PqClient::SetMemcMode(int mode, int isSave)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d", PQ_SET_MEMCMODE, mode, isSave);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::GetMemcMode()
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d", PQ_GET_MEMCMODE);
+    SendMethodCall(buf);
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::SetMemcDeBlurLevel(int mode, int isSave)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d", PQ_SET_MEMC_DEBLUR, mode, isSave);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::GetMemcDeBlurLevel()
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d", PQ_GET_MEMC_DEBLUR);
+    SendMethodCall(buf);
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::SetMemcDeJudderLevel(int mode, int isSave)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d", PQ_SET_MEMC_DEJUDDER, mode, isSave);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::GetMemcDeJudderLevel()
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d", PQ_GET_MEMC_DEJUDDER);
+    SendMethodCall(buf);
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::SetDecontourMode(int mode, int isSave)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d", PQ_SET_DECONTOUR, mode, isSave);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::GetDecontourMode()
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d", PQ_GET_DECONTOUR);
+    SendMethodCall(buf);
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::SetDeBlockMode(int mode, int isSave)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d", PQ_SET_DEBLOCK, mode, isSave);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::GetDeBlockMode()
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d", PQ_GET_DEBLOCK);
+    SendMethodCall(buf);
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::SetDeMosquitoMode(int mode, int isSave)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d", PQ_SET_DEMOSQUITO, mode, isSave);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::GetDeMosquitoMode()
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d", PQ_GET_DEMOSQUITO);
+    SendMethodCall(buf);
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::SetBlackStretch(int mode, int isSave)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d", PQ_SET_BLACKSTRETCH, mode, isSave);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::GetBlackStretch()
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d", PQ_GET_BLACKSTRETCH);
+    SendMethodCall(buf);
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::SetBlueStretch(int mode, int isSave)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d", PQ_SET_BLUESTRETCH, mode, isSave);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::GetBlueStretch()
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d", PQ_GET_BLUESTRETCH);
+    SendMethodCall(buf);
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::HasAipqFunc()
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d", PQ_GET_HAS_AIPQ);
+    SendMethodCall(buf);
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::SetAipqEnable(int mode)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d", PQ_SET_AIPQ, mode);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::GetAipqEnable()
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d", PQ_GET_AIPQ);
+    SendMethodCall(buf);
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::HasAisrFunc()
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d", PQ_GET_HAS_AISR);
+    SendMethodCall(buf);
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::SetAiSrEnable(int mode)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d", PQ_SET_AISR, mode);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::GetAiSrEnable()
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d", PQ_GET_AISR);
+    SendMethodCall(buf);
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::SetLdim(int mode, int isSave)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d", PQ_SET_LDIM, mode, isSave);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::GetLdim()
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d", PQ_GET_LDIM);
+    SendMethodCall(buf);
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::SetMpegNr(int mode, int isSave)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d", PQ_SET_MPEGNR, mode, isSave);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::GetMpegNr()
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d", PQ_SET_MPEGNR);
+    SendMethodCall(buf);
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
 //PQ Factory cmd
 int PqClient::FactoryResetPQMode(void)
 {

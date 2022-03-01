@@ -162,7 +162,7 @@ typedef enum pq_table_name_e {
     TABLE_NAME_HDR = 0x20000,   /*in vpp*/
     TABLE_NAME_DOLBY_VISION = 0x40000,/*in vpp*/
     TABLE_NAME_OVERSCAN = 0x80000,
-    TABLE_NAME_RESERVED1 = 0x100000,
+    TABLE_NAME_SMOOTHPLUS = 0x100000,
     TABLE_NAME_RESERVED2 = 0x200000,
     TABLE_NAME_RESERVED3 = 0x400000,
     TABLE_NAME_RESERVED4 = 0x800000,
@@ -264,4 +264,17 @@ typedef struct am_pic_mode_s {
     int vadj2_en;
 }am_pic_mode_t;
 
+typedef struct ai_pic_table_s {
+    unsigned int height;
+    unsigned int width;
+    union {
+        void *table_ptr;
+        long long table_len;
+    };
+} ai_pic_table_t;
+
+typedef struct cms_data_s {
+    int color;
+    int value;
+} cms_data_t;
 #endif  // _TVOUT_CM_H

@@ -398,3 +398,14 @@ dolby_pq_mode_t CDolbyVision::MappingPQModeToDolbyVisionPQMode(hdr_type_t hdrTyp
     return dolbyMode;
 }
 
+int CDolbyVision::SetDolbyPQDarkDetail(int mode) {
+    int ret = DV_DeviceIOCtl(DV_IOC_SET_DV_DARK_DETAIL, &mode);
+
+    if (ret < 0) {
+        LOGD("%s failed!\n", __FUNCTION__);
+    } else {
+        LOGD("%s success!\n", __FUNCTION__);
+    }
+
+    return ret;
+}

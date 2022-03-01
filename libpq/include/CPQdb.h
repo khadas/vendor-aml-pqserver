@@ -20,6 +20,10 @@
 
 #define PQ_DB_CODE_VERSION        20201211
 
+//pq db table name
+#define PQ_DB_HDRTMO_TABLE_NAME        "HDR_HDMI_NODE"
+#define PQ_DB_CABC_TABLE_NAME          "CABC_AAD_HDMI"
+
 typedef enum code_db_version_e {
     PQ_DB_CODE_VERSION_0 = 20191113,
     PQ_DB_CODE_VERSION_1 = 20201029,  //split hdr10/hdr10plus/hlg/dv
@@ -58,6 +62,7 @@ public:
     int PQ_GetMCDIParams(vpp_mcdi_mode_t mcdi_mode, source_input_param_t source_input_param, am_regs_t *regs);
     int PQ_GetDeblockParams(vpp_deblock_mode_t mode, source_input_param_t source_input_param, am_regs_t *regs);
     int PQ_GetNR2Params(vpp_noise_reduction_mode_t nr_mode, source_input_param_t source_input_param, am_regs_t *regs);
+    int PQ_GetSmoothPlusParams(vpp_smooth_plus_mode_t smoothplus_mode, source_input_param_t source_input_param, am_regs_t *regs);
     int PQ_GetDemoSquitoParams(vpp_DemoSquito_mode_e dem_mode, source_input_param_t source_input_param,  am_regs_t *regs);
     int getDIRegValuesByValue(const char *name, const char *f_name, const char *f2_name, const int val, const int val2, am_regs_t *regs);
     int PQ_GetColorTemperatureParams(vpp_color_temperature_mode_t Tempmode, source_input_param_t source_input_param, tcon_rgb_ogo_t *params);
@@ -97,9 +102,10 @@ public:
     int PQ_GetOverscanParams(source_input_param_t source_input_param, vpp_display_mode_t dmode, tvin_cutwin_t *cutwin_t);
     int PQ_SetOverscanParams(source_input_param_t source_input_param, tvin_cutwin_t cutwin_t);
     int PQ_ResetAllOverscanParams(void);
-    int PQ_GetPQModeParams(source_input_param_t source_input_param, vpp_picture_mode_t pq_mode, vpp_pq_para_t *params);
+    int PQ_GetPQModeParams(tv_source_input_t source_input, vpp_picture_mode_t pq_mode, vpp_pq_para_t *params);
     int PQ_SetPQModeParams(tv_source_input_t source_input, vpp_picture_mode_t pq_mode, vpp_pq_para_t *params);
     int PQ_ResetAllPQModeParams(void);
+    int PQ_GetPictureModeParams(pq_src_param_t source_input, vpp_picture_mode_t pq_mode, vpp_pictur_mode_para_t *params);
     int PQ_GetGammaTableR(int panel_id, source_input_param_t source_input_param, tcon_gamma_table_t *gamma_r);
     int PQ_GetGammaTableG(int panel_id, source_input_param_t source_input_param, tcon_gamma_table_t *gamma_g);
     int PQ_GetGammaTableB(int panel_id, source_input_param_t source_input_param, tcon_gamma_table_t *gamma_b);
@@ -108,7 +114,10 @@ public:
     int PQ_GetPLLParams(source_input_param_t source_input_param, am_regs_t *regs);
     int PQ_GetCVD2Params(source_input_param_t source_input_param, am_regs_t *regs);
     int PQ_GetLCDHDRInfoParams(source_input_param_t source_input_param, lcd_optical_info_t *newParams);
-    int PQ_GetLDIMParams(source_input_param_t source_input_param, aml_ldim_info_s *newParams);
+    int PQ_GetAIParams(source_input_param_t source_input_param, ai_pic_table_t *regs);
+    int PQ_GetHDRTMOParams(source_input_param_t source_input_param, hdr_tmo_t mode, hdr_tmo_sw_s *newParams);
+    int PQ_GetAADParams(source_input_param_t source_input_param, aad_param_t *newParams);
+    int PQ_GetCABCParams(source_input_param_t source_input_param, cabc_param_t *newParams);
     int openPqDB(const char *db_path);
     int reopenDB(const char *db_path);
     bool PQ_GetDataBaseAttribute(database_attribute_t *DbAttribute);
@@ -120,9 +129,14 @@ public:
     bool CheckHdrStatus(const char *tableName);
     bool CheckPQModeTableInDb(void);
     bool CheckIdExistInDb(const char *Id, const char *TableName);
+    int PQ_GetBlackStretchParams(int level, source_input_param_t source_input_param, am_regs_t *regs);
+    int PQ_GetBlueStretchParams(int level, source_input_param_t source_input_param, am_regs_t *regs);
+    int PQ_GetChromaCoringParams(int level, source_input_param_t source_input_param, am_regs_t *regs);
+    int PQ_GetLocalDimmingParams(int level, source_input_param_t source_input_param, aml_ldim_pq_s *newParams);
 
 private:
     std::string GetTableName(const char *GeneralTableName, source_input_param_t source_input_param);
+    std::string GetPqOsdTableName(const char *GeneralTableName, pq_src_param_t source_input_param);
     int CaculateLevelParam(tvpq_data_t *pq_data, int nodes, int level);
     am_regs_t CaculateLevelRegsParam(tvpq_sharpness_regs_t *pq_regs, int level, int sharpness_number);
     int GetNonlinearMapping(tvpq_data_type_t data_type, tv_source_input_t source_input, int level, int *params);

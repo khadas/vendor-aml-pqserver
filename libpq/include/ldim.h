@@ -36,9 +36,69 @@ struct vpu_ldim_param_s {
 	int lit_idx_th;
 	int comp_gain;
 };
-typedef enum ldim_lut_e {
-    bl_remap_curve = 1000,
-    LD_remap_LUT_0 = 1100,
+
+typedef struct aml_ldim_pq_s {
+    unsigned int func_en;
+    unsigned int remapping_en;
+
+    /* switch fw, use for custom fw. 0=aml_hw_fw, 1=aml_sw_fw */
+    unsigned int fw_sel;
+
+    /* fw parameters */
+    unsigned int ldc_hist_mode;
+    unsigned int ldc_hist_blend_mode;
+    unsigned int ldc_hist_blend_alpha;
+    unsigned int ldc_hist_adap_blend_max_gain;
+    unsigned int ldc_hist_adap_blend_diff_th1;
+    unsigned int ldc_hist_adap_blend_diff_th2;
+    unsigned int ldc_hist_adap_blend_th0;
+    unsigned int ldc_hist_adap_blend_thn;
+    unsigned int ldc_hist_adap_blend_gain_0;
+    unsigned int ldc_hist_adap_blend_gain_1;
+    unsigned int ldc_init_bl_min;
+    unsigned int ldc_init_bl_max;
+
+    unsigned int ldc_sf_mode;
+    unsigned int ldc_sf_gain_up;
+    unsigned int ldc_sf_gain_dn;
+    unsigned int ldc_sf_tsf_3x3;
+    unsigned int ldc_sf_tsf_5x5;
+
+    unsigned int ldc_bs_bl_mode;
+    //unsigned int ldc_glb_apl; //read only
+    unsigned int ldc_bs_glb_apl_gain;
+    unsigned int ldc_bs_dark_scene_bl_th;
+    unsigned int ldc_bs_gain;
+    unsigned int ldc_bs_limit_gain;
+    unsigned int ldc_bs_loc_apl_gain;
+    unsigned int ldc_bs_loc_max_min_gain;
+    unsigned int ldc_bs_loc_dark_scene_bl_th;
+
+    unsigned int ldc_tf_en;
+    //unsigned int ldc_tf_sc_flag; //read only
+    unsigned int ldc_tf_low_alpha;
+    unsigned int ldc_tf_high_alpha;
+    unsigned int ldc_tf_low_alpha_sc;
+    unsigned int ldc_tf_high_alpha_sc;
+
+    unsigned int ldc_dimming_curve_en;
+    unsigned int ldc_sc_hist_diff_th;
+    unsigned int ldc_sc_apl_diff_th;
+    unsigned int bl_remap_curve[17];
+
+    /* comp parameters */
+    unsigned int ldc_bl_buf_diff;
+    unsigned int ldc_glb_gain;
+    unsigned int ldc_dth_en;
+    unsigned int ldc_dth_bw;
+    unsigned int ldc_gain_lut[16][64];
+    unsigned int ldc_min_gain_lut[64];
+    unsigned int ldc_dither_lut[32][16];
+}aml_ldim_pq_t;
+
+typedef enum LD_lut_e {
+    LD_bl_remap_curve = 1000,
+    LD_remap_LUT_0    = 1100,
     LD_remap_LUT_1,
     LD_remap_LUT_2,
     LD_remap_LUT_3,
@@ -54,8 +114,10 @@ typedef enum ldim_lut_e {
     LD_remap_LUT_13,
     LD_remap_LUT_14,
     LD_remap_LUT_15,
-    fw_ld_whist = 1200
-} ldim_lut_t;
+    LD_min_gain_lut   = 1200,
+    LD_dither_lut     = 1300,
+} LD_lut_t;
+
 
 //////////for customer backlight local dimming
 typedef struct aml_ldim_info_s {

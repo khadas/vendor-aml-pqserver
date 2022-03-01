@@ -23,7 +23,7 @@ public:
     int PQ_GetOverscanParams(source_input_param_t source_input_param, vpp_display_mode_t dmode, tvin_cutwin_t *cutwin_t);
     int PQ_SetOverscanParams(source_input_param_t source_input_param, tvin_cutwin_t cutwin_t);
     int PQ_ResetAllOverscanParams(void);
-    int PQ_GetPQModeParams(source_input_param_t source_input_param, vpp_picture_mode_t pq_mode, vpp_pq_para_t *params);
+    int PQ_GetPQModeParams(tv_source_input_t source_input, vpp_picture_mode_t pq_mode, vpp_pq_para_t *params);
     int PQ_SetPQModeParams(tv_source_input_t source_input, vpp_picture_mode_t pq_mode, vpp_pq_para_t *params);
     int PQ_SetPQModeParamsByName(const char *name, tv_source_input_t source_input, vpp_picture_mode_t pq_mode, vpp_pq_para_t *params);
     int PQ_ResetAllPQModeParams(void);

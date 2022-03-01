@@ -18,6 +18,9 @@
 // ***************************************************************************
 // *** enum definitions *********************************************
 // ***************************************************************************
+
+#define MAX_PICTUREMODE_PARAM_SIZE                100
+
 typedef enum output_type_e {
     OUTPUT_TYPE_LVDS = -1,
     OUTPUT_TYPE_PAL,
@@ -115,6 +118,15 @@ typedef enum vpp_noise_reduction_mode_e {
     VPP_NOISE_REDUCTION_MODE_MAX,
 } vpp_noise_reduction_mode_t;
 
+typedef enum vpp_smooth_plus_mode_e {
+    VPP_SMOOTH_PLUS_MODE_OFF,
+    VPP_SMOOTH_PLUS_MODE_LOW,
+    VPP_SMOOTH_PLUS_MODE_MID,
+    VPP_SMOOTH_PLUS_MODE_HIGH,
+    VPP_SMOOTH_PLUS_MODE_AUTO,
+    VPP_SMOOTH_PLUS_MODE_MAX,
+} vpp_smooth_plus_mode_t;
+
 typedef enum vpp_xvycc_mode_e {
     VPP_XVYCC_MODE_OFF,
     VPP_XVYCC_MODE_STANDARD,
@@ -153,6 +165,26 @@ typedef struct vpp_pq_para_s {
     int cm_level;
 } vpp_pq_para_t;
 
+typedef struct vpp_pictur_mode_para_s {
+    int Brightness;
+    int Contrast;
+    int Saturation;
+    int Hue;
+    int Sharpness;
+    int Backlight;
+    int Nr;
+    int DynamicContrast;
+    int ColorGamut;
+    int ColorTemperature;
+    int LocalContrast;
+    int BlackStretch;
+    int BlueStretch;
+    int MpegNr;
+    int ChromaCoring;
+    int DolbyMode;
+    int DolbyDarkDetail;
+} vpp_pictur_mode_para_t;
+
 typedef enum vpp_gamma_curve_e {
     VPP_GAMMA_CURVE_DEFAULT,//choose gamma table by value has been saved.
     VPP_GAMMA_CURVE_1,
@@ -168,6 +200,14 @@ typedef enum vpp_gamma_curve_e {
     VPP_GAMMA_CURVE_11,
     VPP_GAMMA_CURVE_MAX,
 } vpp_gamma_curve_t;
+
+typedef enum vpp_memc_mode_e {
+    VPP_MEMC_MODE_OFF,
+    VPP_MEMC_MODE_LOW,
+    VPP_MEMC_MODE_MID,
+    VPP_MEMC_MODE_HIGH,
+    VPP_MEMC_MODE_MAX,
+} vpp_memc_mode_t;
 
 typedef enum tv_source_input_type_e {
     SOURCE_TYPE_TV,
@@ -517,43 +557,28 @@ typedef enum vpp_picture_mode_e {
     VPP_PICTURE_MODE_MONITOR,
     VPP_PICTURE_MODE_GAME,
     VPP_PICTURE_MODE_SPORTS,
-    VPP_PICTURE_MODE_HDR10_STANDARD = 20,
-    VPP_PICTURE_MODE_HDR10_BRIGHT,
-    VPP_PICTURE_MODE_HDR10_SOFT,
-    VPP_PICTURE_MODE_HDR10_USER,
-    VPP_PICTURE_MODE_HDR10_MOVIE,
-    VPP_PICTURE_MODE_HDR10_COLORFUL,
-    VPP_PICTURE_MODE_HDR10_MONITOR,
-    VPP_PICTURE_MODE_HDR10_GAME,
-    VPP_PICTURE_MODE_HDR10_SPORT,
-    VPP_PICTURE_MODE_HDR10_DV_BRIGHT,
-    VPP_PICTURE_MODE_HDR10_DV_DARK,
-    VPP_PICTURE_MODE_HDR10PLUS_STANDARD = 40,
-    VPP_PICTURE_MODE_HDR10PLUS_BRIGHT,
-    VPP_PICTURE_MODE_HDR10PLUS_SOFT,
-    VPP_PICTURE_MODE_HDR10PLUS_USER,
-    VPP_PICTURE_MODE_HDR10PLUS_MOVIE,
-    VPP_PICTURE_MODE_HDR10PLUS_COLORFUL,
-    VPP_PICTURE_MODE_HDR10PLUS_MONITOR,
-    VPP_PICTURE_MODE_HDR10PLUS_GAME,
-    VPP_PICTURE_MODE_HDR10PLUS_SPORT,
-    VPP_PICTURE_MODE_HLG_STANDARD = 60,
-    VPP_PICTURE_MODE_HLG_BRIGHT,
-    VPP_PICTURE_MODE_HLG_SOFT,
-    VPP_PICTURE_MODE_HLG_USER,
-    VPP_PICTURE_MODE_HLG_MOVIE,
-    VPP_PICTURE_MODE_HLG_COLORFUL,
-    VPP_PICTURE_MODE_HLG_MONITOR,
-    VPP_PICTURE_MODE_HLG_GAME,
-    VPP_PICTURE_MODE_HLG_SPORT,
-    VPP_PICTURE_MODE_HLG_DV_BRIGHT,
-    VPP_PICTURE_MODE_HLG_DV_DARK,
-    VPP_PICTURE_MODE_DV_BRIGHT = 80,
+    VPP_PICTURE_MODE_SONY,
+    VPP_PICTURE_MODE_SAMSUNG,
+    VPP_PICTURE_MODE_SHARP,
+    VPP_PICTURE_MODE_DV_BRIGHT,
     VPP_PICTURE_MODE_DV_DARK,
-    VPP_PICTURE_MODE_DV_RESERVED,
-    VPP_PICTURE_MODE_DV_USER   = 83,
     VPP_PICTURE_MODE_MAX,
 } vpp_picture_mode_t;
+
+typedef enum pq_sig_fmt_e {
+    PQ_FMT_DEFAUT = 0,
+    PQ_FMT_SDR,
+    PQ_FMT_HDR,
+    PQ_FMT_HDRP,
+    PQ_FMT_HLG,
+    PQ_FMT_DOBLY,
+    PQ_FMT_MAX,
+} pq_sig_fmt_t;
+
+typedef struct pq_src_param_s {
+    tv_source_input_t pq_source_input;
+    pq_sig_fmt_t pq_sig_fmt;
+} pq_src_param_t;
 
 typedef enum tvpq_data_type_e {
     TVPQ_DATA_BRIGHTNESS,
@@ -654,6 +679,14 @@ typedef enum local_contrast_mode_e
     LOCAL_CONTRAST_MODE_MAX,
 } local_contrast_mode_t;
 
+typedef enum hdr_tmo_e
+{
+    HDR_TMO_OFF = 0,
+    HDR_TMO_DYNAMIC,
+    HDR_TMO_STATIC,
+    HDR_TMO_MAX,
+} hdr_tmo_t;
+
 typedef struct noline_params_s {
     int osd0;
     int osd25;
@@ -661,6 +694,14 @@ typedef struct noline_params_s {
     int osd75;
     int osd100;
 } noline_params_t;
+
+typedef enum vpp_pq_level_e {
+    VPP_PQ_LV_OFF,
+    VPP_PQ_LV_LOW,
+    VPP_PQ_LV_MID,
+    VPP_PQ_LV_HIGH,
+    VPP_PQ_LV_MAX,
+} vpp_pq_level_t;
 
 // ***************************************************************************
 // *** struct definitions *********************************************

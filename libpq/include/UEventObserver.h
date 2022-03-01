@@ -24,8 +24,8 @@
 
 #include "CPQLog.h"
 
-#define FRAME_RATE_VDIN0_UEVENT                 "DEVTYPE=vdin0event"
-#define FRAME_RATE_VDIN1_UEVENT                 "DEVTYPE=vdin1event"
+#define FRAME_RATE_VDIN0_UEVENT                 "change@/devices/platform/vdin@0/vdin/vdin0event"
+#define FRAME_RATE_VDIN1_UEVENT                 "change@/devices/platform/vdin@1/vdin/vdin1event"
 
 typedef struct uevent_data {
     int len;

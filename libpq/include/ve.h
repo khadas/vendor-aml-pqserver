@@ -405,6 +405,43 @@ typedef struct ve_regmap_s {
     unsigned long reg[43];
 } ve_regmap_t;
 
+/*adjust for user*/
+typedef struct hdr_tmo_sw_s {
+    int tmo_en;              // 0 1
+    int reg_highlight;       //u10: control overexposure level
+    int reg_hist_th;         //u7
+    int reg_light_th;
+    int reg_highlight_th1;
+    int reg_highlight_th2;
+    int reg_display_e;       //u10
+    int reg_middle_a;        //u7
+    int reg_middle_a_adj;    //u10
+    int reg_middle_b;        //u7
+    int reg_middle_s;        //u7
+    int reg_max_th1;          //u10
+    int reg_middle_th;          //u10
+    int reg_thold1;          //u10
+    int reg_thold2;          //u10
+    int reg_thold3;          //u10
+    int reg_thold4;          //u10
+    int reg_max_th2;          //u10
+    int reg_pnum_th;          //u16
+    int reg_hl0;
+    int reg_hl1;             //u7
+    int reg_hl2;             //u7
+    int reg_hl3;             //u7
+    int reg_display_adj;     //u7
+    int reg_avg_th;
+    int reg_avg_adj;
+    int reg_low_adj;         //u7
+    int reg_high_en;         //u3
+    int reg_high_adj1;       //u7
+    int reg_high_adj2;       //u7
+    int reg_high_maxdiff;    //u7
+    int reg_high_mindiff;    //u7
+    unsigned int alpha;
+}hdr_tmo_sw_t;
+
 //////////for customer DNLP
 typedef struct ve_dnlp_curve_param_s {
     unsigned int ve_dnlp_scurv_low[65];
@@ -485,6 +522,138 @@ typedef struct vpp_pq_ctrl_s {
         long long ptr_length;
     };
 } vpp_pq_ctrl_t;
+
+struct db_cabc_aad_param_s {
+    unsigned int length;
+    union {
+        void *cabc_aad_param_ptr;
+        long long cabc_aad_param_ptr_len;
+    };
+};
+
+typedef struct db_cabc_param_s {
+    int cabc_param_cabc_en;
+    int cabc_param_hist_mode;
+    int cabc_param_tf_en;
+    int cabc_param_sc_flag;
+    int cabc_param_bl_map_mode;
+    int cabc_param_bl_map_en;
+    int cabc_param_temp_proc;
+    int cabc_param_max95_ratio;
+    int cabc_param_hist_blend_alpha;
+    int cabc_param_init_bl_min;
+    int cabc_param_init_bl_max;
+    int cabc_param_tf_alpha;
+    int cabc_param_sc_hist_diff_thd;
+    int cabc_param_sc_apl_diff_thd;
+    int cabc_param_patch_bl_th;
+    int cabc_param_patch_on_alpha;
+    int cabc_param_patch_bl_off_th;
+    int cabc_param_patch_off_alpha;
+    struct db_cabc_aad_param_s db_o_bl_cv;
+    struct db_cabc_aad_param_s db_maxbin_bl_cv;
+}db_cabc_param_t;
+
+#define CABC_O_BL_CV_MAX       15
+#define CABC_MAXBIN_BL_CV_MAX  15
+
+typedef struct cabc_param_s {
+    int cabc_param_cabc_en;
+    int cabc_param_hist_mode;
+    int cabc_param_tf_en;
+    int cabc_param_sc_flag;
+    int cabc_param_bl_map_mode;
+    int cabc_param_bl_map_en;
+    int cabc_param_temp_proc;
+    int cabc_param_max95_ratio;
+    int cabc_param_hist_blend_alpha;
+    int cabc_param_init_bl_min;
+    int cabc_param_init_bl_max;
+    int cabc_param_tf_alpha;
+    int cabc_param_sc_hist_diff_thd;
+    int cabc_param_sc_apl_diff_thd;
+    int cabc_param_patch_bl_th;
+    int cabc_param_patch_on_alpha;
+    int cabc_param_patch_bl_off_th;
+    int cabc_param_patch_off_alpha;
+    int cabc_param_o_bl_cv_len;
+    int cabc_param_o_bl_cv[CABC_O_BL_CV_MAX];
+    int cabc_param_maxbin_bl_cv_len;
+    int cabc_param_maxbin_bl_cv[CABC_MAXBIN_BL_CV_MAX];
+}cabc_param_t;
+
+typedef enum aad_curve_e {
+    LUT_Y_gain = 400,
+    LUT_RG_gain,
+    LUT_BG_gain,
+    gain_lut,
+    xy_lut,
+    sensor_input,
+} add_curve_t;
+
+typedef struct db_aad_param_s {
+    int aad_param_cabc_aad_en;
+    int aad_param_aad_en;
+    int aad_param_tf_en;
+    int aad_param_force_gain_en;
+    int aad_param_sensor_mode;
+    int aad_param_mode;
+    int aad_param_dist_mode;
+    int aad_param_tf_alpha;
+    int aad_param_sensor_input[3];
+    struct db_cabc_aad_param_s db_LUT_Y_gain;
+    struct db_cabc_aad_param_s db_LUT_RG_gain;
+    struct db_cabc_aad_param_s db_LUT_BG_gain;
+    struct db_cabc_aad_param_s db_gain_lut;
+    struct db_cabc_aad_param_s db_xy_lut;
+}db_aad_param_t;
+
+#define CAAD_SENSOR_INPUT_MAX  3
+#define CAAD_LUT_Y_GAIN_MAX    20
+#define CAAD_LUT_RG_GAIN_MAX   20
+#define CAAD_LUT_BG_GAIN_MAX   20
+#define CAAD_GAIN_LUT_MAX      50
+#define CAAD_XY_LUT_MAX        40
+
+
+typedef struct aad_param_s {
+    int aad_param_cabc_aad_en;
+    int aad_param_aad_en;
+    int aad_param_tf_en;
+    int aad_param_force_gain_en;
+    int aad_param_sensor_mode;
+    int aad_param_mode;
+    int aad_param_dist_mode;
+    int aad_param_tf_alpha;
+    int aad_param_sensor_input_len;
+    int aad_param_sensor_input[CAAD_SENSOR_INPUT_MAX];
+    int aad_param_LUT_Y_gain_len;
+    int aad_param_LUT_Y_gain[CAAD_LUT_Y_GAIN_MAX];
+    int aad_param_LUT_RG_gain_len;
+    int aad_param_LUT_RG_gain[CAAD_LUT_RG_GAIN_MAX];
+    int aad_param_LUT_BG_gain_len;
+    int aad_param_LUT_BG_gain[CAAD_LUT_BG_GAIN_MAX];
+    int aad_param_gain_lut_len;
+    int aad_param_gain_lut[CAAD_GAIN_LUT_MAX];
+    int aad_param_xy_lut_len;
+    int aad_param_xy_lut[CAAD_XY_LUT_MAX];
+}aad_param_t;
+
+typedef enum lut_type_e {
+    LUT_TYPE_HLG = 1,
+    LUT_TYPE_HDR = 2,
+    LUT_TYPE_MAX
+} lut_type_t;
+
+/*tone mapping struct*/
+typedef struct hdr_tone_mapping_s {
+    lut_type_t lut_type;
+    unsigned int lutlength;
+    union {
+    void *tm_lut;
+    long long tm_lut_len;
+    };
+} vpp_hdr_tone_mapping_t;
 
 // ***************************************************************************
 // *** MACRO definitions **********

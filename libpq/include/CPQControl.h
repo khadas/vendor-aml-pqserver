@@ -60,6 +60,9 @@
 #define NR2_MODULE_CONTROL_PATH          "/sys/module/di/parameters/nr2_en"      //noisereduction control
 #define MCDI_MODULE_CONTROL_PATH         "/sys/module/di/parameters/mcen_mode"  //mcdi control
 #define VPP_MODULE_COLORGAMUT_PATH       "/sys/module/am_vecm/parameters/primary_policy"
+#define VIDEO_AISR_ENABLE                "/sys/module/aml_media/parameters/uvm_open_nn"
+#define VDETECT_AIPQ_ENABLE              "/sys/class/vdetect/aipq_enable"
+#define DECODER_COMMON_PARAMETERS_DEBUG_VDETECT "/sys/module/decoder_common/parameters/debug_vdetect"
 
 #define TVIN_IOC_MAGIC 'T'
 #define TVIN_IOC_LOAD_REG           _IOW(TVIN_IOC_MAGIC, 0x20, struct am_regs_s)
@@ -118,6 +121,13 @@
 #define SHARPNESS_HD_BP_DIAG_CORE        (0x3290)
 #define SHARPNESS_HD_PKGAIN_VSLUMA       (0x32fe)
 
+//memc
+#define PROP_CPQ_MEMC               "persist.vendor.sys.memc"
+#define CPQ_MEMC_SYSFS              "/dev/frc"
+#define MEMDEV_CONTRL               _IOW('F', 0x06, unsigned int)
+#define FRC_IOC_SET_MEMC_LEVEL      _IOW('F', 0x07, unsigned int)
+#define FRC_IOC_SET_MEMC_DEMO       _IOW('F', 0x08, unsigned int)
+
 typedef enum db_name_e {
     DB_NAME_PQ = 0,
     DB_NAME_OVERSCAN,
@@ -149,12 +159,15 @@ public:
     virtual void onVframeSizeChange();
     virtual void onTXStatusChange();
     virtual void resetAllUserSettingParam();
+    virtual void resetPQUiSetting(void);
+    virtual void resetPQTableSetting(void);
     virtual void Set_Backlight(int value);
     virtual void GetDynamicBacklighConfig(int *thtf, int *lut_mode, int *heigh_param, int *low_param);
     virtual void GetDynamicBacklighParam(dynamic_backlight_Param_t *DynamicBacklightParam);
     int ResetPQModeSetting(tv_source_input_t source_input, vpp_picture_mode_t pq_mode);
-    vpp_picture_mode_t SetPQModeBySignal();
     int LoadPQSettings();
+    int LoadPQUISettings();
+    int LoadPQTableSettings(void);
     int LoadCpqLdimRegs(void);
     int Cpq_LoadRegs(am_regs_t regs);
     int Cpq_LoadDisplayModeRegs(ve_pq_load_t regs);
@@ -164,34 +177,11 @@ public:
     int ResetLastPQSettingsSourceType(void);
     int BacklightInit(void);
     //PQ mode
-    vpp_picture_mode_t getSDR(vpp_picture_mode_t pq_mode);
-    vpp_picture_mode_t getHDR10(vpp_picture_mode_t pq_mode);
-    vpp_picture_mode_t getHDR10PLUS(vpp_picture_mode_t pq_mode);
-    vpp_picture_mode_t getHLG(vpp_picture_mode_t pq_mode);
-    vpp_picture_mode_t getActualPQMode(vpp_picture_mode_t pq_mode);
-    inline bool ispqmodecheckhdr(vpp_picture_mode_t pq_mode);
-    inline bool ispqmodechecksource();
-    inline bool ispqparamchecksource();
-    inline bool ispqparamcheckhdr(vpp_picture_mode_t pq_mode);
     int SetPQMode(int pq_mode, int is_save);
     int GetPQMode(void);
     int SavePQMode(int pq_mode);
     int GetLastPQMode(void);
     int SaveLastPQMode(int pq_mode);
-    int GetSDRPQMode(void);
-    int SaveSDRPQMode(int pq_mode);
-    int SaveSDRPQModeAllSrc(int pq_mode);
-    int GetHDR10PQMode(void);
-    int SaveHDR10PQMode(int pq_mode);
-    int SaveHDR10PQModeAllSrc(int pq_mode);
-    int GetHDR10PLUSPQMode(void);
-    int SaveHDR10PLUSPQMode(int pq_mode);
-    int SaveHDR10PLUSPQModeAllSrc(int pq_mode);
-    int GetHLGPQMode(void);
-    int SaveHLGPQMode(int pq_mode);
-    int SaveHLGPQModeAllSrc(int pq_mode);
-    int GetDVPQMode(void);
-    int SaveDVPQMode(int pq_mode);
     int Cpq_SetVppPCMode(game_pc_mode_t pcStatus);
     int Cpq_SetVdinPCMode(game_pc_mode_t pcStatus);
     int Cpq_SetPCMode(game_pc_mode_t pcStatus);
@@ -200,12 +190,17 @@ public:
     int Cpq_SetPQMode(vpp_picture_mode_t pq_mode, source_input_param_t source_input_param);
     int SetPQParams(source_input_param_t source_input_param, vpp_picture_mode_t pq_mode, vpp_pq_para_t pq_para);
     int GetPQParams(source_input_param_t source_input_param, vpp_picture_mode_t pq_mode, vpp_pq_para_t *pq_para);
+    int SetPictureModeData(pq_src_param_t source_input, vpp_picture_mode_t picmode, vpp_pictur_mode_para_t *params);
+    int GetPictureModeData(pq_src_param_t source_input, vpp_picture_mode_t picmode, vpp_pictur_mode_para_t *params);
+    int RsetPictureModeData(pq_src_param_t source_input, vpp_picture_mode_t picmode);
+    void SetPcGameMode(vpp_picture_mode_t pq_mode);
+    int Set_PictureMode(vpp_picture_mode_t pq_mode, pq_src_param_t source_input_param);
+    int SetFacColorParams(source_input_param_t source_input_param, vpp_picture_mode_t pqMode);
+
     //color Temperature
     int SetUserGammaValue(int level, vpp_color_temperature_mode_t color_mode);
     int SetColorTemperature(int temp_mode, int is_save, rgb_ogo_type_t rgb_ogo_type = TYPE_INVALID, int value = -1);
     int GetColorTemperature(void);
-    int SaveColorTemperatureToSSM(int value, vpp_picture_mode_t pq_mode, tv_source_input_t srcInput);
-    int SaveColorTemperatureAllSrc(int value, vpp_picture_mode_t pq_mode);
     int SaveColorTemperature(int value);
     tcon_rgb_ogo_t GetColorTemperatureUserParam(void);
     int Cpq_SetColorTemperatureWithoutSave(vpp_color_temperature_mode_t Tempmode, tv_source_input_t tv_source_input __unused);
@@ -226,8 +221,6 @@ public:
     //Brightness
     int SetBrightness(int value, int is_save);
     int GetBrightness(void);
-    int SaveBrightnessToSSM(int value, vpp_picture_mode_t pq_mode, tv_source_input_t srcInput);
-    int SaveBrightnessAllSrc(int value, vpp_picture_mode_t pq_mode);
     int SaveBrightness(int value);
     int Cpq_SetBrightnessBasicParam(source_input_param_t source_input_param);
     int Cpq_SetBrightness(int value, source_input_param_t source_input_param);
@@ -235,8 +228,6 @@ public:
     //Contrast
     int SetContrast(int value, int is_save);
     int GetContrast(void);
-    int SaveContrastToSSM(int value, vpp_picture_mode_t pq_mode, tv_source_input_t srcInput);
-    int SaveContrastAllSrc(int value, vpp_picture_mode_t pq_mode);
     int SaveContrast(int value);
     int Cpq_SetContrastBasicParam(source_input_param_t source_input_param);
     int Cpq_SetContrast(int value, source_input_param_t source_input_param);
@@ -244,16 +235,12 @@ public:
     //Saturation
     int SetSaturation(int value, int is_save);
     int GetSaturation(void);
-    int SaveSaturationToSSM(int value, vpp_picture_mode_t pq_mode, tv_source_input_t srcInput);
-    int SaveSaturationAllSrc(int value, vpp_picture_mode_t pq_mode);
     int SaveSaturation(int value);
     int Cpq_SetSaturationBasicParam(source_input_param_t source_input_param);
     int Cpq_SetSaturation(int value, source_input_param_t source_input_param);
     //Hue
     int SetHue(int value, int is_save);
     int GetHue(void);
-    int SaveHueToSSM(int value, vpp_picture_mode_t pq_mode, tv_source_input_t srcInput);
-    int SaveHueAllSrc(int value, vpp_picture_mode_t pq_mode);
     int SaveHue(int value);
     int Cpq_SetHueBasicParam(source_input_param_t source_input_param);
     int Cpq_SetHue(int value, source_input_param_t source_input_param);
@@ -263,8 +250,6 @@ public:
     //Sharpness
     int SetSharpness(int value, int is_enable, int is_save);
     int GetSharpness(void);
-    int SaveSharpnessToSSM(int value, vpp_picture_mode_t pq_mode, tv_source_input_t srcInput);
-    int SaveSharpnessAllSrc(int value, vpp_picture_mode_t pq_mode);
     int SaveSharpness(int value);
     int Cpq_SetSharpness(int value, source_input_param_t source_input_param);
     int Cpq_SetSharpness0FixedParam(source_input_param_t source_input_param);
@@ -274,13 +259,28 @@ public:
     //NoiseReductionMode
     int SetNoiseReductionMode(int nr_mode, int is_save);
     int GetNoiseReductionMode(void);
-    int SaveNoiseReductionToSSM(int value, vpp_picture_mode_t pq_mode, tv_source_input_t srcInput);
-    int SaveNoiseReductionAllSrc(int value, vpp_picture_mode_t pq_mode);
     int SaveNoiseReductionMode(int nr_mode);
     int Cpq_SetNoiseReductionMode(vpp_noise_reduction_mode_t nr_mode, source_input_param_t source_input_param);
     //GammaValue
     int SetGammaValue(vpp_gamma_curve_t gamma_curve, int is_save);
     int GetGammaValue();
+    //Memc
+    bool hasMemcFunc();
+    int initMemc(void);
+    int Memc_enable(int enable);
+    int SetMemcMode(int memc_mode, int is_save);
+    int GetMemcMode(void);
+    int SaveMemcMode(vpp_memc_mode_t memc_mode);
+    int Cpq_SetMemcMode(vpp_memc_mode_t memc_mode, source_input_param_t source_input_param);
+    int SetMemcDeBlurLevel(int level, int is_save);
+    int GetMemcDeBlurLevel(void);
+    int SaveMemcDeBlurLevel(int level);
+    int Cpq_SetMemcDeBlurLevel(int level, source_input_param_t source_input_param);
+    int SetMemcDeJudderLevel(int level, int is_save);
+    int GetMemcDeJudderLevel(void);
+    int SaveMemcDeJudderLevel(int level);
+    int Cpq_SetMemcDeJudderLevel(int level, source_input_param_t source_input_param);
+
     //Displaymode
     int SetDisplayMode(vpp_display_mode_t display_mode, int is_save);
     int GetDisplayMode(void);
@@ -294,26 +294,47 @@ public:
     //LCD HDR INFO
     int SetLCDhdrinfo(void);
     int Cpq_SetHdrInfo(const lcd_optical_info_t *plcd_hdrinfo);
-    //Local dimming
-    int SetLdim(void);
-    int Cpq_SetLdim(const aml_ldim_info_s *pldim);
+
     //Backlight
     int SetBacklight(int value, int is_save);
     int GetBacklight(void);
-    int SaveBacklightToSSM(int value, vpp_picture_mode_t pq_mode, tv_source_input_t srcInput);
-    int SaveBacklightAllSrc(int value, vpp_picture_mode_t pq_mode);
     int SaveBacklight(int value);
     int Cpq_SetBackLight(int value);
     void Cpq_GetBacklight(int *value);
     int SetDynamicBacklight(Dynamic_backlight_status_t mode, int is_save);
     int GetDynamicBacklight(void);
     int GetVideoPlayStatus(void);
+    //smooth plus
+    int SetSmoothPlusMode(int smoothplus_mode, int is_save);
+    int GetSmoothPlusMode(void);
+    int SaveSmoothPlusMode(int smoothplus_mode);
+    int Cpq_SetSmoothPlusMode(vpp_smooth_plus_mode_t smoothplus_mode, source_input_param_t source_input_param);
     //local contrast
     int SetLocalContrastMode(local_contrast_mode_t mode, int is_save);
     int GetLocalContrastMode(void);
-    int SaveLocalContrastModeToSSM(int value, vpp_picture_mode_t pq_mode, tv_source_input_t srcInput);
-    int SaveLocalContrastModeAllSrc(int value, vpp_picture_mode_t pq_mode);
     int SaveLocalContrastMode(local_contrast_mode_t mode);
+    int Cpq_SetLocalContrastMode(local_contrast_mode_t mode);
+
+    //MpegNr
+    int SetMpegNr(vpp_pq_level_t mode, int is_save);
+    int GetMpegNr(void);
+    int SaveMpegNr(vpp_pq_level_t mode);
+    int Cpq_SetMpegNr(vpp_pq_level_t mode, source_input_param_t source_input_param);
+    //DI deblock
+    int SetDeblockMode(vpp_deblock_mode_t mode, int is_save);
+    int GetDeblockMode(void);
+    int SaveDeblockMode(vpp_deblock_mode_t mode);
+    int Cpq_SetDeblockMode(vpp_deblock_mode_t deblock_mode, source_input_param_t source_input_param);
+    //DI demosquito
+    int SetDemoSquitoMode(vpp_DemoSquito_mode_t mode, int is_save);
+    int GetDemoSquitoMode(void);
+    int SaveDemoSquitoMode(vpp_DemoSquito_mode_t mode);
+    int Cpq_SetDemoSquitoMode(vpp_DemoSquito_mode_t DeMosquito_mode, source_input_param_t source_input_param);
+    //DI MCDI
+    int SetMcDiMode(vpp_mcdi_mode_e mode, int is_save);
+    int GetMcDiMode(void);
+    int SaveMcDiMode(vpp_mcdi_mode_e mode);
+    int Cpq_SetMcDiMode(vpp_mcdi_mode_e McDi_mode, source_input_param_t source_input_param);
     //color base
     int SetColorDemoMode(vpp_color_demomode_t demomode);
     int SetColorBaseMode(vpp_color_basemode_t basemode, int isSave);
@@ -322,22 +343,18 @@ public:
     int SaveColorBaseModeAllSrc(int value, vpp_picture_mode_t pq_mode);
     int SaveColorBaseMode(vpp_color_basemode_t basemode);
     int Cpq_SetColorBaseMode(vpp_color_basemode_t basemode, source_input_param_t source_input_param);
-    //color gamut
-    int SetColorGamutMode(vpp_colorgamut_mode_t value, int is_save);
-    int GetColorGamutMode(void);
-    int SaveColorGamutModeToSSM(int value, vpp_picture_mode_t pq_mode, tv_source_input_t srcInput);
-    int SaveColorGamutModeAllSrc(int value, vpp_picture_mode_t pq_mode);
-    int SaveColorGamutMode(vpp_colorgamut_mode_t value);
-    int Cpq_SetColorGamutMode(vpp_colorgamut_mode_t value, source_input_param_t source_input_param);
 
     //BlackExtension
     int SetBlackExtensionParam(source_input_param_t source_input_param);
+    int Cpq_SetCABC(const db_cabc_param_t *pCABC);
+    int SetCabc(void);
+    int Cpq_SetAAD(const db_aad_param_t *pAAD);
+    int SetAad(void);
     //dynamic contrast
     int SetDnlpMode(Dynamic_contrast_mode_t mode, int is_save);
     int GetDnlpMode();
-    int SaveDnlpModeToSSM(int value, vpp_picture_mode_t pq_mode, tv_source_input_t srcInput);
-    int SaveDnlpModeAllSrc(int value, vpp_picture_mode_t pq_mode);
     int SaveDnlpMode(Dynamic_contrast_mode_t mode);
+    int Cpq_SetDnlpMode(Dynamic_contrast_mode_t level, source_input_param_t source_input_param);
     int Cpq_SetVENewDNLP(const ve_dnlp_curve_param_t *pDNLP);
     int Cpq_SetDNLPStatus(ve_dnlp_state_t status);
 
@@ -411,6 +428,7 @@ public:
     source_input_param_t GetCurrentSourceInputInfo();
     int GetHistParam(ve_hist_t *hist);
     bool isFileExist(const char *file_name);
+
     int GetRGBPattern();
     int SetRGBPattern(int r, int g, int b);
     int FactorySetDDRSSC (int step);
@@ -420,12 +438,63 @@ public:
     int SetLVDSSSC(int step);
     int SetGrayPattern(int value);
     int GetGrayPattern();
+    //HDR
     int SetHDRMode(int mode);
     int GetHDRMode(void);
     int GetSourceHDRType();
     tvpq_databaseinfo_t GetDBVersionInfo(db_name_t name);
     int SetCurrentHdrInfo (int hdrInfo);
     int SetDtvKitSourceEnable(bool isEnable);
+    //AI
+    void AipqInit();
+    int SetAipqEnable(bool isEnable);
+    int GetAipqEnable(void);
+    void enableAipq(bool isEnable);
+    int AiParamLoad(void);
+    //AI SR
+    bool hasAisrFunc();
+    int SetAiSrEnable(bool isEnable);
+    int GetAiSrEnable(void);
+    int SaveAiSrEnable(bool enable);
+    int Cpq_SetAiSrEnable(bool enable);
+    //color gamut
+    int SetColorGamutMode(vpp_colorgamut_mode_t value, int is_save);
+    int GetColorGamutMode(void);
+    int SaveColorGamutMode(vpp_colorgamut_mode_t value);
+    int Cpq_SetColorGamutMode(vpp_colorgamut_mode_t value, source_input_param_t source_input_param);
+
+    //HDR tone mapping
+    int SetHDRTMData(int *reGain);
+    //HDR TMO
+    int Cpq_SetHDRTMOParams(const hdr_tmo_sw_s *phdrtmo);
+    int SetHDRTMOMode(hdr_tmo_t mode, int is_save);
+    int GetHDRTMOMode();
+    int SaveHDRTMOMode(hdr_tmo_t mode);
+
+    //black/bule/chroma stretch
+    int SetBlackStretch(int level, int is_save);
+    int GetBlackStretch(void);
+    int SaveBlackStretch(int level);
+    int Cpq_BlackStretch(int level, source_input_param_t source_input_param);
+
+    int SetBlueStretch(int level, int is_save);
+    int GetBlueStretch(void);
+    int SaveBlueStretch(int level);
+    int Cpq_BlueStretch(int level, source_input_param_t source_input_param);
+
+    int SetChromaCoring(int level, int is_save);
+    int GetChromaCoring(void);
+    int SaveChromaCoring(int level);
+    int Cpq_ChromaCoring(int level, source_input_param_t source_input_param);
+
+    int SetLocalDimming(int level, int is_save);
+    int GetLocalDimming(void);
+    int Cpq_LocalDimming(vpp_pq_level_t level);
+
+    int SetDolbyDarkDetail(int mode, int is_save);
+    int GetDolbyDarkDetail(void);
+    int SaveDolbyDarkDetail(int value);
+    int Cpq_SetDolbyDarkDetail(int mode);
 
 private:
     int VPPOpenModule(void);
@@ -437,6 +506,9 @@ private:
     int LCDLdimOpenModule(void);
     int LCDLdimCloseModule(void);
     int LCDLdimDeviceIOCtl(int request, ...);
+    int MEMCOpenModule(void);
+    int MEMCCloseModule(void);
+    int MEMCDeviceIOCtl(int request, ...);
     int LCDOpenModule(void);
     int LCDCloseModule(void);
     int LCDDeviceIOCtl(int request, ...);
@@ -454,17 +526,11 @@ private:
     int pqReadSys(const char *path, char *buf, int count);
     void pqTransformStringToInt(const char *buf, int *val);
     unsigned int GetSharpnessRegVal(int addr);
-    int Cpq_SetLocalContrastMode(local_contrast_mode_t mode);
     int Cpq_GetInputVideoFrameHeight(tv_source_input_t source_input);
     output_type_t CheckOutPutMode(tv_source_input_t source_input);
-    bool isSDRMode(vpp_picture_mode_t pq_mode);
-    bool isHDR10Mode(vpp_picture_mode_t pq_mode);
-    bool isHDR10PlusMode(vpp_picture_mode_t pq_mode);
-    bool isHLGMode(vpp_picture_mode_t pq_mode);
-    bool isDVMode(vpp_picture_mode_t pq_mode);
-    bool isSupportValidPictureMode(tv_source_input_t source_input, vpp_picture_mode_t pq_mode);
-    bool CheckPQModeTableInDb(void);
+    pq_sig_fmt_t CheckPQTimming(hdr_type_t hdr_type);
     bool isPqDatabaseMachChip();
+    bool CheckPQModeTableInDb(void);
     int Cpq_SetVadjEnableStatus(int isvadj1Enable, int isvadj2Enable);
     bool mInitialized;
     //cfg
@@ -500,6 +566,18 @@ private:
     bool mbAllmModeCfg_enable;
     bool mbItcontentModeCfg_enable;
     bool mbDviModeCfg_enable;
+    bool mbCpqCfg_ai_enable;
+    bool mbCpqCfg_aad_enable;
+    bool mbCpqCfg_cabc_enable;
+    bool mbCpqCfg_smoothplus_enable;
+    bool mbCpqCfg_hdrtmo_enable;
+    bool mbCpqCfg_memc_enable;
+    bool mbCpqCfg_seperate_black_blue_chorma_db_enable;
+    bool mbCpqCfg_bluestretch_enable;
+    bool mbCpqCfg_chromacoring_enable;
+    bool mbCpqCfg_LocalDimming_enable;
+    bool mbCpqCfg_aisr_enable;
+    bool mbCpqCfg_new_picture_mode_enable;
 
     CPQdb *mPQdb;
     COverScandb *mpOverScandb;
@@ -512,14 +590,17 @@ private:
 
     int mAmvideoFd;
     int mDiFd;
-    int mLCDLdimFd;
-    int mLCDFd;
+    int mLdFd;
+    int mMemcFd;
+    int mLcdFd;
 
     CVdin *mpVdin;
     CDolbyVision *mDolbyVision;
 
     tcon_rgb_ogo_t rgbfrompq[3];
     source_input_param_t mCurentSourceInputInfo;
+    tv_source_input_t mSourceInputForSaveParam;
+    pq_src_param_t mCurentPqSource;
     hdr_type_t mCurrentHdrType = HDR_TYPE_NONE;
     tvin_parm_t mCurrentSignalInfo;
     tvin_inputparam_t mCurrentTvinInfo;

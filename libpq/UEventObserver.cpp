@@ -247,7 +247,7 @@ void UEventObserver::ueventPrint(char* ueventBuf, int len) {
             printBuf[i] = ' ';
     }
 
-    //LOGD("Received uevent message: %s\n", printBuf);
+    LOGD("Received uevent message: %s\n", printBuf);
 }
 
 int UEventObserver::StartUEventThead()

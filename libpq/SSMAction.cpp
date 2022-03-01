@@ -476,86 +476,6 @@ int SSMAction::SSMReadLastPictureMode(int offset, int *rw_val)
     return ret;
 }
 
-int SSMAction::SSMSaveSDRPictureMode(int offset, int rw_val)
-{
-    return SSMWriteNTypes(VPP_DATA_POS_SDR_PICTURE_MODE_START, 1, &rw_val, offset);
-}
-
-int SSMAction::SSMReadSDRPictureMode(int offset, int *rw_val)
-{
-    int tmp_val = 0;
-    int ret = 0;
-
-    ret = SSMReadNTypes(VPP_DATA_POS_SDR_PICTURE_MODE_START, 1, &tmp_val, offset);
-    *rw_val = tmp_val;
-
-    return ret;
-}
-
-int SSMAction::SSMSaveHDR10PictureMode(int offset, int rw_val)
-{
-    return SSMWriteNTypes(VPP_DATA_POS_HDR10_PICTURE_MODE_START, 1, &rw_val, offset);
-}
-
-int SSMAction::SSMReadHDR10PictureMode(int offset, int *rw_val)
-{
-    int tmp_val = 0;
-    int ret = 0;
-
-    ret = SSMReadNTypes(VPP_DATA_POS_HDR10_PICTURE_MODE_START, 1, &tmp_val, offset);
-    *rw_val = tmp_val;
-
-    return ret;
-}
-
-int SSMAction::SSMSaveHDR10PLUSPictureMode(int offset, int rw_val)
-{
-    return SSMWriteNTypes(VPP_DATA_POS_HDR10PLUS_PICTURE_MODE_START, 1, &rw_val, offset);
-}
-
-int SSMAction::SSMReadHDR10PLUSPictureMode(int offset, int *rw_val)
-{
-    int tmp_val = 0;
-    int ret = 0;
-
-    ret = SSMReadNTypes(VPP_DATA_POS_HDR10PLUS_PICTURE_MODE_START, 1, &tmp_val, offset);
-    *rw_val = tmp_val;
-
-    return ret;
-}
-
-int SSMAction::SSMSaveHLGPictureMode(int offset, int rw_val)
-{
-    return SSMWriteNTypes(VPP_DATA_POS_HLG_PICTURE_MODE_START, 1, &rw_val, offset);
-}
-
-int SSMAction::SSMReadHLGPictureMode(int offset, int *rw_val)
-{
-    int tmp_val = 0;
-    int ret = 0;
-
-    ret = SSMReadNTypes(VPP_DATA_POS_HLG_PICTURE_MODE_START, 1, &tmp_val, offset);
-    *rw_val = tmp_val;
-
-    return ret;
-}
-
-int SSMAction::SSMSaveDVPictureMode(int offset, int rw_val)
-{
-    return SSMWriteNTypes(VPP_DATA_POS_DV_PICTURE_MODE_START, 1, &rw_val, offset);
-}
-
-int SSMAction::SSMReadDVPictureMode(int offset, int *rw_val)
-{
-    int tmp_val = 0;
-    int ret = 0;
-
-    ret = SSMReadNTypes(VPP_DATA_POS_DV_PICTURE_MODE_START, 1, &tmp_val, offset);
-    *rw_val = tmp_val;
-
-    return ret;
-}
-
 //Color Temperature
 int SSMAction::SSMSaveColorTemperature(int offset, int rw_val)
 {
@@ -588,17 +508,18 @@ int SSMAction::SSMReadColorDemoMode(unsigned char *rw_val)
     return ret;
 }
 
-int SSMAction::SSMSaveColorBaseMode(int offset, int rw_val)
+int SSMAction::SSMSaveColorBaseMode(unsigned char rw_val)
 {
-    return SSMWriteNTypes(VPP_DATA_POS_COLOR_BASE_MODE_START, 1, &rw_val, offset);
+    int tmp_val = rw_val;
+    return SSMWriteNTypes(VPP_DATA_POS_COLOR_BASE_MODE_START, 1, &tmp_val);
 }
 
-int SSMAction::SSMReadColorBaseMode(int offset, int *rw_val)
+int SSMAction::SSMReadColorBaseMode(unsigned char *rw_val)
 {
     int tmp_val = 0;
     int ret = 0;
 
-    ret = SSMReadNTypes(VPP_DATA_POS_COLOR_BASE_MODE_START, 1, &tmp_val, offset);
+    ret = SSMReadNTypes(VPP_DATA_POS_COLOR_BASE_MODE_START, 1, &tmp_val);
     *rw_val = tmp_val;
 
     return ret;
@@ -953,17 +874,17 @@ int SSMAction::SSMReadNoiseReduction(int offset, int *rw_val)
     return ret;
 }
 
-//DolbyMode
-int SSMAction::SSMSaveDolbyMode(int offset, int rw_val)
+//SmoothPlus
+int SSMAction::SSMSaveSmoothPlus(int offset, int rw_val)
 {
-    return SSMWriteNTypes(VPP_DATA_DOLBY_MODE_START, 1, &rw_val, offset);
+    return SSMWriteNTypes(VPP_DATA_POS_SMOOTH_PLUS_START, 1, &rw_val, offset);
 }
 
-int SSMAction::SSMReadDolbyMode(int offset, int *rw_val)
+int SSMAction::SSMReadSmoothPlus(int offset, int *rw_val)
 {
     int tmp_val = 0;
     int ret = 0;
-    ret = SSMReadNTypes(VPP_DATA_DOLBY_MODE_START, 1, &tmp_val, offset);
+    ret = SSMReadNTypes(VPP_DATA_POS_SMOOTH_PLUS_START, 1, &tmp_val, offset);
     *rw_val = tmp_val;
 
     return ret;
@@ -1148,20 +1069,20 @@ int SSMAction::SSMReadDisplayMode(int offset, int *rw_val)
     return ret;
 }
 
-int SSMAction::SSMReadBackLightVal(int offset, int *rw_val)
+int SSMAction::SSMReadBackLightVal(int *rw_val)
 {
     int tmp_ret = 0;
     int ret = 0;
 
-    ret = SSMReadNTypes(VPP_DATA_POS_BACKLIGHT_START, 1, &tmp_ret, offset);
+    ret = SSMReadNTypes(VPP_DATA_POS_BACKLIGHT_START, 1, &tmp_ret);
     *rw_val = tmp_ret;
 
     return ret;
 }
 
-int SSMAction::SSMSaveBackLightVal(int offset, int rw_val)
+int SSMAction::SSMSaveBackLightVal(int rw_val)
 {
-    return SSMWriteNTypes(VPP_DATA_POS_BACKLIGHT_START, 1, &rw_val, offset);
+    return SSMWriteNTypes(VPP_DATA_POS_BACKLIGHT_START, 1, &rw_val);
 }
 
 int SSMAction::SSMSaveAutoAspect(int offset, int rw_val) {
@@ -1218,4 +1139,202 @@ int SSMAction::SSMReadLocalContrastMode(int offset, int *rw_val) {
     *rw_val = tmp_val;
 
     return ret;
+}
+
+int SSMAction::SSMSaveDeblockMode(int offset, int rw_val) {
+    return SSMWriteNTypes(VPP_DATA_POS_DEBLOCK_MODE_START, 1, &rw_val, offset);
+}
+
+int SSMAction::SSMReadDeblockMode(int offset, int *rw_val) {
+    int tmp_val = 0;
+    int ret = 0;
+    ret = SSMReadNTypes(VPP_DATA_POS_DEBLOCK_MODE_START, 1, &tmp_val, offset);
+    *rw_val = tmp_val;
+
+    return ret;
+}
+
+int SSMAction::SSMSaveDemoSquitoMode(int offset, int rw_val) {
+    return SSMWriteNTypes(VPP_DATA_POS_DEMOSQUITO_MODE_START, 1, &rw_val, offset);
+}
+
+int SSMAction::SSMReadDemoSquitoMode(int offset, int *rw_val) {
+    int tmp_val = 0;
+    int ret = 0;
+    ret = SSMReadNTypes(VPP_DATA_POS_DEMOSQUITO_MODE_START, 1, &tmp_val, offset);
+    *rw_val = tmp_val;
+
+    return ret;
+}
+
+int SSMAction::SSMSaveMcDiMode(int offset, int rw_val) {
+    return SSMWriteNTypes(VPP_DATA_POS_MCDI_MODE_START, 1, &rw_val, offset);
+}
+
+int SSMAction::SSMReadMcDiMode(int offset, int *rw_val) {
+    int tmp_val = 0;
+    int ret = 0;
+    ret = SSMReadNTypes(VPP_DATA_POS_MCDI_MODE_START, 1, &tmp_val, offset);
+    *rw_val = tmp_val;
+
+    return ret;
+}
+
+int SSMAction::SSMReadAipqEnableVal(int *rw_val)
+{
+    int tmp_ret = 0;
+    int ret = 0;
+
+    ret = SSMReadNTypes(VPP_DATA_POS_AIPQ_ENABLE_START, 1, &tmp_ret);
+    *rw_val = tmp_ret;
+
+    return ret;
+}
+
+int SSMAction::SSMSaveAipqEnableVal(int rw_val)
+{
+    return SSMWriteNTypes(VPP_DATA_POS_AIPQ_ENABLE_START, 1, &rw_val);
+}
+
+int SSMAction::SSMReadAiSrEnable(int *rw_val)
+{
+    int tmp_ret = 0;
+    int ret = 0;
+
+    ret = SSMReadNTypes(VPP_DATA_POS_AISR_ENABLE_START, 1, &tmp_ret);
+    *rw_val = tmp_ret;
+
+    return ret;
+}
+
+int SSMAction::SSMSaveAiSrEnable(int rw_val)
+{
+    return SSMWriteNTypes(VPP_DATA_POS_AISR_ENABLE_START, 1, &rw_val);
+}
+
+int SSMAction::SSMSaveHdrTmoVal(int offset, int rw_val)
+{
+    return SSMWriteNTypes(VPP_DATA_POS_HDR_TMO_START, 1, &rw_val, offset);
+}
+
+int SSMAction::SSMReadHdrTmoVal(int offset, int *rw_val)
+{
+    int tmp_val = 0;
+    int ret = 0;
+    ret = SSMReadNTypes(VPP_DATA_POS_HDR_TMO_START, 1, &tmp_val, offset);
+    *rw_val = tmp_val;
+
+    return ret;
+}
+
+int SSMAction::SSMSaveMemcMode(int offset, int rw_val) {
+    return SSMWriteNTypes(VPP_DATA_POS_MEMC_MODE_START, 1, &rw_val, offset);
+}
+
+int SSMAction::SSMReadMemcMode(int offset, int *rw_val) {
+    int tmp_val = 0;
+    int ret = 0;
+    ret = SSMReadNTypes(VPP_DATA_POS_MEMC_MODE_START, 1, &tmp_val, offset);
+    *rw_val = tmp_val;
+
+    return ret;
+}
+
+int SSMAction::SSMSaveMemcDeblurLevel(int offset, int rw_val) {
+    return SSMWriteNTypes(VPP_DATA_POS_MEMC_DEBLUR_LEVEL_START, 1, &rw_val, offset);
+}
+
+int SSMAction::SSMReadMemcDeblurLevel(int offset, int *rw_val) {
+    int tmp_val = 0;
+    int ret = 0;
+    ret = SSMReadNTypes(VPP_DATA_POS_MEMC_DEBLUR_LEVEL_START, 1, &tmp_val, offset);
+    *rw_val = tmp_val;
+
+    return ret;
+}
+
+int SSMAction::SSMSaveMemcDeJudderLevel(int offset, int rw_val) {
+    return SSMWriteNTypes(VPP_DATA_POS_MEMC_DEJUDDER_LEVEL_START, 1, &rw_val, offset);
+}
+
+int SSMAction::SSMReadMemcDeJudderLevel(int offset, int *rw_val) {
+    int tmp_val = 0;
+    int ret = 0;
+    ret = SSMReadNTypes(VPP_DATA_POS_MEMC_DEJUDDER_LEVEL_START, 1, &tmp_val, offset);
+    *rw_val = tmp_val;
+
+    return ret;
+}
+
+int SSMAction::SSMSaveBlackStretch(int offset, int rw_val) {
+    return SSMWriteNTypes(VPP_DATA_POS_BLACK_STRETCH_START, 1, &rw_val, offset);
+}
+
+int SSMAction::SSMReadBlackStretch(int offset, int *rw_val) {
+    int tmp_val = 0;
+    int ret = 0;
+    ret = SSMReadNTypes(VPP_DATA_POS_BLACK_STRETCH_START, 1, &tmp_val, offset);
+    *rw_val = tmp_val;
+
+    return ret;
+}
+
+int SSMAction::SSMSaveBlueStretch(int offset, int rw_val) {
+    return SSMWriteNTypes(VPP_DATA_POS_BLUE_STRETCH_START, 1, &rw_val, offset);
+}
+
+int SSMAction::SSMReadBlueStretch(int offset, int *rw_val) {
+    int tmp_val = 0;
+    int ret = 0;
+    ret = SSMReadNTypes(VPP_DATA_POS_BLUE_STRETCH_START, 1, &tmp_val, offset);
+    *rw_val = tmp_val;
+
+    return ret;
+}
+
+int SSMAction::SSMSaveChromaCoring(int offset, int rw_val) {
+    return SSMWriteNTypes(VPP_DATA_POS_CHROMA_CORING_START, 1, &rw_val, offset);
+}
+
+int SSMAction::SSMReadChromaCoring(int offset, int *rw_val) {
+    int tmp_val = 0;
+    int ret = 0;
+    ret = SSMReadNTypes(VPP_DATA_POS_CHROMA_CORING_START, 1, &tmp_val, offset);
+    *rw_val = tmp_val;
+
+    return ret;
+}
+
+int SSMAction::SSMSaveLocalDimming(int offset, int rw_val) {
+    return SSMWriteNTypes(VPP_DATA_POS_LOCAL_DIMMING_START, 1, &rw_val, offset);
+}
+
+int SSMAction::SSMReadLocalDimming(int offset, int *rw_val) {
+    int tmp_val = 0;
+    int ret = 0;
+    ret = SSMReadNTypes(VPP_DATA_POS_LOCAL_DIMMING_START, 1, &tmp_val, offset);
+    *rw_val = tmp_val;
+
+    return ret;
+}
+
+int SSMAction::SSMSavePictureModeParamsFlag(int offset, int rw_val) {
+    return SSMWriteNTypes(VPP_DATA_POS_PICTURE_MODE_PARAM_CRC_START, 1, &rw_val, offset);
+}
+
+int SSMAction::SSMReadPictureModeParamsFlag(int offset, int *rw_val) {
+    int tmp_val = 0;
+    int ret = 0;
+    ret = SSMReadNTypes(VPP_DATA_POS_PICTURE_MODE_PARAM_CRC_START, 1, &tmp_val, offset);
+    *rw_val = tmp_val;
+
+    return ret;
+}
+
+int SSMAction::SSMSavePictureModeParams(int offset, int size, int *rw_val) {
+    return SSMWriteNTypes(VPP_DATA_POS_PICTURE_MODE_PARAM_START, size, rw_val, offset);
+}
+
+int SSMAction::SSMReadPictureModeParams(int offset, int size, int *rw_val) {
+    return SSMReadNTypes(VPP_DATA_POS_PICTURE_MODE_PARAM_START, size, rw_val, offset);
 }

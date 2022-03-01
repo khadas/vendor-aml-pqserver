@@ -85,6 +85,7 @@ int PqService::SetCmd(pq_moudle_param_t param)
 {
     int ret = 0;
     int moudleId = param.moudleId;
+    bool enable = false;
 
     if (((moudleId >= PQ_MOUDLE_CMD_START) && (moudleId <= PQ_MOUDLE_CMD_MAX))
         || ((moudleId >= PQ_FACTORY_CMD_START) || (moudleId <= PQ_FACTORY_CMD_MAX))) {
@@ -160,6 +161,40 @@ int PqService::SetCmd(pq_moudle_param_t param)
             break;
         case PQ_SET_RECOVERYPQ:
             ret = mpPQcontrol->SSMRecovery();
+            break;
+        case PQ_SET_MEMCMODE:
+            ret = mpPQcontrol->SetMemcMode(paramData[0], paramData[1]);
+            break;
+        case PQ_SET_MEMC_DEBLUR:
+            ret = mpPQcontrol->SetMemcDeBlurLevel(paramData[0], paramData[1]);
+            break;
+        case PQ_SET_MEMC_DEJUDDER:
+            ret = mpPQcontrol->SetMemcDeJudderLevel(paramData[0], paramData[1]);
+            break;
+        case PQ_SET_DECONTOUR:
+            ret = mpPQcontrol->SetSmoothPlusMode(paramData[0], paramData[1]);
+            break;
+        case PQ_SET_DEBLOCK:
+            ret = mpPQcontrol->SetDeblockMode((vpp_deblock_mode_t)paramData[0], paramData[1]);
+            break;
+        case PQ_SET_DEMOSQUITO:
+            ret = mpPQcontrol->SetDemoSquitoMode((vpp_DemoSquito_mode_t)paramData[0], paramData[1]);
+            break;
+        case PQ_SET_BLACKSTRETCH:
+            ret = mpPQcontrol->SetBlackStretch(paramData[0], paramData[1]);
+            break;
+        case PQ_SET_AIPQ:
+            ret = mpPQcontrol->SetAipqEnable(paramData[0]);
+            break;
+        case PQ_SET_AISR:
+            enable = (paramData[0] == 0) ? false : true;
+            ret = mpPQcontrol->SetAiSrEnable(enable);
+            break;
+        case PQ_SET_LDIM:
+            ret = mpPQcontrol->SetLocalDimming(paramData[0], paramData[1]);
+            break;
+        case PQ_SET_MPEGNR:
+            ret = mpPQcontrol->SetMpegNr((vpp_pq_level_t)paramData[0], paramData[1]);
             break;
 
         //Factory cmd
@@ -259,6 +294,7 @@ char* PqService::GetCmd(pq_moudle_param_t param)
 {
     int ret = 0;
     int moudleId = param.moudleId;
+    bool enable = false;
 
     if (((moudleId >= PQ_MOUDLE_CMD_START) && (moudleId <= PQ_MOUDLE_CMD_MAX))
         || ((moudleId >= PQ_FACTORY_CMD_START) || (moudleId <= PQ_FACTORY_CMD_MAX))) {
@@ -331,6 +367,53 @@ char* PqService::GetCmd(pq_moudle_param_t param)
             break;
         case PQ_GET_DYNAMICCONTRAST:
             ret = mpPQcontrol->GetDnlpMode();
+            break;
+        case PQ_GET_HAS_MEMC:
+            enable = mpPQcontrol->hasMemcFunc();
+            ret = (enable == true) ? 1: 0;
+            break;
+        case PQ_GET_MEMCMODE:
+            ret = mpPQcontrol->GetMemcMode();
+            break;
+        case PQ_GET_MEMC_DEBLUR:
+            ret = mpPQcontrol->GetMemcDeBlurLevel();
+            break;
+        case PQ_GET_MEMC_DEJUDDER:
+            ret = mpPQcontrol->GetMemcDeJudderLevel();
+            break;
+        case PQ_GET_DECONTOUR:
+            ret = mpPQcontrol->GetSmoothPlusMode();
+            break;
+        case PQ_GET_DEBLOCK:
+            ret = mpPQcontrol->GetDeblockMode();
+            break;
+        case PQ_GET_DEMOSQUITO:
+            ret = mpPQcontrol->GetDemoSquitoMode();
+            break;
+        case PQ_GET_BLACKSTRETCH:
+            ret = mpPQcontrol->GetBlackStretch();
+            break;
+        case PQ_GET_BLUESTRETCH:
+            ret = mpPQcontrol->GetBlueStretch();
+            break;
+        case PQ_GET_HAS_AIPQ:
+            ret = 0;
+            break;
+        case PQ_GET_AIPQ:
+            ret = mpPQcontrol->GetAipqEnable();
+            break;
+        case PQ_GET_HAS_AISR:
+            enable = mpPQcontrol->hasAisrFunc();
+            ret = (enable == true) ? 1 : 0;
+            break;
+        case PQ_GET_AISR:
+            ret = mpPQcontrol->GetAiSrEnable();
+            break;
+        case PQ_GET_LDIM:
+            ret = mpPQcontrol->GetLocalDimming();
+            break;
+        case PQ_GET_MPEGNR:
+            ret = mpPQcontrol->GetMpegNr();
             break;
 
         //Factory cmd
