@@ -303,6 +303,7 @@ public:
     void Cpq_GetBacklight(int *value);
     int SetDynamicBacklight(Dynamic_backlight_status_t mode, int is_save);
     int GetDynamicBacklight(void);
+    int DynamicBackLightInit(void);
     int GetVideoPlayStatus(void);
     //smooth plus
     int SetSmoothPlusMode(int smoothplus_mode, int is_save);

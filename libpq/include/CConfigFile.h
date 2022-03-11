@@ -100,6 +100,7 @@
 #define CFG_BLUESTRETCH_DEF                     "pq.BlueStretch.def"
 #define CFG_CHMROMACORING_DEF                   "pq.ChromaCoring.def"
 #define CFG_LOCALDIMMING_DEF                    "pq.LocalDimming.def"
+#define CFG_DYNAMICBACKLIGHT_DEF                "pq.DynamicBacklight.def"
 
 //for backlight
 #define CFG_SECTION_BACKLIGHT                   "BACKLIGHT"

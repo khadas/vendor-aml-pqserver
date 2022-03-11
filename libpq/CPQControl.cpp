@@ -72,18 +72,11 @@ void CPQControl::CPQControlInit()
     }
 
     // open LD module
-    if (isFileExist(LDIM_PATH)) {
-        mLdFd = LCDLdimOpenModule();
-        if (mLdFd < 0) {
-            LOGE("Open ld failed!\n");
-        } else {
-            LOGD("Open ld ldim success!\n");
-        }
-    } else if (isFileExist(BACKLIGHT_PATH)) {//local diming or pwm
-        mDynamicBackLight.setObserver(this);
-        mDynamicBackLight.startDected();
+    mLdFd = LCDLdimOpenModule();
+    if (mLdFd < 0) {
+        LOGE("Open ld failed!\n");
     } else {
-        LOGD("No auto backlight moudle!\n");
+        LOGD("Open ld ldim success!\n");
     }
 
     //open MEMC module
@@ -223,7 +216,11 @@ void CPQControl::CPQControlInit()
     }
 
     //set backlight
-    //BacklightInit();
+    BacklightInit();
+
+    //set DynamicBackLight
+    DynamicBackLightInit();
+
     AipqInit();
     //cabc pq
     SetCabc();
@@ -996,10 +993,13 @@ void CPQControl::resetPQTableSetting(void)
         mSSMAction->SSMSaveDisplayMode(i, config_val);
     }
 
+    config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_DYNAMICBACKLIGHT_DEF, DYNAMIC_BACKLIGHT_OFF);
+    mSSMAction->SSMSaveDynamicBacklightMode(config_val);
+
     config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_COLORDEMOMODE_DEF, VPP_COLOR_DEMO_MODE_ALLON);
     mSSMAction->SSMSaveColorDemoMode(config_val);
 
-    config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_COLORBASEMODE_DEF, VPP_COLOR_DEMO_MODE_ALLON);
+    config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_COLORBASEMODE_DEF, VPP_COLOR_BASE_MODE_ENHANCE);
     mSSMAction->SSMSaveColorBaseMode (VPP_COLOR_BASE_MODE_OPTIMIZE);
 
     config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_DDRSSC_DEF, 0);
@@ -4085,7 +4085,7 @@ int CPQControl::SaveBacklight(int value)
 
 int CPQControl::Cpq_SetBackLight(int value)
 {
-    //LOGD("%s, value = %d\n",__FUNCTION__, value);
+    LOGD("%s, value = %d\n",__FUNCTION__, value);
     char val[64] = {0};
     sprintf(val, "%d", value);
     return pqWriteSys(BACKLIGHT_PATH, val);
@@ -4148,6 +4148,24 @@ int CPQControl::GetDynamicBacklight()
     LOGD("%s: value is %d\n", __FUNCTION__, mode);
 }
 
+int CPQControl::DynamicBackLightInit(void)
+{
+    int ret = 0;
+    Dynamic_backlight_status_t mode = (Dynamic_backlight_status_t)GetDynamicBacklight();
+    ret = SetDynamicBacklight(mode, 1);
+
+    if (!isFileExist(LDIM_PATH)) {
+        if (isFileExist(BACKLIGHT_PATH)) {
+            mDynamicBackLight.setObserver(this);
+            mDynamicBackLight.startDected();
+        } else {
+            LOGD("No auto backlight moudle!\n");
+        }
+    }
+
+    return ret;
+}
+
 int CPQControl::GetHistParam(ve_hist_t *hist)
 {
     memset(hist, 0, sizeof(ve_hist_s));
@@ -4197,24 +4215,9 @@ void CPQControl::GetDynamicBacklighParam(dynamic_backlight_Param_t *DynamicBackl
     DynamicBacklightParam->hist.width = hist.width;
     DynamicBacklightParam->hist.height = hist.height;
 
-    //read backlight value from ssm_data
-    int data = 0;
-    int pq_mode = VPP_PICTURE_MODE_STANDARD;
-    mSSMAction->SSMReadPictureMode(mCurentSourceInputInfo.source_input, &pq_mode);
-    if (pq_mode < VPP_PICTURE_MODE_STANDARD || pq_mode >= VPP_PICTURE_MODE_MAX) {
-        pq_mode = VPP_PICTURE_MODE_STANDARD;
-    }
-
-    mSSMAction->SSMReadBackLightVal(&data);
-
-    if (data < 0 || data > 100) {
-        data = DEFAULT_BACKLIGHT_BRIGHTNESS;
-    }
-
-    //read backlight value from driver
     Cpq_GetBacklight(&value);
     DynamicBacklightParam->CurBacklightValue = value;
-    DynamicBacklightParam->UiBackLightValue  = data;
+    DynamicBacklightParam->UiBackLightValue  = GetBacklight();
     DynamicBacklightParam->CurDynamicBacklightMode = (Dynamic_backlight_status_t)GetDynamicBacklight();
     DynamicBacklightParam->VideoStatus = GetVideoPlayStatus();
 }
