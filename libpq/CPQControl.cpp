@@ -154,6 +154,7 @@ void CPQControl::CPQControlInit()
     mCurentSourceInputInfo.sig_fmt      = TVIN_SIG_FMT_HDMI_1920X1080P_60HZ;
     mCurentSourceInputInfo.trans_fmt    = TVIN_TFMT_2D;
     mCurrentHdrType                     = HDR_TYPE_SDR;
+    mSourceInputForSaveParam            = SOURCE_MPEG;
     mCurentPqSource.pq_source_input     = SOURCE_MPEG;
     mCurentPqSource.pq_sig_fmt          = PQ_FMT_DEFAUT;
 
@@ -4302,31 +4303,36 @@ int CPQControl::Cpq_SetLocalContrastMode(local_contrast_mode_t mode)
 {
     int ret = -1;
 
-    if (!mbDatabaseMatchChipStatus) {
-        LOGD("%s: DB don't match chip\n", __FUNCTION__);
-        ret = 0;
-    } else {
-        ve_lc_curve_parm_t lc_param;
-        am_regs_t regs;
-        memset(&lc_param, 0x0, sizeof(ve_lc_curve_parm_t));
-        memset(&regs, 0x0, sizeof(am_regs_t));
+    if (mbCpqCfg_local_contrast_enable) {
+        if (!mbDatabaseMatchChipStatus) {
+            LOGD("%s: DB don't match chip\n", __FUNCTION__);
+            ret = 0;
+        } else {
+            ve_lc_curve_parm_t lc_param;
+            am_regs_t regs;
+            memset(&lc_param, 0x0, sizeof(ve_lc_curve_parm_t));
+            memset(&regs, 0x0, sizeof(am_regs_t));
 
-        ret = mPQdb->PQ_GetLocalContrastNodeParams(mCurentSourceInputInfo, mode, &lc_param);
-        if (ret == 0 ) {
-            ret = VPPDeviceIOCtl(AMVECM_IOC_S_LC_CURVE, &lc_param);
-            if (ret == 0) {
-                ret = mPQdb->PQ_GetLocalContrastRegParams(mCurentSourceInputInfo, mode, &regs);
+            ret = mPQdb->PQ_GetLocalContrastNodeParams(mCurentSourceInputInfo, mode, &lc_param);
+            if (ret == 0 ) {
+                ret = VPPDeviceIOCtl(AMVECM_IOC_S_LC_CURVE, &lc_param);
                 if (ret == 0) {
-                    ret = Cpq_LoadRegs(regs);
+                    ret = mPQdb->PQ_GetLocalContrastRegParams(mCurentSourceInputInfo, mode, &regs);
+                    if (ret == 0) {
+                        ret = Cpq_LoadRegs(regs);
+                    } else {
+                        LOGE("%s: PQ_GetLocalContrastRegParams failed\n", __FUNCTION__ );
+                    }
                 } else {
-                    LOGE("%s: PQ_GetLocalContrastRegParams failed\n", __FUNCTION__ );
+                    LOGE("%s VPPDeviceIOCtl failed\n",__FUNCTION__);
                 }
             } else {
-                LOGE("%s VPPDeviceIOCtl failed\n",__FUNCTION__);
+                LOGE("%s: PQ_GetLocalContrastNodeParams failed\n", __FUNCTION__ );
             }
-        } else {
-            LOGE("%s: PQ_GetLocalContrastNodeParams failed\n", __FUNCTION__ );
         }
+    }else {
+        LOGE("%s LocalContrast Disabled\n",__FUNCTION__);
+        ret = 0;
     }
 
     return ret;
