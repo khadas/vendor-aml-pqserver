@@ -55,10 +55,10 @@
 #define AMVECM_PC_MODE_PATH              "/sys/class/amvecm/pc_mode"
 #define SYS_DISPLAY_MODE_PATH            "/sys/class/display/mode"
 #define HDMI_OUTPUT_CHECK_PATH           "/sys/class/amhdmitx"    //if this dir exist,is hdmi output
-#define DEMOSQUITO_MODULE_CONTROL_PATH   "/sys/module/di/parameters/dnr_dm_en"  //demosquito control
-#define DEBLOCK_MODULE_CONTROL_PATH      "/sys/module/di/parameters/dnr_en"     //deblock control
-#define NR2_MODULE_CONTROL_PATH          "/sys/module/di/parameters/nr2_en"      //noisereduction control
-#define MCDI_MODULE_CONTROL_PATH         "/sys/module/di/parameters/mcen_mode"  //mcdi control
+#define DEMOSQUITO_MODULE_CONTROL_PATH   "/sys/module/aml_media/parameters/dnr_dm_en"  //demosquito control
+#define DEBLOCK_MODULE_CONTROL_PATH      "/sys/module/aml_media/parameters/dnr_en"     //deblock control
+#define NR2_MODULE_CONTROL_PATH          "/sys/module/aml_media/parameters/nr2_en"      //noisereduction control
+#define MCDI_MODULE_CONTROL_PATH         "/sys/module/aml_media/parameters/mcen_mode"  //mcdi control
 #define VPP_MODULE_COLORGAMUT_PATH       "/sys/module/am_vecm/parameters/primary_policy"
 #define VIDEO_AISR_ENABLE                "/sys/module/aml_media/parameters/uvm_open_nn"
 #define VDETECT_AIPQ_ENABLE              "/sys/class/vdetect/aipq_enable"

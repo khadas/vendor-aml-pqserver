@@ -1580,19 +1580,20 @@ int CPQControl::SetPQMode(int pq_mode, int is_save)
     if (cur_mode == pq_mode) {
         LOGD("Same PQ mode,no need set again!\n");
         ret = 0;
+        return ret;
+    }
+
+    if (is_save == 1) {
+        SavePQMode(pq_mode);
+    }
+
+    if (mbCpqCfg_new_picture_mode_enable) {
+        ret = Set_PictureMode((vpp_picture_mode_t)pq_mode, mCurentPqSource);
     } else {
-        if (mbCpqCfg_new_picture_mode_enable) {
-            ret = Set_PictureMode((vpp_picture_mode_t)pq_mode, mCurentPqSource);
-        } else {
-            ret = Cpq_SetPQMode((vpp_picture_mode_t)pq_mode, mCurentSourceInputInfo);
-        }
+        ret = Cpq_SetPQMode((vpp_picture_mode_t)pq_mode, mCurentSourceInputInfo);
     }
 
     if ((ret == 0) && (is_save == 1)) {
-        if (cur_mode != pq_mode) {
-            SaveLastPQMode(cur_mode);
-        }
-        SavePQMode(pq_mode);
         if ((mCurentSourceInputInfo.source_input >= SOURCE_HDMI1) &&
             (mCurentSourceInputInfo.source_input <= SOURCE_HDMI4)) {
             vpp_display_mode_t display_mode = (vpp_display_mode_t)GetDisplayMode();
@@ -1608,6 +1609,7 @@ int CPQControl::SetPQMode(int pq_mode, int is_save)
 
     return ret;
 }
+
 
 
 int CPQControl::GetPQMode(void)
@@ -6950,7 +6952,7 @@ int CPQControl::SetCurrentSourceInputInfo(source_input_param_t source_input_para
         mSourceInputForSaveParam = mCurentSourceInputInfo.source_input;
 
         mCurentPqSource.pq_source_input = mSourceInputForSaveParam;
-        mCurentPqSource.pq_sig_fmt = CheckPQTimming(mCurrentHdrType);
+        mCurentPqSource.pq_sig_fmt = CheckPQTimming(newHdrType);
         LOGD("%s:mCurentPqSource is %d  mCurentPqTimming is %d\n", __FUNCTION__, mCurentPqSource.pq_source_input, mCurentPqSource.pq_sig_fmt);
 
         //update hdr type
