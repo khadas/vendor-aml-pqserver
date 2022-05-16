@@ -6491,6 +6491,12 @@ int CPQControl::SetEyeProtectionMode(tv_source_input_t source_input __unused, in
     vpp_color_temperature_mode_t TempMode = (vpp_color_temperature_mode_t)GetColorTemperature();
     tcon_rgb_ogo_t param;
     memset(&param, 0, sizeof(tcon_rgb_ogo_t));
+
+    if (!mbCpqCfg_whitebalance_enable) {
+        LOGD("%s: when pq.whitebalance.en is off, directly return Eye product mode setting process.\n", __FUNCTION__);
+        return 0;
+    }
+
     if (TempMode == VPP_COLOR_TEMPERATURE_MODE_USER) {
         ret = Cpq_GetColorTemperatureUser(mCurentSourceInputInfo.source_input, &param);
     } else {
