@@ -46,6 +46,7 @@ UEventObserver::UEventObserver()
 
     addMatch(FRAME_RATE_VDIN0_UEVENT);
     addMatch(FRAME_RATE_VDIN1_UEVENT);
+    addMatch(FRAME_RATE_VDIN0_UEVENT_2);
 }
 
 UEventObserver::~UEventObserver() {
@@ -164,6 +165,7 @@ void UEventObserver::waitForNextEvent(uevent_data_t* ueventData) {
 
         ueventPrint(buffer, length);
         if (isMatch(buffer, length, ueventData))
+            //LOGD("Received uevent message is match\n");
             return;
     }
 }
@@ -276,16 +278,29 @@ void* UEventObserver::UeventThreadLoop(void) {
     while (true) {
         memset(&ueventData, 0, sizeof(uevent_data_t));
         waitForNextEvent(&ueventData);
+        //LOGD("Received ueventData.matchName: %s\n", ueventData.matchName);
 
         // for new uevent handle
+   #if 0 //compare uevent whole path
         if (!strcmp(ueventData.matchName, FRAME_RATE_VDIN0_UEVENT)
-            || !strcmp(ueventData.matchName, FRAME_RATE_VDIN1_UEVENT)) {
+            || !strcmp(ueventData.matchName, FRAME_RATE_VDIN1_UEVENT)
+            || !strcmp(ueventData.matchName, FRAME_RATE_VDIN0_UEVENT_2)) {
             if (mpUeventObserverCallBack == NULL) {
                 LOGE("%s: mpUeventObserverCallBack is null!\n", __FUNCTION__);
             } else {
                 mpUeventObserverCallBack->onUevent(ueventData);
             }
         }
+    #else //compare uevent sub path
+        if ((strstr(ueventData.matchName, "vdin/vdin0event") != NULL)
+           || (strstr(ueventData.matchName, "vdin/vdin1event") != NULL)) {
+           if (mpUeventObserverCallBack == NULL) {
+                LOGE("%s: mpUeventObserverCallBack is null!\n", __FUNCTION__);
+            } else {
+                mpUeventObserverCallBack->onUevent(ueventData);
+            }
+        }
+    #endif
     }
 
     return NULL;

@@ -26,6 +26,7 @@
 
 #define FRAME_RATE_VDIN0_UEVENT                 "change@/devices/platform/vdin@0/vdin/vdin0event"
 #define FRAME_RATE_VDIN1_UEVENT                 "change@/devices/platform/vdin@1/vdin/vdin1event"
+#define FRAME_RATE_VDIN0_UEVENT_2               "change@/devices/platform/soc/soc:vdin0/vdin/vdin0event"
 
 typedef struct uevent_data {
     int len;
