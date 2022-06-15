@@ -302,8 +302,10 @@ char* PqService::GetCmd(pq_moudle_param_t param)
         int i = 0;
         source_input_param_t source_input_param;
         tvin_cutwin_t overscanParam;
+        tvpq_rgb_ogo_t rgbogo;
         memset(&source_input_param, 0, sizeof(source_input_param_t));
         memset(&overscanParam, 0, sizeof(tvin_cutwin_t));
+        memset(&rgbogo, 0, sizeof(tvpq_rgb_ogo_t));
 
         for (i = 0; i < param.paramLength; i++) {
             paramData[i] = param.paramBuf[i];
@@ -415,6 +417,11 @@ char* PqService::GetCmd(pq_moudle_param_t param)
         case PQ_GET_MPEGNR:
             ret = mpPQcontrol->GetMpegNr();
             break;
+        case PQ_GET_COLORTEMP_USER_PARAM:
+            rgbogo = mpPQcontrol->GetColorTemperatureUserParam();
+            sprintf(mRetBuf, "%d.%d.%d.%d.%d.%d.%d.%d.%d.%d", rgbogo.en, rgbogo.r_pre_offset, rgbogo.g_pre_offset, rgbogo.b_pre_offset,
+                    rgbogo.r_gain, rgbogo.g_gain, rgbogo.b_gain, rgbogo.r_post_offset, rgbogo.g_post_offset, rgbogo.b_post_offset);
+            break;
 
         //Factory cmd
         case PQ_FACTORY_GET_COLOR_TEMPERATURE_MODE:
@@ -493,7 +500,8 @@ char* PqService::GetCmd(pq_moudle_param_t param)
     }
 
     if ((moudleId != PQ_GET_SOURCE_CHANNEL)
-        && (moudleId != PQ_FACTORY_GET_OVERSCAN)) {
+        && (moudleId != PQ_FACTORY_GET_OVERSCAN)
+        && (moudleId != PQ_GET_COLORTEMP_USER_PARAM)) {
         sprintf(mRetBuf, "%d", ret);
     }
 

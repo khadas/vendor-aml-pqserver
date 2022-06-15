@@ -418,4 +418,20 @@ typedef struct tvin_cutwin_s {
     unsigned short ve;
 } tvin_cutwin_t;
 #endif
+
+#ifndef __TVAPP_RGB_OGO__
+#define __TVAPP_RGB_OGO__
+typedef struct tvpq_rgb_ogo_s {
+    unsigned int en;
+    int r_pre_offset;
+    int g_pre_offset;
+    int b_pre_offset;
+    unsigned int r_gain;
+    unsigned int g_gain;
+    unsigned int b_gain;
+    int r_post_offset;
+    int g_post_offset;
+    int b_post_offset;
+} tvpq_rgb_ogo_t;
+#endif
 #endif

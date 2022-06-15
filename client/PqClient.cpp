@@ -167,6 +167,31 @@ int PqClient::GetColorTemperature()
     return ret;
 }
 
+tvpq_rgb_ogo_t PqClient::GetColorTemperatureUserParam()
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+
+    sprintf(buf, "pq.get.%d", PQ_GET_COLORTEMP_USER_PARAM);
+    SendMethodCall(buf);
+    SplitRetBuf(mRetBuf);
+
+    tvpq_rgb_ogo_t rgbogo;
+    rgbogo.en = atoi(mRet[0].c_str());
+    rgbogo.r_pre_offset = atoi(mRet[1].c_str());
+    rgbogo.g_pre_offset = atoi(mRet[2].c_str());
+    rgbogo.b_pre_offset = atoi(mRet[3].c_str());
+    rgbogo.r_gain = atoi(mRet[4].c_str());
+    rgbogo.g_gain = atoi(mRet[5].c_str());
+    rgbogo.b_gain = atoi(mRet[6].c_str());
+    rgbogo.r_post_offset = atoi(mRet[7].c_str());
+    rgbogo.g_post_offset = atoi(mRet[8].c_str());
+    rgbogo.b_post_offset = atoi(mRet[9].c_str());
+
+    return rgbogo;
+}
+
 int PqClient::SetBrightness(int brightnessValue, int isSave)
 {
     LOGD("%s\n", __FUNCTION__);

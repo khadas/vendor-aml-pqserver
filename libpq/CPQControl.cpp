@@ -1996,11 +1996,16 @@ int CPQControl::SaveColorTemperature(int value)
     return ret;
 }
 
-tcon_rgb_ogo_t CPQControl::GetColorTemperatureUserParam(void) {
+tvpq_rgb_ogo_t CPQControl::GetColorTemperatureUserParam(void) {
     tcon_rgb_ogo_t param;
+    tvpq_rgb_ogo_t output;
     memset(&param, 0, sizeof(tcon_rgb_ogo_t));
+    memset(&output, 0, sizeof(tvpq_rgb_ogo_t));
     Cpq_GetColorTemperatureUser(mCurentSourceInputInfo.source_input, &param);
-    return param;
+
+    memcpy(&output, &param, sizeof(tcon_rgb_ogo_t));
+
+    return output;
 }
 
 int CPQControl::Cpq_SetColorTemperatureWithoutSave(vpp_color_temperature_mode_t Tempmode, tv_source_input_t tv_source_input __unused)

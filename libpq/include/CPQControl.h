@@ -202,7 +202,7 @@ public:
     int SetColorTemperature(int temp_mode, int is_save, rgb_ogo_type_t rgb_ogo_type = TYPE_INVALID, int value = -1);
     int GetColorTemperature(void);
     int SaveColorTemperature(int value);
-    tcon_rgb_ogo_t GetColorTemperatureUserParam(void);
+    tvpq_rgb_ogo_t GetColorTemperatureUserParam(void);
     int Cpq_SetColorTemperatureWithoutSave(vpp_color_temperature_mode_t Tempmode, tv_source_input_t tv_source_input __unused);
     int Cpq_CheckColorTemperatureParamAlldata(source_input_param_t source_input_param);
     unsigned short Cpq_CalColorTemperatureParamsChecksum(void);

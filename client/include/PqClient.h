@@ -44,6 +44,7 @@ public:
     int GetPQMode();
     int SetColorTemperature(int colorTemperatureValue, int isSave, int rgb_type, int value);
     int GetColorTemperature();
+    tvpq_rgb_ogo_t GetColorTemperatureUserParam();
     int SetBrightness(int brightnessValue, int isSave = 0);
     int GetBrightness();
     int SetContrast(int contrastValue, int isSave = 0);
