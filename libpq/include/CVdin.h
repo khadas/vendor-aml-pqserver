@@ -171,6 +171,8 @@ typedef struct tvin_info_s {
      */
     unsigned int hdr_info;
     tvin_aspect_ratio_e aspect_ratio;
+    unsigned char dolby_vision;
+    unsigned char low_latency;
 } vdin_info_t;
 
 typedef struct tvin_parm_s {
