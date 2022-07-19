@@ -106,6 +106,7 @@ public:
     int GetLdim();
     int SetMpegNr(int mode, int isSave);
     int GetMpegNr();
+    int ResetPictureUiSetting(void);
 
     int FactoryResetPQMode(void);
     int FactoryResetColorTemp(void);

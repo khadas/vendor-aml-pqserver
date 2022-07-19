@@ -903,6 +903,7 @@ int CPQControl::LoadPQTableSettings()
     return ret;
 }
 
+//reset picture ui setting of all input source, used by init or factory reset
 void CPQControl::resetPQUiSetting(void)
 {
     int i = 0, j = 0, k = 0, config_val = 0;
@@ -955,6 +956,79 @@ void CPQControl::resetPQUiSetting(void)
 
     return;
 }
+
+//reset current input source picture ui setting by Reset_Picture
+void CPQControl::resetCurSrcPqUiSetting(void)
+{
+    int i = 0, j = 0, config_val = 0;
+    vpp_pictur_mode_para_t picture;
+    pq_src_param_t src;
+
+    LOGD("%s mCurentSourceInputInfo.source_input=%d\n", __FUNCTION__, mCurentSourceInputInfo.source_input);
+
+    for (i = PQ_FMT_DEFAUT; i < PQ_FMT_MAX; i++) {
+        if (mCurentSourceInputInfo.source_input != SOURCE_HDMI1 &&
+            mCurentSourceInputInfo.source_input != SOURCE_HDMI2 &&
+            mCurentSourceInputInfo.source_input != SOURCE_HDMI3 &&
+            mCurentSourceInputInfo.source_input != SOURCE_HDMI4) {
+            if (i == PQ_FMT_HDRP)
+                break;
+        }
+
+        src.pq_source_input = mCurentSourceInputInfo.source_input;
+        src.pq_sig_fmt = (pq_sig_fmt_t)i;
+
+        //picture
+        if (i == PQ_FMT_DOBLY) {
+            config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_DV_PICTUREMODE_DEF, VPP_PICTURE_MODE_DV_BRIGHT);
+        } else {
+            config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_PICTUREMODE_DEF, VPP_PICTURE_MODE_STANDARD);
+        }
+        mSSMAction->SSMSavePictureMode(mCurentSourceInputInfo.source_input * PQ_FMT_MAX + i, config_val);
+        mSSMAction->SSMSaveLastPictureMode(mCurentSourceInputInfo.source_input * PQ_FMT_MAX + i, config_val);
+
+        //picture mode params
+        for (j = VPP_PICTURE_MODE_STANDARD; j < VPP_PICTURE_MODE_MAX; j++) {
+            if (mPQdb->PQ_GetPictureModeParams(src, vpp_picture_mode_t(j), &picture) == 0) {
+                SetPictureModeData(src, vpp_picture_mode_t(j), &picture);
+            } else {
+                RsetPictureModeData(src, vpp_picture_mode_t(j));
+            }
+        }
+    }
+
+    //dynamic backlight
+    config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_DYNAMICBACKLIGHT_DEF, DYNAMIC_BACKLIGHT_OFF);
+    mSSMAction->SSMSaveDynamicBacklightMode(config_val);
+
+    //aspect ratio
+    config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_AUTOASPECT_DEF, 1);
+    mSSMAction->SSMSaveAutoAspect(mCurentSourceInputInfo.source_input, config_val);
+
+    //user colortemp
+    config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_RGBGAIN_R_DEF, 0);
+    mSSMAction->SSMSaveRGBGainRStart(0, config_val);
+
+    config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_RGBGAIN_G_DEF, 0);
+    mSSMAction->SSMSaveRGBGainGStart(0, config_val);
+
+    config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_RGBGAIN_B_DEF, 0);
+    mSSMAction->SSMSaveRGBGainBStart(0, config_val);
+
+    config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_RGBPOSTOFFSET_R_DEF_DEF, 1024);
+    mSSMAction->SSMSaveRGBPostOffsetRStart(0, config_val);
+
+    config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_RGBPOSTOFFSET_G_DEF_DEF, 1024);
+    mSSMAction->SSMSaveRGBPostOffsetGStart(0, config_val);
+
+    config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_RGBPOSTOFFSET_B_DEF_DEF, 1024);
+    mSSMAction->SSMSaveRGBPostOffsetBStart(0, config_val);
+
+    mbResetPicture = true;
+
+    return;
+}
+
 
 void CPQControl::resetPQTableSetting(void)
 {
@@ -1577,7 +1651,7 @@ int CPQControl::SetPQMode(int pq_mode, int is_save)
     int ret = -1;
 
     int cur_mode = GetPQMode();
-    if (cur_mode == pq_mode) {
+    if (cur_mode == pq_mode && mbResetPicture != true) {
         LOGD("Same PQ mode,no need set again!\n");
         ret = 0;
         return ret;
@@ -1600,6 +1674,11 @@ int CPQControl::SetPQMode(int pq_mode, int is_save)
             ret = SetDisplayMode(display_mode, 1);
         }
     }
+
+    if (mbResetPicture == true) {
+        mbResetPicture = false;
+    }
+
 
     if (ret < 0) {
         LOGE("%s failed!\n", __FUNCTION__);
@@ -7974,3 +8053,4 @@ int CPQControl::Cpq_SetVadjEnableStatus(int isvadj1Enable, int isvadj2Enable)
 
     return ret;
 }
+

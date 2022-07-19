@@ -78,6 +78,7 @@ typedef enum pqcmd_e {
     PQ_SET_MPEGNR                 = 264,
     PQ_GET_MPEGNR                 = 265,
     PQ_GET_COLORTEMP_USER_PARAM   = 266,
+    PQ_SET_PICTURE_UI_CLEAR       = 267,
 
     PQ_MOUDLE_CMD_MAX             = 299,
     //PQ factory(300~399)

@@ -1154,6 +1154,22 @@ int PqClient::GetMpegNr()
     return ret;
 }
 
+int PqClient::ResetPictureUiSetting(void)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d", PQ_SET_PICTURE_UI_CLEAR);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
 //PQ Factory cmd
 int PqClient::FactoryResetPQMode(void)
 {

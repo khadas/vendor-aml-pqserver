@@ -196,6 +196,9 @@ int PqService::SetCmd(pq_moudle_param_t param)
         case PQ_SET_MPEGNR:
             ret = mpPQcontrol->SetMpegNr((vpp_pq_level_t)paramData[0], paramData[1]);
             break;
+        case PQ_SET_PICTURE_UI_CLEAR:
+            mpPQcontrol->resetCurSrcPqUiSetting();
+            break;
 
         //Factory cmd
         case PQ_FACTORY_RESET_PICTURE_MODE:

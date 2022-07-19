@@ -496,6 +496,7 @@ public:
     int GetDolbyDarkDetail(void);
     int SaveDolbyDarkDetail(int value);
     int Cpq_SetDolbyDarkDetail(int mode);
+    void resetCurSrcPqUiSetting(void);
 
 private:
     int VPPOpenModule(void);
@@ -609,5 +610,6 @@ private:
     bool mbDtvKitEnable;
     bool mbDatabaseMatchChipStatus;
     bool mbVideoIsPlaying = false;//video don't playing
+    bool mbResetPicture = false;
 };
 #endif

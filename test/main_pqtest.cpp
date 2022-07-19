@@ -297,6 +297,10 @@ public:
                     rgbogo.en, rgbogo.r_pre_offset, rgbogo.g_pre_offset, rgbogo.b_pre_offset,
                     rgbogo.r_gain, rgbogo.g_gain, rgbogo.b_gain, rgbogo.r_post_offset, rgbogo.g_post_offset, rgbogo.b_post_offset);
             break;
+        case PQ_SET_PICTURE_UI_CLEAR:
+            ret = mpPqClient->ResetPictureUiSetting();
+            LOGD("%s: reset picture ui setting result is %d\n", __FUNCTION__, ret);
+            break;
 
         //factory API
         case PQ_FACTORY_RESET_PICTURE_MODE:
@@ -519,6 +523,7 @@ int main(int argc, char **argv) {
     LOGD("#### select 264 to set MpegNr ####\n");
     LOGD("#### select 265 to get MpegNr ####\n");
     LOGD("#### select 266 to get RGB Gain/Offset ####\n");
+    LOGD("#### select 267 to reset picture ui setting ####\n");
 
     LOGD("#### below is factory cmd####\n");
     LOGD("#### select 301 to reset pq mode ####\n");
@@ -1116,6 +1121,10 @@ int main(int argc, char **argv) {
           }
           case 266: {
               test->cmdID = PQ_GET_COLORTEMP_USER_PARAM;
+              break;
+          }
+          case 267: {
+              test->cmdID = PQ_SET_PICTURE_UI_CLEAR;
               break;
           }
 
