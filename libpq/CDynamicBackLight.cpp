@@ -51,15 +51,17 @@ void CDynamicBackLight::gd_fw_alg_frm(int value, int *tf_bl_value, int *LUT)
     int nL0 = 0, nR0 = 0;
     int nDt = 0;
     int bl_value = 0;
-    int bld_lvl = 0, bl_diff = 0;//luma_dif = 0;
-    int RBASE = 0;
     int apl_lut[10] = {0, 16, 35, 58, 69, 80, 91, 102, 235, 255};
     int step = 0;
     int i = 0;
     int average = 0;
     int GD_STEP_Th = 5;
+    /* for coverity
     int GD_IIR_MODE = 0;//1-old iir;0-new iir,set constant step
+    int bld_lvl = 0, bl_diff = 0;//luma_dif = 0;
+    int RBASE = 0;
     RBASE = (1 << mGD_mvreflsh);
+    */
     if (COLOR_RANGE_MODE == 1) {//color range limit
         if (value < 16) {
             value = 16;
@@ -97,14 +99,16 @@ void CDynamicBackLight::gd_fw_alg_frm(int value, int *tf_bl_value, int *LUT)
         nL0 = LUT[nT0];
         nR0 = LUT[nT0+1];
         nDt = nL0*(step-nT1)+nR0*nT1+step/2;
-        bl_value = nDt/step;//make sure that step != 0
+        if (step != 0) {
+            bl_value = nDt/step;//make sure that step != 0
+        }
     }
 
-    if (GD_IIR_MODE) {
+    /*if (GD_IIR_MODE) {
         bl_diff = (mPreBacklightValue > bl_value) ? (mPreBacklightValue - bl_value) : (bl_value - mPreBacklightValue);
         bld_lvl = (RBASE > (GD_ThTF + bl_diff)) ? (GD_ThTF + bl_diff) : RBASE;
         *tf_bl_value = ((RBASE - bld_lvl) * mPreBacklightValue + bld_lvl * bl_value + (RBASE >> 1)) >> mGD_mvreflsh;     //slowchange
-    } else {
+    } else*/{
         step = bl_value - mPreBacklightValue;
         if (step > GD_STEP_Th  )// dark --> bright, limit increase step
             step = GD_STEP_Th;

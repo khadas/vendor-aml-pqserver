@@ -31,6 +31,7 @@ typedef enum overscan_db_version_e {
 
 COverScandb::COverScandb()
 {
+    mOverScanDbVersion = OVERSCAN_DB_CODE_VERSION_0;
 }
 
 COverScandb::~COverScandb()

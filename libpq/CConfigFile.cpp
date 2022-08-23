@@ -39,7 +39,7 @@ CConfigFile::CConfigFile()
 
 CConfigFile::~CConfigFile()
 {
-    LOGD("%\n", __FUNCTION__);
+    LOGD("%s\n", __FUNCTION__);
     FreeAllMem();
 }
 
@@ -66,12 +66,14 @@ int CConfigFile::LoadFromFile(const char *filename)
     FreeAllMem();
 
     if (filename == NULL) {
-        LOGE("%s: config file path is null!\n");
+        LOGE("%s: config file path is null!\n", __FUNCTION__);
         return -1;
     }
 
     LOGD("LoadFromFile name = %s\n", filename);
-    strcpy(mpFileName, filename);
+    if (strlen(filename) <= sizeof(mpFileName)/sizeof(char)) {
+        strcpy(mpFileName, filename);
+    }
     if ((mpConfigFile = fopen (mpFileName, "r")) == NULL) {
         LOGE("open %s fail!!!\n", filename);
         return -1;

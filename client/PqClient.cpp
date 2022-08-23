@@ -65,11 +65,15 @@ void PqClient::SendMethodCall(char *CmdString)
             LOGE("PqClient: call %s failed\n", CmdString);
             const char* tmp;
             tmp = reply.readCString();
-            strcpy(mRetBuf, tmp);
+            if (strlen(tmp) <= sizeof(mRetBuf)/sizeof(char)) {
+                strcpy(mRetBuf, tmp);
+            }
         } else {
             const char* tmp;
             tmp = reply.readCString();
-            strcpy(mRetBuf, tmp);
+            if (strlen(tmp) <= sizeof(mRetBuf)/sizeof(char)) {
+                strcpy(mRetBuf, tmp);
+            }
         }
     }
 
@@ -78,12 +82,14 @@ void PqClient::SendMethodCall(char *CmdString)
 
 int PqClient::SplitRetBuf(const char *commandData)
 {
-    char cmdbuff[1024];
+    char cmdbuff[1024] = {'\0'};
     char *token;
     int  cmd_size = 0;
     const char *delimitation = ".";
 
-    strcpy(cmdbuff, commandData);
+    if (strlen(commandData) <= sizeof(cmdbuff)/sizeof(char)) {
+        strcpy(cmdbuff, commandData);
+    }
 
     /* get first str*/
     token = strtok(cmdbuff, delimitation);
@@ -1402,7 +1408,7 @@ int PqClient::FactorySetOverscanParams(int sourceInput, int sigFmt, int transFmt
     char buf[32] = {0};
     int  ret     = -1;
 
-    sprintf(buf, "pq.set.%d.%d.%d.%d.%d.%d.%d.%d.%d", PQ_FACTORY_SET_OVERSCAN, sourceInput, sigFmt, transFmt, cutwin_t.he, cutwin_t.hs, cutwin_t.ve, cutwin_t.vs);
+    sprintf(buf, "pq.set.%d.%d.%d.%d.%d.%d.%d.%d", PQ_FACTORY_SET_OVERSCAN, sourceInput, sigFmt, transFmt, cutwin_t.he, cutwin_t.hs, cutwin_t.ve, cutwin_t.vs);
     SendMethodCall(buf);
 
     ret = atoi(mRetBuf);

@@ -21,7 +21,9 @@ CPQFile::CPQFile()
 
 CPQFile::CPQFile(const char *path)
 {
-    strcpy(mPath, path);
+    if (strlen(path) <= sizeof(mPath)/sizeof(char)) {
+        strcpy(mPath, path);
+    }
     mFd = -1;
 }
 
@@ -36,7 +38,9 @@ int CPQFile::PQ_OpenFile(const char *path)
     if (mFd < 0) {
         const char *openPath = mPath;
         if (path != NULL)
-            strcpy(mPath, path);
+            if (strlen(path) <= sizeof(mPath)/sizeof(char)) {
+                strcpy(mPath, path);
+            }
 
         if (strlen(openPath) <= 0) {
             LOGE("openFile openPath is NULL, path:%s.\n", path);
@@ -92,6 +96,7 @@ int CPQFile::PQ_CopyFile(const char *dstPath)
 
     if ((dstFd = open(dstPath, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR)) == -1) {
         LOGE("Open %s Error:%s.\n", dstPath, strerror(errno));
+        return -1;
     }
 
     int bytes_read, bytes_write;
@@ -174,8 +179,9 @@ int CPQFile::PQ_GetFileAttrValue(const char *path)
     int size;
 
     int fd = open(path, O_RDONLY);
-    if (fd <= 0) {
+    if (fd < 0) {
         LOGE("open  (%s)ERROR!!error = %s.\n", path, strerror ( errno ));
+        return -1;
     }
 
     char s[8];

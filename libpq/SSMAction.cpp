@@ -34,6 +34,10 @@ SSMAction *SSMAction::getInstance()
 
 SSMAction::SSMAction()
 {
+    m_dev_fd = -1;
+    mpObserver = NULL;
+    mSSMDataFilePath = NULL;
+    mSSMHandlerFilePath = NULL;
 }
 
 SSMAction::~SSMAction()
@@ -85,6 +89,7 @@ void SSMAction::init(char *settingDataPath, char *whiteBalanceDataPath)
 
     if (m_dev_fd < 0) {
         LOGE("%s, Open %s failed error: %s\n", __FUNCTION__, mSSMDataFilePath, strerror(errno));
+        return;
     } else {
         LOGD("%s, Open %s success\n", __FUNCTION__, mSSMDataFilePath);
     }
@@ -219,7 +224,10 @@ int SSMAction::WriteBytes(int offset, int size, int *buf)
 {
     int wr_size;
 
-    lseek(m_dev_fd, offset, SEEK_SET);
+    if (lseek(m_dev_fd, offset, SEEK_SET) == -1) {
+        LOGE("%s seek faile\n", __FUNCTION__);
+    }
+
     wr_size = write(m_dev_fd, buf, size);
     if (wr_size < 0) {
         LOGE("write error = %s\n", strerror(errno));
@@ -231,7 +239,10 @@ int SSMAction::ReadBytes(int offset, int size, int *buf)
 {
     int rd_size;
 
-    lseek(m_dev_fd, offset, SEEK_SET);
+    if (lseek(m_dev_fd, offset, SEEK_SET) == -1) {
+        LOGE("%s seek faile\n", __FUNCTION__);
+    }
+
     rd_size = read(m_dev_fd, buf, size);
     if (rd_size < 0) {
         LOGE("read error = %s\n", strerror(errno));
@@ -725,14 +736,14 @@ int SSMAction::ReadDataFromFile(const char *file_name, int offset, int nsize, un
         return -1;
     }
 
-    if ( lseek(device_fd, offset, SEEK_SET) < 0 ){
+    if ( lseek(device_fd, offset, SEEK_SET) < 0 ) {
         LOGE("lseek file \"%s\" error(%s).\n", file_name, strerror(errno));
         ret = -1;
-    }else if ( (bytesRead = read(device_fd, data_buf, nsize)) <= 0 ) {
+    } else if ( (bytesRead = read(device_fd, data_buf, nsize)) <= 0 ) {
         LOGE("read file \"%s\" bytesRead[%d] error(%s).\n", file_name, bytesRead, strerror(errno));
         ret = -1;
     }
-    
+
     close(device_fd);
     device_fd = -1;
 
@@ -760,7 +771,12 @@ int SSMAction::SaveDataToFile(const char *file_name, int offset, int nsize, unsi
         return -1;
     }
 
-    lseek(device_fd, offset, SEEK_SET);
+    if (lseek(device_fd, offset, SEEK_SET) < 0) {
+        LOGE("lseek file \"%s\" error(%s).\n", file_name, strerror(errno));
+        close(device_fd);
+        return -1;
+    }
+
     wr_size = write(device_fd, data_buf, nsize);
     if (wr_size < 0) {
         LOGE("write error = %s\n", strerror(errno));

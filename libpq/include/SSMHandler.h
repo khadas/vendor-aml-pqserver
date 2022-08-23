@@ -33,7 +33,7 @@ public:
     bool SSMRecreateHeader(void);
     unsigned int SSMGetActualAddr(int id);
     unsigned int SSMGetActualSize(int id);
-	int SSMSaveCurrentHeader(current_ssmheader_section2_t *header_cur);
+    int SSMSaveCurrentHeader(current_ssmheader_section2_t *header_cur);
 private:
     int mFd;
     static SSMHandler *mSSMHandler;

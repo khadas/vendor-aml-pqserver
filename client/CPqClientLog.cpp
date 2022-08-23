@@ -29,6 +29,7 @@ int _log_print(const char *moudle_tag, const char *level_tag, const char *class_
     va_list ap;
     va_start(ap, fmt);
     vsnprintf(buf, DEFAULT_LOG_BUFFER_LEN, fmt, ap);
+    va_end(ap);
 
     return printf("%s %d %ld %s %s [%s]: %s", timeBuf,
                                                 getpid(),

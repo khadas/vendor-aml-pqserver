@@ -56,12 +56,14 @@ int PqService::PqServiceHandleMessage()
 
 int PqService::SplitCommand(const char *commandData)
 {
-    char cmdbuff[1024];
+    char cmdbuff[1024] = {'\0'};
     char *token;
     int   cmd_size = 0;
     const char *delimitation = ".";
 
-    strcpy(cmdbuff, commandData);
+    if (strlen(commandData) <= sizeof(cmdbuff)/sizeof(char)) {
+        strcpy(cmdbuff, commandData);
+    }
 
     /* get first str*/
     token = strtok(cmdbuff, delimitation);
@@ -467,7 +469,7 @@ char* PqService::GetCmd(pq_moudle_param_t param)
             source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
 
             overscanParam = mpPQcontrol->FactoryGetOverscanParam(source_input_param);
-            sprintf(mRetBuf, "%d.%d.%d.d", overscanParam.he, overscanParam.hs, overscanParam.ve, overscanParam.vs);
+            sprintf(mRetBuf, "%d.%d.%d.%d", overscanParam.he, overscanParam.hs, overscanParam.ve, overscanParam.vs);
             break;
         case PQ_FACTORY_GET_WB_RED_GAIN:
             ret = mpPQcontrol->FactoryGetColorTemp_Rgain(paramData[0], paramData[1]);

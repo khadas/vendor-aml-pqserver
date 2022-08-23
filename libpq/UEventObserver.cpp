@@ -71,7 +71,11 @@ int UEventObserver::ueventInit() {
     if (s < 0)
         return 0;
 
-    setsockopt(s, SOL_SOCKET, SO_RCVBUFFORCE, &sz, sizeof(sz));
+    int ret = setsockopt(s, SOL_SOCKET, SO_RCVBUFFORCE, &sz, sizeof(sz));
+    if (ret != 0) {
+        close(s);
+        return 0;
+    }
 
     if (bind(s, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
         close(s);
@@ -118,11 +122,15 @@ bool UEventObserver::isMatch(const char* buffer, int length,
         if (!strcmp(field, matchStr)) {
             LOGD("Matched uevent message with pattern: %s\n", matchStr);
 
-            strcpy(ueventData->matchName, matchStr);
+            if (strlen(matchStr) <= sizeof(ueventData->matchName)/sizeof(char)) {
+                strcpy(ueventData->matchName, matchStr);
+            }
             matched = true;
         }
         else if (strstr(field, "DEVTYPE=")) {
-            strcpy(ueventData->switchName, field + strlen("DEVTYPE="));
+            if (strlen(field + strlen("DEVTYPE=")) <= sizeof(ueventData->switchName)/sizeof(char)) {
+                strcpy(ueventData->switchName, field + strlen("DEVTYPE="));
+            }
         }
         field += strlen(field) + 1;
     } while (field != end);

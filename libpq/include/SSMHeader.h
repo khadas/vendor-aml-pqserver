@@ -15,24 +15,24 @@
 
 struct SSMHeader_section1_t
 {
-	unsigned int magic;
-	unsigned int version;//count by ID and its size
-	unsigned int count;//count by column of excel
-	unsigned int rsv[6];//reserve
+    unsigned int magic;
+    unsigned int version;//count by ID and its size
+    unsigned int count;//count by column of excel
+    unsigned int rsv[6];//reserve
 };
 
 struct SSMHeader_section2_t
 {
     unsigned int addr;//Id's addr
-	unsigned int size;//this item size
-	unsigned int valid;
-	unsigned char rsv[6];
+    unsigned int size;//this item size
+    unsigned int valid;
+    unsigned char rsv[6];
 };
 
 
 typedef struct current_ssmheader_section2_s {
-	unsigned int size;
-	SSMHeader_section2_t *header_section2_data;
+    unsigned int size;
+    SSMHeader_section2_t *header_section2_data;
     void *reserved;
 } current_ssmheader_section2_t;
 

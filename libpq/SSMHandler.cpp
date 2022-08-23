@@ -36,10 +36,11 @@ SSMHandler* SSMHandler::GetSingletonInstance(const char *SSMHandlerPath)
 
 SSMHandler::SSMHandler()
 {
-    unsigned int sum = 0;
-
+    mFd = -1;
+    mSSMHandlerPath = NULL;
     memset (&mSSMHeader_section1, 0, sizeof (SSMHeader_section1_t));
 
+    unsigned int sum = 0;
     for (unsigned int i = 1; i < gSSMHeader_section1.count; i++) {
         sum += gSSMHeader_section2[i-1].size;
 
@@ -98,7 +99,9 @@ int SSMHandler::SSMSaveCurrentHeader(current_ssmheader_section2_t *header_cur)
 
     LOGD ("%s --- line:%d\n", __FUNCTION__, __LINE__);
 
-    lseek (mFd, sizeof (SSMHeader_section1_t), SEEK_SET);
+    if (lseek (mFd, sizeof (SSMHeader_section1_t), SEEK_SET) == 1) {
+        LOGE("%s seek faile\n", __FUNCTION__);
+    }
 
     for (unsigned int i = 0; i < gSSMHeader_section1.count; i++) {
         SSMHeader_section2_t temp;
