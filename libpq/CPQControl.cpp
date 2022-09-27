@@ -48,6 +48,7 @@ CPQControl::CPQControl()
     mSSMAction =  NULL;
     mPQConfigFile = NULL;
     mDolbyVision = NULL;
+    mpObserver = NULL;
     mInitialized   = false;
     mbDtvKitEnable = false;
     mbDatabaseMatchChipStatus = false;
@@ -7190,6 +7191,11 @@ int CPQControl::SetCurrentSourceInputInfo(source_input_param_t source_input_para
     output_type_t NewOutputType = OUTPUT_TYPE_LVDS;
     NewOutputType = CheckOutPutMode(source_input_param.source_input);
 
+    if (mCurrentHdrType != newHdrType) {
+        LOGD("%s: callback hdr type to client %d %d\n", __FUNCTION__, newHdrType, mCurrentHdrType);
+        Cpq_SetHdrType(newHdrType);
+    }
+
     if ((mCurentSourceInputInfo.source_input != source_input_param.source_input) ||
          (mCurentSourceInputInfo.sig_fmt     != source_input_param.sig_fmt) ||
          (mCurentSourceInputInfo.trans_fmt   != source_input_param.trans_fmt) ||
@@ -8336,5 +8342,21 @@ int CPQControl::Cpq_SetVadjEnableStatus(int isvadj1Enable, int isvadj2Enable)
     }
 
     return ret;
+}
+
+
+//for callback to upper client
+int CPQControl::Cpq_SetHdrType(int data)
+{
+    if (mpObserver != NULL) {
+        LOGD("%s data %d\n", __FUNCTION__, data);
+        PQControlCb::HdrTypeCb cb_data;
+        cb_data.mHdrType = data;
+        mpObserver->GetCbDataFromLibpq(cb_data);
+    } else {
+        LOGD("%s mpObserver is NULL\n", __FUNCTION__);
+    }
+
+    return 0;
 }
 

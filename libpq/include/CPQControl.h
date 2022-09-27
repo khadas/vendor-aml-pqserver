@@ -23,6 +23,7 @@
 #include "UEventObserver.h"
 #include "CVdin.h"
 #include "CAmdolbyVision.h"
+#include "CPQControlCb.h"
 
 #define PQ_DB_DEFAULT_PATH               "/vendor/etc/tvconfig/pq/pq.db"
 #define OVERSCAN_DB_DEFAULT_PATH         "/vendor/etc/tvconfig/pq/overscan.db"
@@ -621,5 +622,23 @@ private:
     bool mbDatabaseMatchChipStatus;
     bool mbVideoIsPlaying = false;//video don't playing
     bool mbResetPicture = false;
+
+//for callback to upper client
+public:
+    class ICPQControlObserver {
+    public:
+        ICPQControlObserver() {};
+        virtual ~ICPQControlObserver() {};
+        virtual void GetCbDataFromLibpq(CPQControlCb &cb_data) = 0;
+    };
+
+    void setObserver (ICPQControlObserver *pOb) {
+        mpObserver = pOb;
+    };
+
+private:
+    ICPQControlObserver *mpObserver; //to get upper pqserver object
+
+    int Cpq_SetHdrType(int data);
 };
 #endif

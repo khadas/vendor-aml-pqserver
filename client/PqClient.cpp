@@ -14,6 +14,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <binder/IPCThreadState.h>
+#include <binder/ProcessState.h>
 
 #include "PqClient.h"
 #include "CPqClientLog.h"
@@ -26,19 +28,27 @@ const int EVENT_SIGLE_DETECT = 4;
 const int EVENT_SOURCE_CONNECT = 10;
 
 PqClient *mInstance = NULL;
+
 PqClient *PqClient::GetInstance() {
     if (mInstance == NULL) {
+        LOGD("%s mInstance is null\n", __FUNCTION__);
         mInstance = new PqClient();
+    } else {
+        LOGD("%s mInstance is not null\n", __FUNCTION__);
     }
 
+    LOGD("%s: getid %p\n", __FUNCTION__, getpid());
     return mInstance;
 }
 
 PqClient::PqClient() {
+    sp<ProcessState> proc(ProcessState::self());
+    proc->startThreadPool();
     Parcel send, reply;
     sp<IServiceManager> serviceManager = defaultServiceManager();
     do {
         mpqServicebinder = serviceManager->getService(String16("pqservice"));
+        LOGD("%s mpqServicebinder is %p\n", __FUNCTION__, mpqServicebinder);
         if (mpqServicebinder != 0) break;
         LOGD("PqClient: Waiting pqservice published.\n");
         usleep(500000);
@@ -47,6 +57,7 @@ PqClient::PqClient() {
 }
 
 PqClient::~PqClient() {
+    mInstance = NULL;
     Parcel send, reply;
     mpqServicebinder->transact(CMD_CLR_PQ_CB, send, &reply);
     mpqServicebinder = NULL;
@@ -1805,6 +1816,10 @@ status_t PqClient::onTransact(uint32_t code,
                                 uint32_t flags) {
     LOGD("PqClient get tanscode: %u\n", code);
     switch (code) {
+        case CMD_HDR_DT_CB: {
+            GetHdrTypeFromPqserver(&data);
+            break;
+        }
         case CMD_START:
         default:
             return BBinder::onTransact(code, data, reply, flags);
@@ -1812,3 +1827,82 @@ status_t PqClient::onTransact(uint32_t code,
 
     return (0);
 }
+
+//for callback method
+int PqClient::RegisterObserverToPqClient(PqClientIObserver *observer)
+{
+    LOGD("%s the main process pid %p\n", __FUNCTION__, getpid());
+
+    //send client binder proxy object to server
+    if (mpqServicebinder != 0) {
+        Parcel send, reply;
+        send.writeStrongBinder(sp<IBinder>(this));
+        mpqServicebinder->transact(CMD_SET_PQ_CB, send, &reply);
+        mpqServicebinderId = reply.readInt32();
+        LOGD("%s mpqServicebinderId %d\n", __FUNCTION__, mpqServicebinderId);
+    }
+
+    //register upper client observer
+    if (observer != nullptr) {
+        LOGD("%s observer is %p\n", __FUNCTION__, observer);
+        int cookie = -1;
+        int clientSize = mPqClientObserver.size();
+        LOGD("%s clientSize is %d\n", __FUNCTION__, clientSize);
+
+        for (int i = 0; i < clientSize; i++) {
+            if (mPqClientObserver[i] == NULL) {
+                cookie = i;
+                mPqClientObserver[i] = observer;
+                LOGD("%s mPqClientObserver[%d] %p\n", __FUNCTION__, i, mPqClientObserver[i]);
+                break;
+            } else {
+                LOGD("%s mPqClientObserver[%d] has been register\n", __FUNCTION__, i);
+            }
+        }
+
+        if (cookie < 0) {
+            cookie = clientSize;
+            mPqClientObserver[clientSize] = observer;
+            LOGD("%s mPqClientObserver[clientSize] %p\n", __FUNCTION__, mPqClientObserver[clientSize]);
+        }
+    } else {
+        LOGE("%s observer is NULL\n", __FUNCTION__);
+    }
+
+    return 0;
+}
+
+int PqClient::TransactCbData(CPqClientCb &cb_data)
+{
+    int clientSize = mPqClientObserver.size();
+    LOGD("%s now has %d pqclient\n", __FUNCTION__, clientSize);
+
+    int i = 0;
+    for (i = 0; i < clientSize; i++) {
+        if (mPqClientObserver[i] != NULL) {
+            mPqClientObserver[i]->GetPqCbData(cb_data);
+            LOGD("%s mPqClientObserver[%d] %p\n", __FUNCTION__, i, mPqClientObserver[i]);
+        } else {
+            LOGD("%s mPqClientObserver[%d] is NULL\n", __FUNCTION__, i, mPqClientObserver[i]);
+        }
+    }
+
+    LOGD("%s send event for %d count PqClientObserver!\n", __FUNCTION__, i);
+    return 0;
+}
+
+int PqClient::GetHdrTypeFromPqserver(const void* param)
+{
+    LOGD("%s the main process pid %p\n", __FUNCTION__, getpid());
+    Parcel *parcel = (Parcel *) param;
+
+    PqClientCb::HdrTypeCb cb_data;
+    cb_data.mHdrType = parcel->readInt32();
+    LOGD("%s cb_data.mHdrType %d\n", __FUNCTION__, cb_data.mHdrType);
+
+    mInstance->TransactCbData(cb_data);
+
+    return 0;
+}
+
+

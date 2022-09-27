@@ -36,6 +36,7 @@ PqService *PqService::GetInstance() {
 PqService::PqService() {
     mpPQcontrol = CPQControl::GetInstance();
     mpPQcontrol->CPQControlInit();
+    mpPQcontrol->setObserver(this);
 }
 
 PqService::~PqService() {
@@ -607,11 +608,92 @@ status_t PqService::onTransact(uint32_t code,
             reply->writeInt32(mpPQcontrol->FactoryGetLVDSSSCMode());
             break;
         }
+        case CMD_SET_PQ_CB: {
+            int pqServiceCallBackID = SetClientProxyToServer(data.readStrongBinder());
+            reply->writeInt32(pqServiceCallBackID);
+            LOGD("%s %s pqServiceCallBackID %d\n", __FUNCTION__, "CMD_SET_PQ_CB", pqServiceCallBackID);
+            break;
+        }
         default:
             return BBinder::onTransact(code, data, reply, flags);
     }
 
     return (0);
+}
+
+//for callback to upper client
+int PqService::SetClientProxyToServer(sp<IBinder> callBack)
+{
+    LOGD("%s the main process pid %p\n", __FUNCTION__, getpid());
+    int ret = -1;
+
+    if (callBack != nullptr) {
+        LOGD("%s callBack is %p\n", __FUNCTION__, callBack);
+        int cookie = -1;
+        int clientSize = mPqServiceCallBack.size();
+        LOGD("%s clientSize is %d\n", __FUNCTION__, clientSize);
+
+        for (int i = 0; i < clientSize; i++) {
+            if (mPqServiceCallBack[i] == NULL) {
+                cookie = i;
+                mPqServiceCallBack[i] = callBack;
+                LOGD("%s mPqServiceCallBack[%d] %p\n", __FUNCTION__, i, mPqServiceCallBack[i]);
+                break;
+            } else {
+                LOGD("%s mPqServiceCallBack[%d] has been register\n", __FUNCTION__, i);
+            }
+        }
+
+        if (cookie < 0) {
+            cookie = clientSize;
+            mPqServiceCallBack[clientSize] = callBack;
+            LOGD("%s mPqServiceCallBack[clientSize] %p\n", __FUNCTION__, mPqServiceCallBack[clientSize]);
+        }
+        ret = cookie;
+    } else {
+        LOGE("%s callBack is NULL\n", __FUNCTION__);
+    }
+
+    return ret;
+}
+
+void PqService::GetCbDataFromLibpq(CPQControlCb &cb_data)
+{
+    int cbType = cb_data.getCbType();
+    LOGD("%s: cbType: %d\n", __FUNCTION__, cbType);
+
+    switch (cbType) {
+        case CPQControlCb::PQ_CB_TYPE_HDRTYPE:
+            Sethdrtype(cb_data);
+            break;
+        default :
+            LOGE("%s invalie callback type\n", __FUNCTION__);
+            break;
+    }
+
+    return;
+}
+
+void PqService::Sethdrtype(CPQControlCb &cb_data)
+{
+    LOGD("%s the main process's pid %p\n", __FUNCTION__, getpid());
+    Parcel send, reply;
+
+    PQControlCb::HdrTypeCb *hdrTypeCb = (PQControlCb::HdrTypeCb *)(&cb_data);
+    int clientSize = mPqServiceCallBack.size();
+    LOGD("%s now has %d pqclient\n", __FUNCTION__, clientSize);
+
+    for (int i = 0; i < clientSize; i++) {
+        if (mPqServiceCallBack[i] != NULL) {
+            LOGD("%s send callback data from server to client by binder i %d\n", __FUNCTION__, i);
+            send.writeInt32(hdrTypeCb->mHdrType);
+            mPqServiceCallBack[i]->transact(CMD_HDR_DT_CB, send, &reply);
+        } else {
+            LOGE("%s mPqServiceCallBack is NULL\n");
+        }
+    }
+
+    return;
 }
 #ifdef __cplusplus
 }

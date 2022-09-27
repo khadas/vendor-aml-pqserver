@@ -13,6 +13,7 @@
 #include <binder/Binder.h>
 #include <binder/Parcel.h>
 #include "CPQControl.h"
+#include <map>
 
 using namespace android;
 
@@ -22,7 +23,8 @@ typedef struct pq_moudle_param_s {
     int paramBuf[10];    //param for action
 } pq_moudle_param_t;
 
-class PqService: public BBinder{
+class PqService: public CPQControl::ICPQControlObserver,
+                 public BBinder {
 public:
     PqService();
     ~PqService();
@@ -36,6 +38,7 @@ public:
         CMD_CLR_PQ_CB = IBinder::FIRST_CALL_TRANSACTION + 3,
         EVT_SRC_CT_CB = IBinder::FIRST_CALL_TRANSACTION + 4,
         EVT_SIG_DT_CB = IBinder::FIRST_CALL_TRANSACTION + 5,
+        CMD_HDR_DT_CB = IBinder::FIRST_CALL_TRANSACTION + 6,
 
         CMD_PQ_SET_DDR_SSC,
         CMD_PQ_GET_DDR_SSC,
@@ -61,5 +64,16 @@ private:
                                 const Parcel& data, Parcel* reply,
                                 uint32_t flags = 0);
     std::string mPqCommand[10];
+
+private:
+    //used to send client binder proxy object pointer to pqserver, to realize service <--> client two-way communication
+    int SetClientProxyToServer(sp<IBinder> callBack);
+    //used to libpq callback data to pqserver
+    virtual void GetCbDataFromLibpq(CPQControlCb &cb_data);
+
+    void Sethdrtype(CPQControlCb &cb_data);
+
+    std::map<int, sp<IBinder>> mPqServiceCallBack;
+
 };
 #endif

@@ -17,6 +17,7 @@
 #include <binder/Parcel.h>
 #include <binder/IServiceManager.h>
 #include "common.h"
+#include "CPqClientCb.h"
 
 using namespace android;
 
@@ -24,9 +25,9 @@ using namespace android;
 extern "C" {
 #endif
 
-class PqClient : public BBinder{
-public:
 
+class PqClient : public BBinder {
+public:
     enum {
         CMD_START = IBinder::FIRST_CALL_TRANSACTION,
         CMD_PQ_ACTION = IBinder::FIRST_CALL_TRANSACTION + 1,
@@ -34,6 +35,7 @@ public:
         CMD_CLR_PQ_CB = IBinder::FIRST_CALL_TRANSACTION + 3,
         EVT_SRC_CT_CB = IBinder::FIRST_CALL_TRANSACTION + 4,
         EVT_SIG_DT_CB = IBinder::FIRST_CALL_TRANSACTION + 5,
+        CMD_HDR_DT_CB = IBinder::FIRST_CALL_TRANSACTION + 6,
 
         CMD_PQ_SET_DDR_SSC,
         CMD_PQ_GET_DDR_SSC,
@@ -49,7 +51,6 @@ public:
     PqClient();
     ~PqClient();
     static PqClient *GetInstance();
-
     int SetPQMode(int mode, int isSave = 0);
     int GetPQMode();
     int SetColorTemperature(int colorTemperatureValue, int isSave, int rgb_type, int value);
@@ -164,13 +165,32 @@ public:
 private:
     void SendMethodCall(char *CmdString);
     int SplitRetBuf(const char *commandData);
+
     char mRetBuf[128] = {0};
     std::array<std::string, 10> mRet;
-
     sp<IBinder> mpqServicebinder;
     virtual status_t onTransact(uint32_t code,
                                 const Parcel& data, Parcel* reply,
                                 uint32_t flags = 0);
+
+//for callback method
+public:
+    class PqClientIObserver {
+    public:
+        PqClientIObserver() {};
+        virtual ~PqClientIObserver() {};
+        virtual void GetPqCbData(CPqClientCb &cb_data) = 0;
+    };
+
+    //used to register pqclient observer by upper client
+    int RegisterObserverToPqClient(PqClientIObserver *observer);
+
+private:
+    int TransactCbData(CPqClientCb &cb_data);
+    static int GetHdrTypeFromPqserver(const void *param);
+
+    std::map<int, PqClientIObserver *> mPqClientObserver;
+    int mpqServicebinderId;
 };
 #ifdef __cplusplus
 }

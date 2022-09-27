@@ -72,9 +72,16 @@ pqtest_SRCS  = \
 	$(LOCAL_PATH)/test/main_pqtest.cpp \
 	$(NULL)
 
+################################################################################
+# pqcbtest - src files
+################################################################################
+pqcbtest_SRCS  = \
+	$(LOCAL_PATH)/test/main_callback_test.cpp \
+	$(NULL)
+
 # ---------------------------------------------------------------------
 #  Build rules
-BUILD_TARGETS = libpqclient.so libpq.so pqservice pqtest
+BUILD_TARGETS = libpqclient.so libpq.so pqservice pqtest pqcbtest
 
 .PHONY: all install uninstall clean
 
@@ -94,6 +101,10 @@ pqtest: $(pqtest_SRCS) libpqclient.so
 	$(CC) $(CFLAGS) -I$(pqclient_HEADERS) -L$(LOCAL_PATH) \
 	-lpqclient $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
+pqcbtest: $(pqcbtest_SRCS) libpqclient.so
+	$(CC) $(CFLAGS) -I$(pqclient_HEADERS) -L$(LOCAL_PATH) \
+	-lpqclient $(LDFLAGS) -o $@ $^ $(LDLIBS)
+
 all: $(BUILD_TARGETS)
 
 clean:
@@ -104,9 +115,11 @@ install:
 	install -m 0644 libpq.so $(TARGET_DIR)/usr/lib/
 	install -m 755 pqservice $(TARGET_DIR)/usr/bin/
 	install -m 755 pqtest $(TARGET_DIR)/usr/bin/
+	install -m 755 pqcbtest $(TARGET_DIR)/usr/bin/
 
 uninstall:
 	rm -f $(TARGET_DIR)/usr/lib/libpqclient.so
 	rm -f $(TARGET_DIR)/usr/lib/libpq.so
 	rm -f $(TARGET_DIR)/usr/bin/pqtest
+	rm -f $(TARGET_DIR)/usr/bin/pqcbtest
 	rm -f $(TARGET_DIR)/usr/bin/pqservice
