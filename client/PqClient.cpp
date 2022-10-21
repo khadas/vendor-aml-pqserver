@@ -1692,6 +1692,112 @@ int PqClient::FactoryGetGrayPattern()
     return ret;
 }
 
+//ddr
+int PqClient::FactorySetDDRSSC(int step)
+{
+    Parcel send, reply;
+
+    send.writeInt32(step);
+
+    if (mpqServicebinder->transact(CMD_PQ_SET_DDR_SSC, send, &reply) != 0) {
+        LOGD("%s CMD_PQ_SET_DDR_SSC step = %d fail\n", __FUNCTION__, step);
+        return -1;
+    }
+
+    return reply.readInt32();
+}
+
+int PqClient::FactoryGetDDRSSC(void)
+{
+    Parcel send, reply;
+
+    if (mpqServicebinder->transact(CMD_PQ_GET_DDR_SSC, send, &reply) != 0) {
+        LOGD("%s CMD_PQ_GET_DDR_SSC fail\n", __FUNCTION__);
+        return -1;
+    }
+
+    return reply.readInt32();
+}
+
+//lcd
+int PqClient::FactorySetLVDSSSCLevel(int level)
+{
+    Parcel send, reply;
+
+    send.writeInt32(level);
+
+    if (mpqServicebinder->transact(CMD_PQ_SET_LVDS_SSC_LEVEL, send, &reply) != 0) {
+        LOGD("%s CMD_PQ_SET_LVDS_SSC_LEVEL level = %d fail\n", __FUNCTION__, level);
+        return -1;
+    }
+
+    return reply.readInt32();
+}
+
+int PqClient::FactoryGetLVDSSSCLevel(void)
+{
+    Parcel send, reply;
+
+    if (mpqServicebinder->transact(CMD_PQ_GET_LVDS_SSC_LEVEL, send, &reply) != 0) {
+        LOGD("%s CMD_PQ_GET_LVDS_SSC_LEVEL fail\n", __FUNCTION__);
+        return -1;
+    }
+
+    return reply.readInt32();
+}
+
+int PqClient::FactorySetLVDSSSCFrep(int step)
+{
+    Parcel send, reply;
+
+    send.writeInt32(step);
+
+    if (mpqServicebinder->transact(CMD_PQ_SET_LVDS_SSC_FREP, send, &reply) != 0) {
+        LOGD("%s CMD_PQ_SET_LVDS_SSC_FREP step = %d fail\n", __FUNCTION__, step);
+        return -1;
+    }
+
+    return reply.readInt32();
+}
+
+int PqClient::FactoryGetLVDSSSCFrep(void)
+{
+    Parcel send, reply;
+
+    if (mpqServicebinder->transact(CMD_PQ_GET_LVDS_SSC_FREP, send, &reply) != 0) {
+        LOGD("%s CMD_PQ_GET_LVDS_SSC_FREP fail\n", __FUNCTION__);
+        return -1;
+    }
+
+    return reply.readInt32();
+}
+
+int PqClient::FactorySetLVDSSSCMode(int mode)
+{
+    Parcel send, reply;
+
+    send.writeInt32(mode);
+
+    if (mpqServicebinder->transact(CMD_PQ_SET_LVDS_SSC_MODE, send, &reply) != 0) {
+        LOGD("%s CMD_PQ_SET_LVDS_SSC_MODE mode = %d fail\n", __FUNCTION__, mode);
+        return -1;
+    }
+
+    return reply.readInt32();
+}
+
+int PqClient::FactoryGetLVDSSSCMode(void)
+{
+    Parcel send, reply;
+
+    if (mpqServicebinder->transact(CMD_PQ_GET_LVDS_SSC_MODE, send, &reply) != 0) {
+        LOGD("%s CMD_PQ_GET_LVDS_SSC_MODE fail\n", __FUNCTION__);
+        return -1;
+    }
+
+    return reply.readInt32();
+}
+
 status_t PqClient::onTransact(uint32_t code,
                                 const Parcel& data, Parcel* reply,
                                 uint32_t flags) {

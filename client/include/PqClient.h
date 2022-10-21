@@ -34,6 +34,16 @@ public:
         CMD_CLR_PQ_CB = IBinder::FIRST_CALL_TRANSACTION + 3,
         EVT_SRC_CT_CB = IBinder::FIRST_CALL_TRANSACTION + 4,
         EVT_SIG_DT_CB = IBinder::FIRST_CALL_TRANSACTION + 5,
+
+        CMD_PQ_SET_DDR_SSC,
+        CMD_PQ_GET_DDR_SSC,
+
+        CMD_PQ_SET_LVDS_SSC_LEVEL,
+        CMD_PQ_GET_LVDS_SSC_LEVEL,
+        CMD_PQ_SET_LVDS_SSC_FREP,
+        CMD_PQ_GET_LVDS_SSC_FREP,
+        CMD_PQ_SET_LVDS_SSC_MODE,
+        CMD_PQ_GET_LVDS_SSC_MODE,
     };
 
     PqClient();
@@ -141,6 +151,15 @@ public:
     int FactoryGetRGBPattern();
     int FactorySetGrayPattern(int value);
     int FactoryGetGrayPattern();
+
+    int FactorySetDDRSSC(int step);
+    int FactoryGetDDRSSC(void);
+    int FactorySetLVDSSSCLevel(int level);
+    int FactoryGetLVDSSSCLevel(void);
+    int FactorySetLVDSSSCFrep(int step);
+    int FactoryGetLVDSSSCFrep(void);
+    int FactorySetLVDSSSCMode(int mode);
+    int FactoryGetLVDSSSCMode(void);
 
 private:
     void SendMethodCall(char *CmdString);

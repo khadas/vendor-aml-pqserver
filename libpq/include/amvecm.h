@@ -138,12 +138,25 @@
 #define AMVECM_IOC_S_AAD_PARAM     _IOW(AMVECM_IOC_MAGIC, 0x77, struct db_aad_param_s)
 
 //LCD command list
+#define MAX_TABLE_SIZE                            0xC0000
 #define LCD_IOC_TYPE               'C'
 #define LCD_IOC_NR_GET_HDR_INFO    0x0
 #define LCD_IOC_NR_SET_HDR_INFO    0x1
 
 #define LCD_IOC_CMD_GET_HDR_INFO   _IOR(LCD_IOC_TYPE, LCD_IOC_NR_GET_HDR_INFO, struct lcd_optical_info_s)
 #define LCD_IOC_CMD_SET_HDR_INFO   _IOW(LCD_IOC_TYPE, LCD_IOC_NR_SET_HDR_INFO, struct lcd_optical_info_s)
+
+#define LCD_IOC_GET_TCON_BIN_MAX_CNT_INFO         _IOR(LCD_IOC_TYPE, 0x2, unsigned int)
+#define LCD_IOC_SET_TCON_DATA_INDEX_INFO          _IOW(LCD_IOC_TYPE, 0x3, unsigned int)
+#define LCD_IOC_GET_TCON_BIN_PATH_INFO            _IOR(LCD_IOC_TYPE, 0x4, struct aml_path_s)
+#define LCD_IOC_SET_TCON_BIN_DATA_INFO            _IOW(LCD_IOC_TYPE, 0x5, struct am_pq_bin_param_s)
+#define LCD_IOC_CMD_POWER_CTRL                           _IOW(LCD_IOC_TYPE, 0x6, unsigned int)
+#define LCD_IOC_CMD_MUTE_CTRL                            _IOW(LCD_IOC_TYPE, 0x7, unsigned int)
+
+#define LCD_IOC_CMD_SET_PHY_PARAM                        _IOW(LCD_IOC_TYPE, 0x9, struct phy_config_s)
+#define LCD_IOC_CMD_GET_PHY_PARAM                        _IOR(LCD_IOC_TYPE, 0xa, struct phy_config_s)
+#define LCD_IOC_CMD_SET_SS                               _IOW(LCD_IOC_TYPE, 0xc, struct aml_lcd_ss_ctl_s)
+#define LCD_IOC_CMD_GET_SS                               _IOR(LCD_IOC_TYPE, 0xd, struct aml_lcd_ss_ctl_s)
 
 #endif /* __AMVECM_H */
 

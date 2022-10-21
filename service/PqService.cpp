@@ -571,6 +571,42 @@ status_t PqService::onTransact(uint32_t code,
             reply->writeCString(mRetBuf);
             break;
         }
+        case CMD_PQ_SET_DDR_SSC: {
+            int step = data.readInt32();
+            reply->writeInt32(mpPQcontrol->FactorySetDDRSSC(step));
+            break;
+        }
+        case CMD_PQ_GET_DDR_SSC: {
+            reply->writeInt32(mpPQcontrol->FactoryGetDDRSSC());
+            break;
+        }
+        case CMD_PQ_SET_LVDS_SSC_LEVEL: {
+            int level = data.readInt32();
+            reply->writeInt32(mpPQcontrol->FactorySetLVDSSSCLevel(level));
+            break;
+        }
+        case CMD_PQ_GET_LVDS_SSC_LEVEL: {
+            reply->writeInt32(mpPQcontrol->FactoryGetLVDSSSCLevel());
+            break;
+        }
+        case CMD_PQ_SET_LVDS_SSC_FREP: {
+            int step = data.readInt32();
+            reply->writeInt32(mpPQcontrol->FactorySetLVDSSSCFrep(step));
+            break;
+        }
+        case CMD_PQ_GET_LVDS_SSC_FREP: {
+            reply->writeInt32(mpPQcontrol->FactoryGetLVDSSSCFrep());
+            break;
+        }
+        case CMD_PQ_SET_LVDS_SSC_MODE: {
+            int mode = data.readInt32();
+            reply->writeInt32(mpPQcontrol->FactorySetLVDSSSCMode(mode));
+            break;
+        }
+        case CMD_PQ_GET_LVDS_SSC_MODE: {
+            reply->writeInt32(mpPQcontrol->FactoryGetLVDSSSCMode());
+            break;
+        }
         default:
             return BBinder::onTransact(code, data, reply, flags);
     }

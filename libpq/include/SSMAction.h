@@ -149,8 +149,8 @@ public:
     int SSMReadEyeProtectionMode(int *rw_val);
     int SSMSaveDDRSSC(unsigned char rw_val);
     int SSMReadDDRSSC(unsigned char *rw_val);
-    int SSMSaveLVDSSSC(int *rw_val);
-    int SSMReadLVDSSSC(int *rw_val);
+    int SSMSaveLVDSSSC(int offset, int size, int *rw_val);
+    int SSMReadLVDSSSC(int offset, int size, int *rw_val);
 
     int SSMSaveDisplayMode(int offset, int rw_val);
     int SSMReadDisplayMode(int offset, int *rw_val);
