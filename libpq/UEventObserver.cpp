@@ -19,7 +19,7 @@
  *  - 1 process uevent for system control
  */
 
-#define LOG_MOUDLE_TAG "PQ"
+#define LOG_MODULE_TAG "PQ"
 #define LOG_CLASS_TAG "UEventObserver"
 
 #include <stdio.h>

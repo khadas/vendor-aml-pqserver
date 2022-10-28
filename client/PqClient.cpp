@@ -6,7 +6,7 @@
  *
  * Description:
  */
-#define LOG_MOUDLE_TAG "PQ"
+#define LOG_MODULE_TAG "PQ"
 #define LOG_CLASS_TAG "PqClient"
 
 #include <stdio.h>

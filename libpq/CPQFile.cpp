@@ -7,7 +7,7 @@
  * Description: c++ file
  */
 
-#define LOG_MOUDLE_TAG "PQ"
+#define LOG_MODULE_TAG "PQ"
 #define LOG_CLASS_TAG "CPQFile"
 //#define LOG_NDEBUG 0
 
