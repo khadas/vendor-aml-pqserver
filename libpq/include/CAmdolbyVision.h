@@ -7,8 +7,8 @@
  * Description: header file
  */
 
-#ifndef __CDOLBY_VISION_H
-#define __CDOLBY_VISION_H
+#ifndef __CAMDOLBY_VISION_H
+#define __CAMDOLBY_VISION_H
 
 #include "PQType.h"
 
@@ -156,16 +156,16 @@ class CDolbyVision {
 public:
     CDolbyVision(const char *binFilePath, const char *cfgFilePath);
     ~CDolbyVision();
-    int SetDolbyCfgFile(const char *binFilePath, const char *cfgFilePath);
-    int SetDolbyPQMode(dolby_pq_mode_t mode);
-    dolby_pq_mode_t GetDolbyPQMode(void);
-    int SetDolbyPQParam(dolby_pq_mode_t mode, dolby_pq_item_t iteamID, int value);
-    int GetDolbyPQParam(dolby_pq_mode_t mode, dolby_pq_item_t iteamID);
-    int SetDolbyPQFullParam(dolby_full_pq_info_t fullInfo);
-    int GetDolbyPQFullParam(dolby_full_pq_info_t *fullInfo);
-    bool isSourceCallDolbyCore(hdr_type_t hdrType);
-    dolby_pq_mode_t MappingPQModeToDolbyVisionPQMode(hdr_type_t hdrType, vpp_picture_mode_t pq_mode);
-    int SetDolbyPQDarkDetail(int mode);
+    int SetAmdolbyCfgFile(const char *binFilePath, const char *cfgFilePath);
+    int SetAmdolbyPQMode(dolby_pq_mode_t mode);
+    dolby_pq_mode_t GetAmdolbyPQMode(void);
+    int SetAmdolbyPQParam(dolby_pq_mode_t mode, dolby_pq_item_t iteamID, int value);
+    int GetAmdolbyPQParam(dolby_pq_mode_t mode, dolby_pq_item_t iteamID);
+    int SetAmdolbyPQFullParam(dolby_full_pq_info_t fullInfo);
+    int GetAmdolbyPQFullParam(dolby_full_pq_info_t *fullInfo);
+    bool isSourceCallAmdolbyCore(hdr_type_t hdrType);
+    dolby_pq_mode_t MappingPQModeToAmdolbyVisionPQMode(hdr_type_t hdrType, vpp_picture_mode_t pq_mode);
+    int SetAmdolbyPQDarkDetail(int mode);
 
 private:
     int DV_OpenModule();
@@ -176,4 +176,4 @@ private:
 private:
     int mDVDevFd;
 };
-#endif /*__CDOLBY_VISION_H*/
+#endif /*__CAMDOLBY_VISION_H*/

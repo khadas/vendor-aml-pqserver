@@ -22,7 +22,7 @@
 #include "COverScandb.h"
 #include "UEventObserver.h"
 #include "CVdin.h"
-#include "CDolbyVision.h"
+#include "CAmdolbyVision.h"
 
 #define PQ_DB_DEFAULT_PATH               "/vendor/etc/tvconfig/pq/pq.db"
 #define OVERSCAN_DB_DEFAULT_PATH         "/vendor/etc/tvconfig/pq/overscan.db"
@@ -492,10 +492,10 @@ public:
     int GetLocalDimming(void);
     int Cpq_LocalDimming(vpp_pq_level_t level);
 
-    int SetDolbyDarkDetail(int mode, int is_save);
-    int GetDolbyDarkDetail(void);
-    int SaveDolbyDarkDetail(int value);
-    int Cpq_SetDolbyDarkDetail(int mode);
+    int SetAmdolbyDarkDetail(int mode, int is_save);
+    int GetAmdolbyDarkDetail(void);
+    int SaveAmdolbyDarkDetail(int value);
+    int Cpq_SetAmdolbyDarkDetail(int mode);
     void resetCurSrcPqUiSetting(void);
 
 private:

@@ -1303,11 +1303,11 @@ int CPQControl::Set_PictureMode(vpp_picture_mode_t pq_mode, pq_src_param_t sourc
 
         //dobly mode
         if (pq_para.DolbyMode >= 0) {
-            ret |= mDolbyVision->SetDolbyPQMode((dolby_pq_mode_t) pq_para.DolbyMode);
+            ret |= mDolbyVision->SetAmdolbyPQMode((dolby_pq_mode_t) pq_para.DolbyMode);
         }
         //dolby dark Detail
         if (pq_para.DolbyDarkDetail >= 0) {
-            ret |= Cpq_SetDolbyDarkDetail(pq_para.DolbyDarkDetail);
+            ret |= Cpq_SetAmdolbyDarkDetail(pq_para.DolbyDarkDetail);
         }
         //colortemp
         if (mbCpqCfg_whitebalance_enable) {
@@ -1456,14 +1456,14 @@ pq_sig_fmt_t CPQControl::CheckPQTimming(hdr_type_t hdr_type)
     return timming;
 }
 
-int CPQControl::SetDolbyDarkDetail(int mode, int is_save)
+int CPQControl::SetAmdolbyDarkDetail(int mode, int is_save)
 {
     int ret =0;
     LOGD("%s, mode = %d\n", __FUNCTION__, mode);
-    ret = Cpq_SetDolbyDarkDetail(mode);
+    ret = Cpq_SetAmdolbyDarkDetail(mode);
 
     if ((ret == 0) && (is_save == 1)) {
-        ret = SaveDolbyDarkDetail(mode);
+        ret = SaveAmdolbyDarkDetail(mode);
     }
 
     if (ret < 0) {
@@ -1474,7 +1474,7 @@ int CPQControl::SetDolbyDarkDetail(int mode, int is_save)
     return 0;
 }
 
-int CPQControl::GetDolbyDarkDetail(void)
+int CPQControl::GetAmdolbyDarkDetail(void)
 {
     int mode = -1;
 
@@ -1490,7 +1490,7 @@ int CPQControl::GetDolbyDarkDetail(void)
     return mode;
 }
 
-int CPQControl::SaveDolbyDarkDetail(int value)
+int CPQControl::SaveAmdolbyDarkDetail(int value)
 {
     int ret = -1;
     if (mbCpqCfg_new_picture_mode_enable) {
@@ -1508,11 +1508,11 @@ int CPQControl::SaveDolbyDarkDetail(int value)
     return ret;
 }
 
-int CPQControl::Cpq_SetDolbyDarkDetail(int mode)
+int CPQControl::Cpq_SetAmdolbyDarkDetail(int mode)
 {
     int ret = -1;
 
-    ret = mDolbyVision->SetDolbyPQDarkDetail(mode);
+    ret = mDolbyVision->SetAmdolbyPQDarkDetail(mode);
 
     if (ret < 0)
         LOGE("%s failed!\n",__FUNCTION__);

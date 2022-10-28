@@ -40,7 +40,7 @@ pq_SRCS = \
   $(LOCAL_PATH)/libpq/CConfigFile.cpp \
   $(LOCAL_PATH)/libpq/UEventObserver.cpp \
   $(LOCAL_PATH)/libpq/CVdin.cpp \
-  $(LOCAL_PATH)/libpq/CDolbyVision.cpp \
+  $(LOCAL_PATH)/libpq/CAmdolbyVision.cpp \
   $(NULL)
 
 pq_HEADERS = \
