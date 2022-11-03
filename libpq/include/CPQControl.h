@@ -32,7 +32,7 @@
 
 #define LDIM_PATH                        "/dev/aml_ldim"
 #define LDIM_CONTROL_PATH                "/sys/class/aml_ldim/func_en"
-#define LCD_PATH                         "/dev/lcd"
+#define LCD_PATH                         "/dev/lcd0"
 #define VPP_DEV_PATH                     "/dev/amvecm"
 #define DI_DEV_PATH                      "/dev/di0"
 #define AFE_DEV_PATH                     "/dev/tvafe0"
@@ -434,9 +434,15 @@ public:
     int SetRGBPattern(int r, int g, int b);
     int FactorySetDDRSSC (int step);
     int FactoryGetDDRSSC(void);
-    int FactorySetLVDSSSC (int step);
-    int FactoryGetLVDSSSC(void);
-    int SetLVDSSSC(int step);
+    int FactorySetLVDSSSCLevel(int level);
+    int FactoryGetLVDSSSCLevel(void);
+    int FactorySetLVDSSSCFrep(int step);
+    int FactoryGetLVDSSSCFrep(void);
+    int FactorySetLVDSSSCMode(int mode);
+    int FactoryGetLVDSSSCMode(void);
+    int GetLVDSSSCParams(aml_lcd_ss_ctl_t *param);
+    int SaveLVDSSSCParams(aml_lcd_ss_ctl_t *param);
+
     int SetGrayPattern(int value);
     int GetGrayPattern();
     //HDR

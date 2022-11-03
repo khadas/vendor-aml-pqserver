@@ -158,7 +158,7 @@ struct SSMHeader_section2_t gSSMHeader_section2[] = {
     {.addr = 0, .size = 1, .valid = 0, .rsv = {0}},
     {.addr = 0, .size = 1, .valid = 0, .rsv = {0}},
     {.addr = 0, .size = 1, .valid = 0, .rsv = {0}},
-    {.addr = 0, .size = 2, .valid = 0, .rsv = {0}},
+    {.addr = 0, .size = 8 * MAX_LVDS_SSC_PARAM_SIZE, .valid = 0, .rsv = {0}},
     {.addr = 0, .size = 1, .valid = 0, .rsv = {0}},
     {.addr = 0, .size = 1, .valid = 0, .rsv = {0}},
     {.addr = 0, .size = SOURCE_MAX, .valid = 0, .rsv = {0}},

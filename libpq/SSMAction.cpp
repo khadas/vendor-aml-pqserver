@@ -358,7 +358,7 @@ int SSMAction::SSMRestoreDefault(int id, bool resetAll)
     int8_t std_buf[6] = { 0, 0, 0, 0, 0, 0 };
     int8_t warm_buf[6] = { 0, 0, -8, 0, 0, 0 };
     int8_t cold_buf[6] = { -8, 0, 0, 0, 0, 0 };
-    int tmp[2] = {0, 0};
+    int lvdsssc_buf[3] = {0, 0, 0};
 
     if (resetAll || VPP_DATA_POS_RGB_GAIN_R_START == id)
         SSMSaveRGBGainRStart(0, gain_r);
@@ -446,7 +446,7 @@ int SSMAction::SSMRestoreDefault(int id, bool resetAll)
         SSMSaveDDRSSC(0);
 
     if (resetAll || VPP_DATA_POS_LVDS_SSC_START == id)
-        SSMSaveLVDSSSC(tmp);
+        SSMSaveLVDSSSC(0, 12, lvdsssc_buf);
 
     if (resetAll || VPP_DATA_EYE_PROTECTION_MODE_START == id)
        SSMSaveEyeProtectionMode(0);
@@ -1050,24 +1050,14 @@ int SSMAction::SSMReadDDRSSC(unsigned char *rw_val)
     return ret;
 }
 
-int SSMAction::SSMSaveLVDSSSC(int *rw_val)
+int SSMAction::SSMSaveLVDSSSC(int offset, int size, int *rw_val)
 {
-    int tmp_val;
-    int ret = 0;
-    ret = SSMWriteNTypes(VPP_DATA_POS_LVDS_SSC_START, 2, &tmp_val);
-    *rw_val = tmp_val;
-
-    return ret;
+    return SSMWriteNTypes(VPP_DATA_POS_LVDS_SSC_START, size, rw_val, offset);
 }
 
-int SSMAction::SSMReadLVDSSSC(int *rw_val)
+int SSMAction::SSMReadLVDSSSC(int offset, int size, int *rw_val)
 {
-    int tmp_val;
-    int ret = 0;
-    ret = SSMReadNTypes(VPP_DATA_POS_LVDS_SSC_START, 2, &tmp_val);
-    *rw_val = tmp_val;
-
-    return ret;
+    return SSMReadNTypes(VPP_DATA_POS_LVDS_SSC_START, size, rw_val, offset);
 }
 
 int SSMAction::SSMSaveDisplayMode(int offset, int rw_val)

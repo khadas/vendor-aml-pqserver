@@ -1157,9 +1157,11 @@ void CPQControl::resetPQTableSetting(void)
     mSSMAction->SSMSaveDDRSSC(config_val);
 
     buf = mPQConfigFile->GetString(CFG_SECTION_PQ, CFG_LVDSSSC_DEF, NULL);
-    int tmp[2] = {0, 0};
-    pqTransformStringToInt(buf, tmp);
-    mSSMAction->SSMSaveLVDSSSC(tmp);
+    int lvds_ssc_buf[3] = {0, 0, 0};
+    pqTransformStringToInt(buf, lvds_ssc_buf);
+    for (i = 0; i < 8; i++) { //8 panel
+        mSSMAction->SSMSaveLVDSSSC(i * MAX_LVDS_SSC_PARAM_SIZE, sizeof(int) * 3, lvds_ssc_buf);
+    }
 
     config_val = mPQConfigFile->GetInt(CFG_SECTION_HDMI, CFG_EDID_VERSION_DEF, 0);
     mSSMAction->SSMEdidRestoreDefault(config_val);
@@ -7234,56 +7236,159 @@ int CPQControl::FactoryGetDDRSSC() {
     return data;
 }
 
-int CPQControl::SetLVDSSSC(int step) {
-    if (step > 4)
-        step = 4;
+/*1000ppm each level*/
+int CPQControl::FactorySetLVDSSSCLevel(int level)
+{
+    if (level > 4)
+        level = 4;
+    LOGD("%s,SSC_level = %d", __FUNCTION__, level);
 
-    FILE *fp = fopen(SSC_PATH, "w");
-    if (fp != NULL) {
-        fprintf(fp, "%d", step);
-        fclose(fp);
-    } else {
-        LOGE("open /sys/class/lcd/ss ERROR(%s)!!\n", strerror(errno));
+    aml_lcd_ss_ctl_t ssm_param;
+    memset(&ssm_param, 0, sizeof(aml_lcd_ss_ctl_t));
+
+    if (GetLVDSSSCParams(&ssm_param) < 0) {
+        LOGD ("%s,GetLVDSSSCParams fail", __FUNCTION__);
+    }
+
+    ssm_param.level = level;
+
+    if (LCDDeviceIOCtl(LCD_IOC_CMD_SET_SS, &ssm_param) < 0) {
+        LOGE("%s,LCD_IOC_CMD_SET_SS fail", __FUNCTION__);
         return -1;
     }
-    return 0;
-}
-int CPQControl::FactorySetLVDSSSC(int step) {
-    int data[2] = {0, 0};
-    int value = 0, panel_idx = 0, tmp = 0;
-    const char *PanelIdx;
-    if (step > 4)
-        step = 4;
-    PanelIdx = "0";//config_get_str ( CFG_SECTION_TV, "get.panel.index", "0" ); can't parse ini file in systemcontrol
-    panel_idx = strtoul(PanelIdx, NULL, 10);
-    LOGD ("%s, panel_idx = %x", __FUNCTION__, panel_idx);
-    mSSMAction->SSMReadLVDSSSC(data);
 
-    //every 2 bits represent one panel, use 2 byte store 8 panels
-    value = (data[1] << 8) | data[0];
-    step = step & 0x03;
-    panel_idx = panel_idx * 2;
-    tmp = 3 << panel_idx;
-    value = (value & (~tmp)) | (step << panel_idx);
-    data[0] = value & 0xFF;
-    data[1] = (value >> 8) & 0xFF;
-    LOGD ("%s, tmp = %x, save value = %x", __FUNCTION__, tmp, value);
-
-    SetLVDSSSC(step);
-    return mSSMAction->SSMSaveLVDSSSC(data);
+    return SaveLVDSSSCParams(&ssm_param);
 }
 
-int CPQControl::FactoryGetLVDSSSC() {
-    int data[2] = {0, 0};
-    int value = 0, panel_idx = 0;
-    const char *PanelIdx = "0";//config_get_str ( CFG_SECTION_TV, "get.panel.index", "0" );can't parse ini file in systemcontrol
+int CPQControl::FactoryGetLVDSSSCLevel(void)
+{
+    int level = 0;
 
-    panel_idx = strtoul(PanelIdx, NULL, 10);
-    mSSMAction->SSMReadLVDSSSC(data);
-    value = (data[1] << 8) | data[0];
-    value = (value >> (2 * panel_idx)) & 0x03;
-    LOGD ("%s, panel_idx = %x, value= %d", __FUNCTION__, panel_idx, value);
-    return value;
+    aml_lcd_ss_ctl_t ssm_param;
+    memset(&ssm_param, 0, sizeof(aml_lcd_ss_ctl_t));
+
+    if (GetLVDSSSCParams(&ssm_param) < 0) {
+        LOGD ("%s,GetLVDSSSCParams fail", __FUNCTION__);
+    }
+
+    level = ssm_param.level;
+
+    return level;
+}
+
+/*Frep step range:
+step 0 : 29.5KHZ
+step 1 : 31.5KHZ
+step 2 : 50KHZ
+step 3 : 75KHZ
+step 4 : 100KHZ
+step 5 : 150KHZ
+step 5 : 200KHZ*/
+int CPQControl::FactorySetLVDSSSCFrep(int step)
+{
+    if (step > 6)
+        step = 6;
+    LOGD("%s,SSC_Frep =  fail", __FUNCTION__, step);
+
+    aml_lcd_ss_ctl_t ssm_param;
+    memset(&ssm_param, 0, sizeof(aml_lcd_ss_ctl_t));
+
+    if (GetLVDSSSCParams(&ssm_param) < 0) {
+        LOGE ("%s,GetLVDSSSCParams fail", __FUNCTION__);
+    }
+
+    ssm_param.freq = step;
+
+    if (LCDDeviceIOCtl(LCD_IOC_CMD_SET_SS, &ssm_param) < 0) {
+        LOGD ("%s,LCD_IOC_CMD_SET_SS fail", __FUNCTION__);
+        return -1;
+    }
+
+    return SaveLVDSSSCParams(&ssm_param);
+}
+
+int CPQControl::FactoryGetLVDSSSCFrep(void)
+{
+    int setp = 0;
+
+    aml_lcd_ss_ctl_t ssm_param;
+    memset(&ssm_param, 0, sizeof(aml_lcd_ss_ctl_t));
+
+    if (GetLVDSSSCParams(&ssm_param) < 0) {
+        LOGD ("%s,GetLVDSSSCParams fail", __FUNCTION__);
+    }
+
+    setp = ssm_param.freq;
+
+    return setp;
+}
+
+/* mode:
+mode 0 : center ss
+mode 1 : up ss
+mode 2 : down ss */
+int CPQControl::FactorySetLVDSSSCMode(int mode)
+{
+    if (mode > 3)
+        mode = 0;
+
+    LOGD("%s,SSC_mode =  fail", __FUNCTION__, mode);
+
+    aml_lcd_ss_ctl_t ssm_param;
+    memset(&ssm_param, 0, sizeof(aml_lcd_ss_ctl_t));
+
+    if (GetLVDSSSCParams(&ssm_param) < 0) {
+        LOGD ("%s,GetLVDSSSCParams fail", __FUNCTION__);
+    }
+
+    ssm_param.mode = mode;
+
+    if (LCDDeviceIOCtl(LCD_IOC_CMD_SET_SS, &ssm_param) < 0) {
+        LOGE("%s,LCD_IOC_CMD_SET_SS fail", __FUNCTION__);
+        return -1;
+    }
+
+    return SaveLVDSSSCParams(&ssm_param);
+}
+
+int CPQControl::FactoryGetLVDSSSCMode(void)
+{
+    int mode = 0;
+
+    aml_lcd_ss_ctl_t ssm_param;
+    memset(&ssm_param, 0, sizeof(aml_lcd_ss_ctl_t));
+
+    if (GetLVDSSSCParams(&ssm_param) < 0) {
+        LOGD ("%s,GetLVDSSSCParams fail", __FUNCTION__);
+    }
+
+    mode = ssm_param.mode;
+
+    return mode;
+}
+
+int CPQControl::GetLVDSSSCParams(aml_lcd_ss_ctl_t *param)
+{
+    int ret = -1;
+    const char *PanelIdx =  "0";//config_get_str ( CFG_SECTION_TV, "get.panel.index", "0" ); can't parse ini file in systemcontrol
+    int panel_idx = strtoul(PanelIdx, NULL, 10);
+    int offset = panel_idx * MAX_LVDS_SSC_PARAM_SIZE;
+
+    ret = mSSMAction->SSMReadLVDSSSC(offset, sizeof(aml_lcd_ss_ctl_t), (int *)param);
+
+    return ret;
+}
+
+int CPQControl::SaveLVDSSSCParams(aml_lcd_ss_ctl_t *param)
+{
+    int ret = -1;
+    const char *PanelIdx =  "0";//config_get_str ( CFG_SECTION_TV, "get.panel.index", "0" ); can't parse ini file in systemcontrol
+    int panel_idx = strtoul(PanelIdx, NULL, 10);
+    int offset = panel_idx * MAX_LVDS_SSC_PARAM_SIZE;
+
+    ret = mSSMAction->SSMSaveLVDSSSC(offset, sizeof(aml_lcd_ss_ctl_t), (int *)param);
+
+    return ret;
 }
 
 int CPQControl::SetGrayPattern(int value) {
@@ -7864,10 +7969,11 @@ void CPQControl::resetAllUserSettingParam()
     mSSMAction->SSMSaveDDRSSC(config_val);
 
     buf = mPQConfigFile->GetString(CFG_SECTION_PQ, CFG_LVDSSSC_DEF, NULL);
-    int tmp[2] = {0, 0};
-    pqTransformStringToInt(buf, tmp);
-    mSSMAction->SSMSaveLVDSSSC(tmp);
-
+    int lvds_ssc_buf[3] = {0, 0, 0};
+    pqTransformStringToInt(buf, lvds_ssc_buf);
+    for (i = 0; i < 8; i++) { //8 panle
+        mSSMAction->SSMSaveLVDSSSC(i * MAX_LVDS_SSC_PARAM_SIZE, sizeof(int) * 3, lvds_ssc_buf);
+    }
     config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_EYEPROJECTMODE_DEF, 0);
     mSSMAction->SSMSaveEyeProtectionMode(config_val);
 

@@ -32,6 +32,20 @@ public:
     enum command {
         CMD_START = IBinder::FIRST_CALL_TRANSACTION,
         CMD_PQ_ACTION = IBinder::FIRST_CALL_TRANSACTION + 1,
+        CMD_SET_PQ_CB = IBinder::FIRST_CALL_TRANSACTION + 2,
+        CMD_CLR_PQ_CB = IBinder::FIRST_CALL_TRANSACTION + 3,
+        EVT_SRC_CT_CB = IBinder::FIRST_CALL_TRANSACTION + 4,
+        EVT_SIG_DT_CB = IBinder::FIRST_CALL_TRANSACTION + 5,
+
+        CMD_PQ_SET_DDR_SSC,
+        CMD_PQ_GET_DDR_SSC,
+
+        CMD_PQ_SET_LVDS_SSC_LEVEL,
+        CMD_PQ_GET_LVDS_SSC_LEVEL,
+        CMD_PQ_SET_LVDS_SSC_FREP,
+        CMD_PQ_GET_LVDS_SSC_FREP,
+        CMD_PQ_SET_LVDS_SSC_MODE,
+        CMD_PQ_GET_LVDS_SSC_MODE,
     };
 
 private:

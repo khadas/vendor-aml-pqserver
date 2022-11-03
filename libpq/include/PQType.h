@@ -20,6 +20,7 @@
 // ***************************************************************************
 
 #define MAX_PICTUREMODE_PARAM_SIZE                100
+#define MAX_LVDS_SSC_PARAM_SIZE                   20
 
 typedef enum output_type_e {
     OUTPUT_TYPE_LVDS = -1,
@@ -769,5 +770,69 @@ typedef struct tvpq_rgb_ogo_s {
     int g_post_offset;
     int b_post_offset;
 } tvpq_rgb_ogo_t;
+
+//lcd
+typedef struct aml_path_s {
+    char string[256];
+} aml_path_t;
+
+typedef struct am_pq_bin_param_s {
+    unsigned int table_index;
+    unsigned int table_len;
+    union {
+        void *table_ptr;
+        long long table_ptr_len;
+    };
+} am_pq_bin_param_t;
+
+typedef struct Tconbin_Header_s {
+    unsigned int data_check;
+    unsigned int ram_data_check;
+    unsigned int block_size;
+    unsigned short header_size;
+    unsigned short ext_header_size;
+    unsigned short block_type;
+    unsigned short block_ctrl;
+    unsigned int block_flag;
+    unsigned short init_priority;
+    unsigned short chip_id;
+    unsigned char name[36];
+} Tconbin_Header_t;
+
+typedef enum LD_bin_table_index_e
+{
+    LD_BIN_BL_MAPPING = 0,
+    LD_BIN_BL_PROFILE,
+    LD_BIN_BL_MAX,
+} LD_bin_table_index_t;
+
+typedef struct aml_lcd_ss_ctl_s {
+    unsigned int level;
+    unsigned int freq;
+    unsigned int mode;
+}aml_lcd_ss_ctl_t;
+
+typedef struct phy_lane_s {
+    unsigned int preem;
+    unsigned int amp;
+}phy_lane_t;
+
+#define CH_LANE_MAX 32
+
+typedef struct phy_config_s {
+    unsigned int flag;
+    unsigned int vswing;
+    unsigned int vcm;
+    unsigned int odt;
+    unsigned int ref_bias;
+    unsigned int mode;
+    unsigned int weakly_pull_down;
+    unsigned int lane_num;
+    unsigned int ext_pullup;
+    unsigned int vswing_level;
+    unsigned int preem_level;
+    int ioctl_mode; //for ioctl control mode
+    struct phy_lane_s lane[CH_LANE_MAX];
+}phy_config_t;
 
 #endif
