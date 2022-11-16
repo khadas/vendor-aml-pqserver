@@ -120,6 +120,15 @@
 #define CGF_HDMI_AUTOSWITCH_ITCONTENT_EN        "hdmi.autoswitch.itcontent.en"
 #define CGF_HDMI_AUTOSWITCH_DVI_EN              "hdmi.autoswitch.dvi.en"
 
+//for auto nr
+#define CFG_SECTION_AUTO_NR                     "AUTO_NR"
+#define CFG_AUTO_NR_MOTION_TH                   "auto.nr.motion_th"
+#define CFG_AUTO_NR_MOTION_LP_YGAIN             "auto.nr.motion_lp_ygain"
+#define CFG_AUTO_NR_MOTION_HP_YGAIN             "auto.nr.motion_hp_ygain"
+#define CFG_AUTO_NR_MOTION_LP_CGAIN             "auto.nr.motion_lp_cgain"
+#define CFG_AUTO_NR_MOTION_HP_CGAIN             "auto.nr.motion_hp_cgain"
+#define CFG_AUTO_NR_APL_GAIN                    "auto.nr.apl_gain"
+
 static const int MAX_CONFIG_FILE_LINE_LEN = 512;
 
 typedef enum _LINE_TYPE {

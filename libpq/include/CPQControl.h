@@ -64,6 +64,9 @@
 #define VDETECT_AIPQ_ENABLE              "/sys/class/vdetect/aipq_enable"
 #define DECODER_COMMON_PARAMETERS_DEBUG_VDETECT "/sys/module/decoder_common/parameters/debug_vdetect"
 
+#define AMDOLBY_VISION_HDR10_POLICY      "/sys/module/aml_media/parameters/dolby_vision_hdr10_policy"
+#define AML_AUTO_NR_PARAMS               "/sys/class/deinterlace/di0/autonr_param"
+
 #define TVIN_IOC_MAGIC 'T'
 #define TVIN_IOC_LOAD_REG           _IOW(TVIN_IOC_MAGIC, 0x20, struct am_regs_s)
 
@@ -256,6 +259,7 @@ public:
     int Cpq_SetSharpness0VariableParam(source_input_param_t source_input_param);
     int Cpq_SetSharpness1FixedParam(source_input_param_t source_input_param);
     int Cpq_SetSharpness1VariableParam(source_input_param_t source_input_param);
+    void InitAutoNr(void);
     //NoiseReductionMode
     int SetNoiseReductionMode(int nr_mode, int is_save);
     int GetNoiseReductionMode(void);
