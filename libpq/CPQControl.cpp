@@ -6806,7 +6806,7 @@ int CPQControl::SetFlagByCfg(void)
         mbCpqCfg_seperate_db_enable = false;
     }
 
-    config_value = mPQConfigFile->GetString(CFG_SECTION_PQ, CFG_ALL_PQ_MOUDLE_ENABLE, "enable");
+    config_value = mPQConfigFile->GetString(CFG_SECTION_PQ, CFG_ALL_PQ_MODULE_ENABLE, "enable");
     if (strcmp(config_value, "enable") == 0) {
         mbCpqCfg_pq_enable = true;
     } else {

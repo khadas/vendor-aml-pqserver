@@ -25,7 +25,7 @@
 #define CFG_PQ_DV_CFG_PATH                      "pq_dv_cfg_path"
 
 #define CFG_BIG_SMALL_DB_ENABLE                 "pq.BigSmallDb.en"
-#define CFG_ALL_PQ_MOUDLE_ENABLE                "pq.AllPQMoudle.en"
+#define CFG_ALL_PQ_MODULE_ENABLE                "pq.AllPQModule.en"
 #define CFG_PQ_MODE_CHECK_SOURCE_ENABLE         "pq.pqmodeCheckSource.en"
 #define CFG_TVHAL_ENABLE                        "pq.tvhal.en"
 #define CFG_BLACK_BLUE_CHROMA_DB_ENABLE         "pq.BlackBlueChromaDb.en"
