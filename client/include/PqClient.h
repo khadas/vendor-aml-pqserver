@@ -132,8 +132,8 @@ public:
     int FactoryGetPQMode_Hue(int sourceInput, int sigFmt, int transFmt, int pq_mode);
     int FactorySetPQMode_Sharpness(int sourceInput, int sigFmt, int transFmt, int pq_mode, int sharpness);
     int FactoryGetPQMode_Sharpness(int sourceInput, int sigFmt, int transFmt, int pq_mode);
-    int FactorySetOverscanParams(int sourceInput, int sigFmt, int transFmt, tvin_cutwin_t cutwin_t);
-    tvin_cutwin_t FactoryGetOverscanParams(int sourceInput, int sigFmt, int transFmt);
+    int FactorySetOverscanParams(int sourceInput, int sigFmt, int transFmt, int dmode, tvin_cutwin_t cutwin_t);
+    tvin_cutwin_t FactoryGetOverscanParams(int sourceInput, int sigFmt, int transFmt, int dmode);
     int FactorySetWhiteBalanceRedGain(int sourceInput, int sigFmt, int transFmt, int colortemptureMode, int value);
     int FactoryGetWhiteBalanceRedGain(int sourceInput, int sigFmt, int transFmt, int colortemptureMode);
     int FactorySetWhiteBalanceGreenGain(int sourceInput, int sigFmt, int transFmt, int colortemptureMode, int value);

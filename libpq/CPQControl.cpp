@@ -3997,8 +3997,6 @@ int CPQControl::Cpq_SetDisplayModeOneTiming(tv_source_input_t source_input, vpp_
 
     if (mbCpqCfg_seperate_db_enable) {
         ret = mpOverScandb->PQ_GetOverscanParams(mCurentSourceInputInfo, display_mode, &cutwin);
-    } else {
-        ret = mPQdb->PQ_GetOverscanParams(mCurentSourceInputInfo, display_mode, &cutwin);
     }
 
     if (ret == 0) {
@@ -4083,8 +4081,6 @@ int CPQControl::Cpq_SetDisplayModeAllTiming(tv_source_input_t source_input, vpp_
             source_input_param.sig_fmt = sig_fmt[i];
             if (mbCpqCfg_seperate_db_enable) {
                 ret = mpOverScandb->PQ_GetOverscanParams(source_input_param, display_mode, cutwin+i);
-            } else {
-                ret = mPQdb->PQ_GetOverscanParams(source_input_param, display_mode, cutwin+i);
             }
 
             if (ret == 0) {
@@ -4102,8 +4098,6 @@ int CPQControl::Cpq_SetDisplayModeAllTiming(tv_source_input_t source_input, vpp_
             source_input_param.sig_fmt = sig_fmt[i];
             if (mbCpqCfg_seperate_db_enable) {
                 ret = mpOverScandb->PQ_GetOverscanParams(source_input_param, display_mode, cutwin+i);
-            } else {
-                ret = mPQdb->PQ_GetOverscanParams(source_input_param, display_mode, cutwin+i);
             }
 
             if (ret == 0) {
@@ -6560,14 +6554,18 @@ int CPQControl::FactoryGetHdrMode(void)
     return GetHDRMode();
 }
 
-int CPQControl::FactorySetOverscanParam(source_input_param_t source_input_param, tvin_cutwin_t cutwin_t)
+int CPQControl::FactorySetOverscanParam(source_input_param_t source_input_param, vpp_display_mode_t dmode, tvin_cutwin_t cutwin_t)
 {
     int ret = -1;
+
+    LOGD("%s %d %d %d %d %d %d %d %d\n", __FUNCTION__,
+          source_input_param.source_input, source_input_param.sig_fmt, source_input_param.trans_fmt,
+          dmode, cutwin_t.hs, cutwin_t.he, cutwin_t.vs, cutwin_t.ve);
+
     if (mbCpqCfg_seperate_db_enable) {
-        ret = mpOverScandb->PQ_SetOverscanParams(source_input_param, cutwin_t);
-    } else {
-        ret = mPQdb->PQ_SetOverscanParams(source_input_param, cutwin_t);
+        ret = mpOverScandb->PQ_SetOverscanParams(source_input_param, dmode, cutwin_t);
     }
+
     if (ret != 0) {
         LOGE("%s failed.\n", __FUNCTION__);
     } else {
@@ -6577,20 +6575,24 @@ int CPQControl::FactorySetOverscanParam(source_input_param_t source_input_param,
     return ret;
 }
 
-tvin_cutwin_t CPQControl::FactoryGetOverscanParam(source_input_param_t source_input_param)
+tvin_cutwin_t CPQControl::FactoryGetOverscanParam(source_input_param_t source_input_param, vpp_display_mode_t dmode)
 {
     int ret = -1;
     tvin_cutwin_t cutwin_t;
     memset(&cutwin_t, 0, sizeof(cutwin_t));
 
+    LOGD("%s %d %d %d %d\n", __FUNCTION__,
+          source_input_param.source_input, source_input_param.sig_fmt, source_input_param.trans_fmt, dmode);
+
     if (source_input_param.trans_fmt < TVIN_TFMT_2D || source_input_param.trans_fmt > TVIN_TFMT_3D_LDGD) {
         return cutwin_t;
     }
     if (mbCpqCfg_seperate_db_enable) {
-        ret = mpOverScandb->PQ_GetOverscanParams(source_input_param, VPP_DISPLAY_MODE_169, &cutwin_t);
-    } else {
-        ret = mPQdb->PQ_GetOverscanParams(source_input_param, VPP_DISPLAY_MODE_169, &cutwin_t);
+        ret = mpOverScandb->PQ_GetOverscanParams(source_input_param, dmode, &cutwin_t);
     }
+
+    LOGD("%s %d %d %d %d\n", __FUNCTION__,
+          cutwin_t.hs, cutwin_t.he, cutwin_t.vs, cutwin_t.ve);
 
     if (ret != 0) {
         LOGE("%s failed.\n", __FUNCTION__);

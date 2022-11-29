@@ -252,12 +252,12 @@ int PqService::SetCmd(pq_moudle_param_t param)
             source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
             source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
 
-            overscanParam.he = (unsigned short)paramData[3];
             overscanParam.hs = (unsigned short)paramData[4];
-            overscanParam.ve = (unsigned short)paramData[5];
+            overscanParam.he = (unsigned short)paramData[5];
             overscanParam.vs = (unsigned short)paramData[6];
+            overscanParam.ve = (unsigned short)paramData[7];
 
-            ret = mpPQcontrol->FactorySetOverscanParam(source_input_param, overscanParam);
+            ret = mpPQcontrol->FactorySetOverscanParam(source_input_param, (vpp_display_mode_t)paramData[3], overscanParam);
             break;
         case PQ_FACTORY_SET_WB_RED_GAIN:
             ret = mpPQcontrol->FactorySetColorTemp_Rgain(paramData[0], paramData[1], paramData[2]);
@@ -468,8 +468,8 @@ char* PqService::GetCmd(pq_moudle_param_t param)
             source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
             source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
 
-            overscanParam = mpPQcontrol->FactoryGetOverscanParam(source_input_param);
-            sprintf(mRetBuf, "%d.%d.%d.%d", overscanParam.he, overscanParam.hs, overscanParam.ve, overscanParam.vs);
+            overscanParam = mpPQcontrol->FactoryGetOverscanParam(source_input_param, (vpp_display_mode_t)paramData[3]);
+            sprintf(mRetBuf, "%d.%d.%d.%d", overscanParam.hs, overscanParam.he, overscanParam.vs, overscanParam.ve);
             break;
         case PQ_FACTORY_GET_WB_RED_GAIN:
             ret = mpPQcontrol->FactoryGetColorTemp_Rgain(paramData[0], paramData[1]);

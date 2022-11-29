@@ -434,4 +434,22 @@ typedef struct tvpq_rgb_ogo_s {
     int b_post_offset;
 } tvpq_rgb_ogo_t;
 #endif
+
+#ifndef __DISPLAY_MODE_
+#define __DISPLAY_MODE_
+typedef enum vpp_display_mode_e {
+    VPP_DISPLAY_MODE_169,
+    VPP_DISPLAY_MODE_PERSON,
+    VPP_DISPLAY_MODE_MOVIE,
+    VPP_DISPLAY_MODE_CAPTION,
+    VPP_DISPLAY_MODE_MODE43,
+    VPP_DISPLAY_MODE_FULL,
+    VPP_DISPLAY_MODE_NORMAL,
+    VPP_DISPLAY_MODE_NOSCALEUP,
+    VPP_DISPLAY_MODE_CROP_FULL,
+    VPP_DISPLAY_MODE_CROP,
+    VPP_DISPLAY_MODE_ZOOM,
+    VPP_DISPLAY_MODE_MAX,
+} vpp_display_mode_t;
+#endif
 #endif

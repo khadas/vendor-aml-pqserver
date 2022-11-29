@@ -109,18 +109,10 @@ bool COverScandb::GetOverScanDbVersion(std::string& ToolVersion, std::string& Pr
     return ret;
 }
 
-int COverScandb::PQ_GetOverscanParams(source_input_param_t source_input_param, vpp_display_mode_t dmode, tvin_cutwin_t *cutwin_t)
+void COverScandb::PQ_GetOverscanTableName(vpp_display_mode_t dmode, char *table_name, int size)
 {
-    CSqlite::Cursor c;
-    char sqlmaster[256];
-    int rval = -1;
-    char table_name[30];
-    tv_source_input_t source_input = source_input_param.source_input;
-    tvin_sig_fmt_t fmt = source_input_param.sig_fmt;
-    tvin_trans_fmt_t trans_fmt = source_input_param.trans_fmt;
-
-    memset(table_name, 0, sizeof(table_name));
-    switch (dmode) {
+    memset(table_name, 0, size);
+    switch ( dmode ) {
         case VPP_DISPLAY_MODE_169 :
             strcpy(table_name, "OVERSCAN_16_9");
             break;
@@ -154,10 +146,25 @@ int COverScandb::PQ_GetOverscanParams(source_input_param_t source_input_param, v
         case VPP_DISPLAY_MODE_ZOOM :
             strcpy(table_name, "OVERSCAN_ZOOM");
             break;
+        case VPP_DISPLAY_MODE_MAX :
         default :
             strcpy(table_name, "OVERSCAN_NORMAL");
             break;
     }
+}
+
+int COverScandb::PQ_GetOverscanParams(source_input_param_t source_input_param, vpp_display_mode_t dmode, tvin_cutwin_t *cutwin_t)
+{
+    CSqlite::Cursor c;
+    char sqlmaster[256];
+    int rval = -1;
+    char table_name[30];
+    tv_source_input_t source_input = source_input_param.source_input;
+    tvin_sig_fmt_t fmt = source_input_param.sig_fmt;
+    tvin_trans_fmt_t trans_fmt = source_input_param.trans_fmt;
+
+    PQ_GetOverscanTableName(dmode, table_name, sizeof(table_name));
+    LOGD ("%s table_name %s\n", __FUNCTION__, table_name);
 
     memset(cutwin_t, 0, sizeof(tvin_cutwin_t));
     getSqlParams(__FUNCTION__, sqlmaster, "select hs, he, vs, ve from %s where "
@@ -187,18 +194,22 @@ int COverScandb::PQ_GetOverscanParams(source_input_param_t source_input_param, v
     }
     return rval;
 }
-int COverScandb::PQ_SetOverscanParams(source_input_param_t source_input_param , tvin_cutwin_t cutwin_t)
+int COverScandb::PQ_SetOverscanParams(source_input_param_t source_input_param , vpp_display_mode_t dmode, tvin_cutwin_t cutwin_t)
 {
     CSqlite::Cursor c;
     char sqlmaster[256];
+    char table_name[30];
     int rval = -1;
     tv_source_input_t source_input = source_input_param.source_input;
     tvin_sig_fmt_t fmt = source_input_param.sig_fmt;
     tvin_trans_fmt_t trans_fmt = source_input_param.trans_fmt;
 
+    PQ_GetOverscanTableName(dmode, table_name, sizeof(table_name));
+    LOGD ("%s table_name %s\n", __FUNCTION__, table_name);
+
     getSqlParams(__FUNCTION__, sqlmaster,
-        "select * from OVERSCAN where TVIN_PORT = %d and TVIN_SIG_FMT = %d and TVIN_TRANS_FMT = %d;",
-        source_input, fmt, trans_fmt);
+        "select * from %s where TVIN_PORT = %d and TVIN_SIG_FMT = %d and TVIN_TRANS_FMT = %d;",
+        table_name, source_input, fmt, trans_fmt);
 
     rval = this->select(sqlmaster, c);
 
@@ -208,19 +219,19 @@ int COverScandb::PQ_SetOverscanParams(source_input_param_t source_input_param , 
         LOGE ("%s - Load default.\n", __FUNCTION__);
 
         getSqlParams(__FUNCTION__, sqlmaster,
-                    "select * from OVERSCAN where TVIN_PORT = %d and TVIN_SIG_FMT = %d and TVIN_TRANS_FMT = %d;",
-                    source_input, fmt, trans_fmt);
+                    "select * from %s where TVIN_PORT = %d and TVIN_SIG_FMT = %d and TVIN_TRANS_FMT = %d;",
+                    table_name, source_input, fmt, trans_fmt);
         this->select(sqlmaster, c);
     }
 
     if (c.moveToFirst()) {
         getSqlParams(__FUNCTION__, sqlmaster,
-            "update OVERSCAN set hs = %d, he = %d, vs = %d, ve = %d where TVIN_PORT = %d and TVIN_SIG_FMT = %d and TVIN_TRANS_FMT = %d;",
-            cutwin_t.hs, cutwin_t.he, cutwin_t.vs, cutwin_t.ve, source_input, fmt, trans_fmt);
+            "update %s set hs = %d, he = %d, vs = %d, ve = %d where TVIN_PORT = %d and TVIN_SIG_FMT = %d and TVIN_TRANS_FMT = %d;",
+            table_name, cutwin_t.hs, cutwin_t.he, cutwin_t.vs, cutwin_t.ve, source_input, fmt, trans_fmt);
     } else {
         getSqlParams(__FUNCTION__, sqlmaster,
-            "Insert into OVERSCAN(TVIN_PORT, TVIN_SIG_FMT, TVIN_TRANS_FMT, hs, he, vs, ve) values(%d, %d, %d ,%d ,%d, %d, %d);",
-            source_input, fmt, trans_fmt, cutwin_t.hs, cutwin_t.he, cutwin_t.vs, cutwin_t.ve);
+            "Insert into %s(TVIN_PORT, TVIN_SIG_FMT, TVIN_TRANS_FMT, hs, he, vs, ve) values(%d, %d, %d ,%d ,%d, %d, %d);",
+            table_name, source_input, fmt, trans_fmt, cutwin_t.hs, cutwin_t.he, cutwin_t.vs, cutwin_t.ve);
     }
 
     if (this->exeSql(sqlmaster)) {

@@ -356,17 +356,17 @@ public:
         case PQ_FACTORY_SET_OVERSCAN:
             tvin_cutwin_t overscanParam;
             memset(&overscanParam, 0, sizeof(tvin_cutwin_t));
-            overscanParam.he = (unsigned short)setValue[3];
             overscanParam.hs = (unsigned short)setValue[4];
-            overscanParam.ve = (unsigned short)setValue[5];
+            overscanParam.he = (unsigned short)setValue[5];
             overscanParam.vs = (unsigned short)setValue[6];
-            ret = mpPqClient->FactorySetOverscanParams(setValue[0], setValue[1], setValue[2], overscanParam);
+            overscanParam.ve = (unsigned short)setValue[7];
+            ret = mpPqClient->FactorySetOverscanParams(setValue[0], setValue[1], setValue[2], setValue[3], overscanParam);
             break;
         case PQ_FACTORY_GET_OVERSCAN:
             tvin_cutwin_t cutwin_t;
-            cutwin_t = mpPqClient->FactoryGetOverscanParams(setValue[0], setValue[1], setValue[2]);
-            LOGD("%s: cutwin_t: he:%d hs:%d ve:%d vs:%d.\n",
-                __FUNCTION__, cutwin_t.he, cutwin_t.hs, cutwin_t.ve, cutwin_t.vs);
+            cutwin_t = mpPqClient->FactoryGetOverscanParams(setValue[0], setValue[1], setValue[2], setValue[3]);
+            LOGD("%s: cutwin_t: hs:%d he:%d vs:%d ve:%d.\n",
+                __FUNCTION__, cutwin_t.hs, cutwin_t.he, cutwin_t.vs, cutwin_t.ve);
             break;
         case PQ_FACTORY_SET_WB_RED_GAIN:
             ret = mpPqClient->FactorySetWhiteBalanceRedGain(setValue[0], setValue[1], setValue[2], setValue[3], setValue[4]);
@@ -733,13 +733,16 @@ int main(int argc, char **argv) {
               break;
           }
           case 221: {
-              LOGD("please input 2 parameters:\n"
+              LOGD("please input 3 parameters:\n"
+                   "is used:(0~1)\n"
                    "displaymode value:(0/4/5/6)\n"
                    "is save:(0~1)\n");
-              scanf_ret = scanf("%d %d", &mode, &is_save);
-              if (scanf_ret != 2)    break;
-              test->setValue[0] = mode;
-              test->setValue[1] = is_save;
+              int is_used = 0;
+              scanf_ret = scanf("%d %d %d", &is_used, &mode, &is_save);
+              if (scanf_ret != 3)    break;
+              test->setValue[0] = is_used;
+              test->setValue[1] = mode;
+              test->setValue[2] = is_save;
               test->cmdID = PQ_SET_DISPLAY_MODE;
               break;
           }
@@ -861,6 +864,59 @@ int main(int argc, char **argv) {
           }
           case 238: {
               test->cmdID = PQ_SET_RECOVERYPQ;
+              break;
+          }
+          case 239: {
+              test->cmdID = PQ_GET_HAS_MEMC;
+              break;
+          }
+          case 240: {
+              LOGD("please input 2 parameters:\n"
+                   "mode value:(0~1)\n"
+                   "is save:(0~1)\n");
+              scanf_ret = scanf("%d %d", &mode, &is_save);
+              if (scanf_ret != 2)    break;
+              test->setValue[0] = mode;
+              test->setValue[1] = is_save;
+              test->cmdID = PQ_SET_MEMCMODE;
+              break;
+          }
+          case 241: {
+              test->cmdID = PQ_GET_MEMCMODE;
+              break;
+          }
+          case 256: {
+              test->cmdID = PQ_GET_HAS_AIPQ;
+              break;
+          }
+          case 257: {
+              LOGD("please input  parameters:\n"
+                   "mode value:(0~1)\n");
+              scanf_ret = scanf("%d", &mode);
+              if (scanf_ret != 1)    break;
+              test->setValue[0] = mode;
+              test->cmdID = PQ_SET_AIPQ;
+              break;
+          }
+          case 258: {
+              test->cmdID = PQ_GET_AIPQ;
+              break;
+          }
+          case 259: {
+              test->cmdID = PQ_GET_HAS_AISR;
+              break;
+          }
+          case 260: {
+              LOGD("please input  parameters:\n"
+                   "mode value:(0~1)\n");
+              scanf_ret = scanf("%d", &mode);
+              if (scanf_ret != 1)    break;
+              test->setValue[0] = mode;
+              test->cmdID = PQ_SET_AISR;
+              break;
+          }
+          case 261: {
+              test->cmdID = PQ_GET_AISR;
               break;
           }
 
@@ -1054,37 +1110,43 @@ int main(int argc, char **argv) {
               break;
           }
           case 315: {
-              LOGD("please input 7 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n"
+              LOGD("please input 8 parameters:\n"
+                   "source value(tv_source_input_t):\n"
+                   "sig_fmt value(tvin_sig_fmt_t):\n"
+                   "3d_fmt value(tvin_trans_fmt_t):\n"
+                   "display mode(vpp_display_mode_t):\n"
                    "input he:\n"
                    "input hs:\n"
                    "input ve:\n"
                    "input vs:\n");
+              int dmode = 0;
               int he = 0, hs = 0, ve = 0, vs = 0;
-              scanf_ret = scanf("%d %d %d %d %d %d %d", &source, &sig_fmt, &fmt_3d, &he, &hs, &ve, &vs);
-              if (scanf_ret != 7)    break;
+              scanf_ret = scanf("%d %d %d %d %d %d %d %d", &source, &sig_fmt, &fmt_3d, &dmode, &hs, &he, &vs, &ve);
+              if (scanf_ret != 8)    break;
               test->setValue[0] = source;
               test->setValue[1] = sig_fmt;
               test->setValue[2] = fmt_3d;
-              test->setValue[3] = he;
+              test->setValue[3] = dmode;
               test->setValue[4] = hs;
-              test->setValue[5] = ve;
+              test->setValue[5] = he;
               test->setValue[6] = vs;
+              test->setValue[7] = ve;
               test->cmdID = PQ_FACTORY_SET_OVERSCAN;
               break;
           }
           case 316: {
-              LOGD("please input 3 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n");
-              scanf_ret = scanf("%d %d %d", &source, &sig_fmt, &fmt_3d);
-              if (scanf_ret != 3)    break;
+              LOGD("please input 4 parameters:\n"
+                   "source value(tv_source_input_t):\n"
+                   "sig_fmt value(tvin_sig_fmt_t):\n"
+                   "3d_fmt value(tvin_trans_fmt_t):\n"
+                   "display mode(vpp_display_mode_t):\n");
+              int dmode = 0;
+              scanf_ret = scanf("%d %d %d %d", &source, &sig_fmt, &fmt_3d, &dmode);
+              if (scanf_ret != 4)    break;
               test->setValue[0] = source;
               test->setValue[1] = sig_fmt;
               test->setValue[2] = fmt_3d;
+              test->setValue[3] = dmode;
               test->cmdID = PQ_FACTORY_GET_OVERSCAN;
               break;
           }

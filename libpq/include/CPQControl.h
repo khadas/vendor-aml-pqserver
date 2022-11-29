@@ -400,8 +400,8 @@ public:
     noline_params_t FactoryGetNolineParams(source_input_param_t source_input_param,          int type);
     int FactorySetHdrMode(int mode);
     int FactoryGetHdrMode(void);
-    int FactorySetOverscanParam(source_input_param_t source_input_param, tvin_cutwin_t cutwin_t);
-    tvin_cutwin_t FactoryGetOverscanParam(source_input_param_t source_input_param);
+    int FactorySetOverscanParam(source_input_param_t source_input_param, vpp_display_mode_t dmode, tvin_cutwin_t cutwin_t);
+    tvin_cutwin_t FactoryGetOverscanParam(source_input_param_t source_input_param, vpp_display_mode_t dmode);
     int FactorySetGamma(int gamma_r_value, int gamma_g_value, int gamma_b_value);
     int FcatorySSMRestore(void);
 

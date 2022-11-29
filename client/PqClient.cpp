@@ -1401,14 +1401,14 @@ int PqClient::FactoryGetPQMode_Sharpness(int sourceInput, int sigFmt, int transF
     return ret;
 }
 
-int PqClient::FactorySetOverscanParams(int sourceInput, int sigFmt, int transFmt, tvin_cutwin_t cutwin_t)
+int PqClient::FactorySetOverscanParams(int sourceInput, int sigFmt, int transFmt, int dmode, tvin_cutwin_t cutwin_t)
 {
     LOGD("%s\n", __FUNCTION__);
 
-    char buf[32] = {0};
+    char buf[256] = {0};
     int  ret     = -1;
 
-    sprintf(buf, "pq.set.%d.%d.%d.%d.%d.%d.%d.%d", PQ_FACTORY_SET_OVERSCAN, sourceInput, sigFmt, transFmt, cutwin_t.he, cutwin_t.hs, cutwin_t.ve, cutwin_t.vs);
+    sprintf(buf, "pq.set.%d.%d.%d.%d.%d.%d.%d.%d.%d", PQ_FACTORY_SET_OVERSCAN, sourceInput, sigFmt, transFmt, dmode, cutwin_t.hs, cutwin_t.he, cutwin_t.vs, cutwin_t.ve);
     SendMethodCall(buf);
 
     ret = atoi(mRetBuf);
@@ -1417,21 +1417,23 @@ int PqClient::FactorySetOverscanParams(int sourceInput, int sigFmt, int transFmt
     return ret;
 }
 
-tvin_cutwin_t PqClient::FactoryGetOverscanParams(int sourceInput, int sigFmt, int transFmt)
+tvin_cutwin_t PqClient::FactoryGetOverscanParams(int sourceInput, int sigFmt, int transFmt, int dmode)
 {
     LOGD("%s\n", __FUNCTION__);
 
-    char buf[32] = {0};
+    char buf[256] = {0};
 
-    sprintf(buf, "pq.get.%d.%d.%d.%d", PQ_FACTORY_GET_OVERSCAN, sourceInput, sigFmt, transFmt);
+    sprintf(buf, "pq.get.%d.%d.%d.%d.%d", PQ_FACTORY_GET_OVERSCAN, sourceInput, sigFmt, transFmt, dmode);
     SendMethodCall(buf);
     SplitRetBuf(mRetBuf);
 
     tvin_cutwin_t cutwin_t;
-    cutwin_t.he = atoi(mRet[0].c_str());
-    cutwin_t.hs = atoi(mRet[1].c_str());
-    cutwin_t.ve = atoi(mRet[2].c_str());
-    cutwin_t.vs = atoi(mRet[3].c_str());
+    cutwin_t.hs = atoi(mRet[0].c_str());
+    cutwin_t.he = atoi(mRet[1].c_str());
+    cutwin_t.vs = atoi(mRet[2].c_str());
+    cutwin_t.ve = atoi(mRet[3].c_str());
+
+    //LOGD("%s %d %d %d %d\n", __FUNCTION__, cutwin_t.hs, cutwin_t.he, cutwin_t.vs, cutwin_t.ve);
 
     return cutwin_t;
 }
