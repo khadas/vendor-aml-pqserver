@@ -877,6 +877,7 @@ int CPQControl::LoadPQSettings()
         pq_ctrl_t pqControlVal;
         memset(&pqControlVal, 0, sizeof(pq_ctrl_t));
         vpp_pq_ctrl_t amvecmConfigVal;
+        memset(&amvecmConfigVal, 0, sizeof(vpp_pq_ctrl_t));
         amvecmConfigVal.length = 14;//this is the count of pq_ctrl_s option
         amvecmConfigVal.ptr    = &pqControlVal;
         ret = VPPDeviceIOCtl(AMVECM_IOC_S_PQ_CTRL, &amvecmConfigVal);
@@ -7091,6 +7092,8 @@ int CPQControl::SetFlagByCfg(void)
     }
 
     vpp_pq_ctrl_t amvecmConfigVal;
+    //vpp_pq_ctrl_t amvecmConfigVal = {0, {(void *)"0"}};
+    memset(&amvecmConfigVal, 0, sizeof(vpp_pq_ctrl_t));
     amvecmConfigVal.length = 14;//this is the count of pq_ctrl_s option
     amvecmConfigVal.ptr = &pqControlVal;
     int ret = VPPDeviceIOCtl(AMVECM_IOC_S_PQ_CTRL, &amvecmConfigVal);
