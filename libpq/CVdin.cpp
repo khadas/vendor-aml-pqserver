@@ -237,6 +237,21 @@ int CVdin::VDIN_SetGameMode(game_pc_mode_t mode)
     return ret;
 }
 
+int CVdin::VDIN_GetVrrFreesyncParm(tvin_vrr_freesync_param_t *vrrparm)
+{
+    int ret = -1;
+    if (vrrparm == NULL) {
+        LOGE("%s: param is NULL\n", __FUNCTION__);
+    } else {
+        ret = VDIN_DeviceIOCtl(TVIN_IOC_G_VRR_STATUS, vrrparm);
+        if (ret < 0) {
+            LOGE("%s failed, error(%s)\n", __FUNCTION__, strerror(errno));
+        }
+    }
+
+    return ret;
+}
+
 int CVdin::Tvin_SetPCMode(game_pc_mode_t mode)
 {
     int ret = -1;
@@ -439,4 +454,17 @@ tv_source_input_t CVdin::Tvin_PortToSourceInput ( tvin_port_t port )
     }
 
     return SOURCE_MAX;
+}
+
+int CVdin::Tvin_GetVrrFreesyncParm(tvin_vrr_freesync_param_t *vrrparm)
+{
+    int ret = -1;
+
+    if (vrrparm == NULL) {
+        LOGE("%s vrrparm is NULL\n", __FUNCTION__);
+    } else {
+        ret = VDIN_GetVrrFreesyncParm(vrrparm);
+    }
+
+    return ret;
 }

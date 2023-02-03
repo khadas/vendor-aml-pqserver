@@ -84,6 +84,7 @@ typedef enum tvin_sig_change_flag_e {
      TVIN_SIG_CHG_VS_FRQ    = 0x80,
      TVIN_SIG_CHG_DV_ALLM   = 0x100,/*allm info*/
      TVIN_SIG_CHG_AFD       = 0x200,/*aspect ratio*/
+     TVIN_SIG_CHG_VRR       = 0x1000, /*vrr*/
      TVIN_SIG_CHG_CLOSE_FE  = 0x40000000, /*closed frontend*/
      TVIN_SIG_CHG_STS       = 0x80000000, /*sm state change*/
 } tvin_sig_change_flag_t;
@@ -214,6 +215,24 @@ typedef struct tvin_latency_s {
     tvin_cn_type_e cn_type;
 } tvin_latency_t;
 
+//VRR info
+typedef enum tvin_vrr_mode_e {
+    VDIN_VRR_OFF = 0,
+    VDIN_VRR_BASIC,
+    VDIN_VRR_FREESYNC,
+    VDIN_VRR_FREESYNC_PREMIUM,
+    VDIN_VRR_FREESYNC_PREMIUM_PRO,
+    VDIN_VRR_FREESYNC_PREMIUM_G_SYNC,
+    VDIN_VRR_NUM
+} tvin_vrr_mode_t;
+
+typedef struct vdin_vrr_freesync_param_s {
+    enum tvin_vrr_mode_e vrr_status;
+    unsigned char tone_mapping_en;
+    unsigned char local_dimming_disable;
+    unsigned char native_color_en;
+} tvin_vrr_freesync_param_t;
+
 typedef struct tvin_inputparam_s {
     unsigned int   is_dvi;
     /*
@@ -237,6 +256,7 @@ typedef struct tvin_inputparam_s {
     */
     unsigned int   hdr_info;
     tvin_latency_t allmInfo;
+    tvin_vrr_freesync_param_t vrrparm;
 } tvin_inputparam_t;
 
 // ***************************************************************************
@@ -255,6 +275,7 @@ typedef struct tvin_inputparam_s {
 #define TVIN_IOC_S_PC_MODE          _IOW(TVIN_IOC_MAGIC, 0x50, unsigned int)
 #define TVIN_IOC_GAME_MODE          _IOW(TVIN_IOC_MAGIC, 0x4b, unsigned int)
 #define TVIN_IOC_GET_LATENCY_MODE   _IOR(TVIN_IOC_MAGIC, 0X4d, struct tvin_latency_s)
+#define TVIN_IOC_G_VRR_STATUS       _IOR(TVIN_IOC_MAGIC, 0x53, struct vdin_vrr_freesync_param_s)
 
 
 #define VDIN_DEV_PATH               "/dev/vdin0"
@@ -270,6 +291,7 @@ public:
     int Tvin_GetAllmInfo(tvin_latency_s *AllmInfo);
     int Tvin_SetPCMode(game_pc_mode_t mode);
     int Tvin_SetGameMode(game_pc_mode_t mode);
+    int Tvin_GetVrrFreesyncParm(tvin_vrr_freesync_param_t *vrrparm);
     tv_source_input_t Tvin_PortToSourceInput (tvin_port_t port);
     tv_source_input_type_t Tvin_SourceInputToSourceInputType ( tv_source_input_t source_input );
 
@@ -288,6 +310,7 @@ private:
     int VDIN_GetAllmInfo(tvin_latency_s *AllmInfo);
     int VDIN_SetPCMode(game_pc_mode_t mode);
     int VDIN_SetGameMode(game_pc_mode_t mode);
+    int VDIN_GetVrrFreesyncParm(tvin_vrr_freesync_param_t *vrrparm);
     void Tvin_LoadPortToSourceInputMap();
     unsigned int Tvin_TransPortStringToValue(const char *port_str);
     const char *ConfigGetStr(const char *section,  const char *key, const char *def_value);

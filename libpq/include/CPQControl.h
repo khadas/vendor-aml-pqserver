@@ -531,6 +531,7 @@ private:
     int AFEDeviceIOCtl ( int request, ... );
     void stopVdin(void);
     void onSigStatusChange(void);
+    void onVrrStatusChange(void);
     int SetCurrenSourceInfo(tvin_parm_t sig_info);
     tvin_sig_fmt_t getVideoResolutionToFmt();
     int GetWindowStatus(void);
@@ -545,6 +546,7 @@ private:
     bool isPqDatabaseMachChip();
     bool CheckPQModeTableInDb(void);
     int Cpq_SetVadjEnableStatus(int isvadj1Enable, int isvadj2Enable);
+    int SetPqModeForDvGame(void);
     bool mInitialized;
     //cfg
     bool mbCpqCfg_seperate_db_enable;
@@ -618,6 +620,8 @@ private:
     tvin_parm_t mCurrentSignalInfo;
     tvin_inputparam_t mCurrentTvinInfo;
     game_pc_mode_t mGamemode = MODE_OFF;
+    tvin_latency_t mPreAllmInfo;
+    tvin_vrr_freesync_param_t mPreVrrParm;
     bool mbDtvKitEnable;
     bool mbDatabaseMatchChipStatus;
     bool mbVideoIsPlaying = false;//video don't playing
