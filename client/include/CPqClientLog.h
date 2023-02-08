@@ -18,6 +18,7 @@
 //1024 + 128
 #define DEFAULT_LOG_BUFFER_LEN 1152
 
+void init_pq_logging();
 extern int _log_print(const char *moudle_tag, const char *level_tag ,const char *class_tag, const char *fmt, ...);
 
 #ifdef LOG_MODULE_TAG

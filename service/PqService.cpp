@@ -34,6 +34,7 @@ PqService *PqService::GetInstance() {
 }
 
 PqService::PqService() {
+    init_pq_logging();
     mpPQcontrol = CPQControl::GetInstance();
     mpPQcontrol->CPQControlInit();
 }

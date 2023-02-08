@@ -37,6 +37,7 @@ PqClient *PqClient::GetInstance() {
 PqClient::PqClient() {
     Parcel send, reply;
     sp<IServiceManager> serviceManager = defaultServiceManager();
+    init_pq_logging();
     do {
         mpqServicebinder = serviceManager->getService(String16("pqservice"));
         if (mpqServicebinder != 0) break;
