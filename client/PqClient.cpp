@@ -46,6 +46,7 @@ PqClient::PqClient() {
     proc->startThreadPool();
     Parcel send, reply;
     sp<IServiceManager> serviceManager = defaultServiceManager();
+    init_pq_logging();
     do {
         mpqServicebinder = serviceManager->getService(String16("pqservice"));
         LOGD("%s mpqServicebinder is %p\n", __FUNCTION__, mpqServicebinder);

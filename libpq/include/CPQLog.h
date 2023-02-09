@@ -24,6 +24,7 @@
 #define __unused __attribute__((__unused__))
 #endif
 
+void init_pq_logging();
 extern int __pq_log_print(const char *moudle_tag, const char *level_tag ,const char *class_tag, const char *fmt, ...);
 
 #ifdef LOG_MODULE_TAG
