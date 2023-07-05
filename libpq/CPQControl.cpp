@@ -7266,13 +7266,6 @@ int CPQControl::SetCurrentSourceInputInfo(source_input_param_t source_input_para
         vpp_display_mode_t display_mode = (vpp_display_mode_t)GetDisplayMode();
         SetDisplayMode(display_mode, 1);
 
-        //load cvd2 parameter for cvbs decode
-        if (((SOURCE_TV == mCurentSourceInputInfo.source_input)
-            || (SOURCE_AV1 == mCurentSourceInputInfo.source_input)
-            || (SOURCE_AV2 == mCurentSourceInputInfo.source_input))) {
-            SetCVD2Values();
-        }
-
         //load pq setting
         if (source_input_param.sig_fmt == TVIN_SIG_FMT_NULL) {//exit source
             mCurrentHdrType = HDR_TYPE_NONE;
@@ -7312,6 +7305,15 @@ int CPQControl::SetCurrentSourceInputInfo(source_input_param_t source_input_para
         }
     } else {
         LOGD("%s: same signal, no need set\n", __FUNCTION__);
+    }
+
+    if (mCurrentSignalInfo.info.status == TVIN_SIG_STATUS_STABLE) {
+        //load cvd2 parameter for cvbs decode
+        if (((SOURCE_TV == mCurentSourceInputInfo.source_input)
+            || (SOURCE_AV1 == mCurentSourceInputInfo.source_input)
+            || (SOURCE_AV2 == mCurentSourceInputInfo.source_input))) {
+            SetCVD2Values();
+        }
     }
 
     pthread_mutex_unlock(&PqControlMutex);
