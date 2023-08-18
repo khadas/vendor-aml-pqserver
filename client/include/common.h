@@ -293,6 +293,31 @@ typedef struct tvin_cutwin_s {
 } tvin_cutwin_t;
 #endif
 
+#ifndef __NOLINE_PARAMS__
+#define __NOLINE_PARAMS__
+typedef struct noline_params_s {
+    int osd0;
+    int osd25;
+    int osd50;
+    int osd75;
+    int osd100;
+} noline_params_t;
+#endif
+
+#ifndef __NOLINE_PARAMS_TYPE__
+#define __NOLINE_PARAMS_TYPE__
+typedef enum noline_params_type_e {
+    NOLINE_PARAMS_TYPE_BRIGHTNESS,
+    NOLINE_PARAMS_TYPE_CONTRAST,
+    NOLINE_PARAMS_TYPE_SATURATION,
+    NOLINE_PARAMS_TYPE_HUE,
+    NOLINE_PARAMS_TYPE_SHARPNESS,
+    NOLINE_PARAMS_TYPE_VOLUME,
+    NOLINE_PARAMS_TYPE_BACKLIGHT,
+    NOLINE_PARAMS_TYPE_MAX,
+} noline_params_type_t;
+#endif
+
 #ifndef __TVAPP_RGB_OGO__
 #define __TVAPP_RGB_OGO__
 typedef struct tvpq_rgb_ogo_s {
@@ -307,6 +332,17 @@ typedef struct tvpq_rgb_ogo_s {
     int g_post_offset;
     int b_post_offset;
 } tvpq_rgb_ogo_t;
+#endif
+
+#ifndef __VPP_COLOR_TEMPERATURE_MODE__
+#define __VPP_COLOR_TEMPERATURE_MODE__
+typedef enum vpp_color_temperature_mode_e {
+    VPP_COLOR_TEMPERATURE_MODE_STANDARD,
+    VPP_COLOR_TEMPERATURE_MODE_WARM,
+    VPP_COLOR_TEMPERATURE_MODE_COLD,
+    VPP_COLOR_TEMPERATURE_MODE_USER,
+    VPP_COLOR_TEMPERATURE_MODE_MAX,
+} vpp_color_temperature_mode_t;
 #endif
 
 #ifndef __DISPLAY_MODE_
@@ -326,4 +362,35 @@ typedef enum vpp_display_mode_e {
     VPP_DISPLAY_MODE_MAX,
 } vpp_display_mode_t;
 #endif
+
+#ifndef __SHARPNESS_TIMING__
+#define __SHARPNESS_TIMING__
+typedef enum sharpness_timing_e {
+    SHARPNESS_TIMING_SD = 0,
+    SHARPNESS_TIMING_HD,
+} sharpness_timing_t;
+#endif
+
+#ifndef __PQ_TYPE__
+#define __PQ_TYPE__
+typedef enum pq_type_e {
+    ALL,
+    COLOR,
+    SHARPNESS_SD,
+    SHARPNESS_HD,
+    _3D_NR_GAIN,
+    _2D_NR_GAIN,
+    DCI,
+    GAMMA,
+    FMD,
+    CTI_SR0,
+    CTI_SR1,
+    DEJAGGY_SR0,
+    DEJAGGY_SR1,
+    DRT_SR0,
+    DRT_SR1,
+    BLACK_STRETCH,
+} pq_type_t;
+#endif
+
 #endif

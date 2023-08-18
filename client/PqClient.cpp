@@ -1172,6 +1172,199 @@ int PqClient::GetMpegNr()
     return ret;
 }
 
+noline_params_t PqClient::FactoryGetNolineParams(source_input_param_t source_input_param, int type)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+
+    sprintf(buf, "pq.set.%d.%d.%d.%d.%d",
+            PQ_FACTORY_GET_NOLINE_PARAMS,
+            source_input_param.source_input,
+            source_input_param.sig_fmt,
+            source_input_param.trans_fmt,
+            type);
+    SendMethodCall(buf);
+
+    SplitRetBuf(mRetBuf);
+
+    noline_params_t noline_params;
+    noline_params.osd0   = atoi(mRet[0].c_str());
+    noline_params.osd25  = atoi(mRet[1].c_str());
+    noline_params.osd50  = atoi(mRet[2].c_str());
+    noline_params.osd75  = atoi(mRet[3].c_str());
+    noline_params.osd100 = atoi(mRet[4].c_str());
+    LOGE("PqClient: [osd0:%d][osd25:%d][osd50:%d][osd75:%d][osd100:%d].\n",
+            noline_params.osd0,
+            noline_params.osd25,
+            noline_params.osd50,
+            noline_params.osd75,
+            noline_params.osd100);
+
+    return noline_params;
+}
+
+int PqClient::FactorySetNolineParams(source_input_param_t source_input_param, int type, noline_params_t noline_params)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d.%d.%d.%d.%d.%d.%d.%d",
+            PQ_FACTORY_SET_NOLINE_PARAMS,
+            source_input_param.source_input,
+            source_input_param.sig_fmt,
+            source_input_param.trans_fmt,
+            type,
+            noline_params.osd0,
+            noline_params.osd25,
+            noline_params.osd50,
+            noline_params.osd75,
+            noline_params.osd100
+    );
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactorySetBrightnessNolineParams(source_input_param_t source_input_param, noline_params_t noline_params)
+{
+    return FactorySetNolineParams(source_input_param, NOLINE_PARAMS_TYPE_BRIGHTNESS, noline_params);
+}
+
+int PqClient::FactorySetContrastNolineParams(source_input_param_t source_input_param, noline_params_t noline_params)
+{
+    return FactorySetNolineParams(source_input_param, NOLINE_PARAMS_TYPE_CONTRAST, noline_params);
+}
+int PqClient::FactorySetSaturationNolineParams(source_input_param_t source_input_param, noline_params_t noline_params)
+{
+    return FactorySetNolineParams(source_input_param, NOLINE_PARAMS_TYPE_SATURATION, noline_params);
+}
+int PqClient::FactorySetHueNolineParams(source_input_param_t source_input_param, noline_params_t noline_params)
+{
+    return FactorySetNolineParams(source_input_param, NOLINE_PARAMS_TYPE_HUE, noline_params);
+}
+int PqClient::FactorySetSharpnessNolineParams(source_input_param_t source_input_param, noline_params_t noline_params)
+{
+    return FactorySetNolineParams(source_input_param, NOLINE_PARAMS_TYPE_SHARPNESS, noline_params);
+}
+int PqClient::FactorySetVolumeNolineParams(source_input_param_t source_input_param, noline_params_t noline_params)
+{
+    return FactorySetNolineParams(source_input_param, NOLINE_PARAMS_TYPE_VOLUME, noline_params);
+}
+
+noline_params_t PqClient::FactoryGetBrightnessNolineParams(source_input_param_t source_input_param)
+{
+    return FactoryGetNolineParams(source_input_param, NOLINE_PARAMS_TYPE_BRIGHTNESS);
+}
+
+noline_params_t PqClient::FactoryGetContrastNolineParams(source_input_param_t source_input_param)
+{
+    return FactoryGetNolineParams(source_input_param, NOLINE_PARAMS_TYPE_CONTRAST);
+}
+
+noline_params_t PqClient::FactoryGetSaturationNolineParams(source_input_param_t source_input_param)
+{
+    return FactoryGetNolineParams(source_input_param, NOLINE_PARAMS_TYPE_SATURATION);
+}
+
+noline_params_t PqClient::FactoryGetHueNolineParams(source_input_param_t source_input_param)
+{
+    return FactoryGetNolineParams(source_input_param, NOLINE_PARAMS_TYPE_HUE);
+}
+
+noline_params_t PqClient::FactoryGetSharpnessNolineParams(source_input_param_t source_input_param)
+{
+    return FactoryGetNolineParams(source_input_param, NOLINE_PARAMS_TYPE_SHARPNESS);
+}
+
+noline_params_t PqClient::FactoryGetVolumeNolineParams(source_input_param_t source_input_param)
+{
+    return FactoryGetNolineParams(source_input_param, NOLINE_PARAMS_TYPE_VOLUME);
+}
+
+int PqClient::FactorySetColorParams(int tempMode, tvpq_rgb_ogo_t rgbogo)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[128] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pqFactory.set.%d.%d.%d.%d.%d.%d.%d.%d.%d.%d.%d.%d", PQ_FACTORY_SET_COLOR_PARAMS, tempMode, rgbogo.en, rgbogo.r_pre_offset, rgbogo.g_pre_offset,
+        rgbogo.b_pre_offset, rgbogo.r_gain, rgbogo.g_gain, rgbogo.b_gain, rgbogo.r_post_offset, rgbogo.g_post_offset, rgbogo.b_post_offset);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactoryGetColorParams(int tempMode, tvpq_rgb_ogo_t *rgbogo)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[128] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pqFactory.get.%d.%d.%d.%d.%d.%d.%d.%d.%d.%d.%d.%d", PQ_FACTORY_GET_COLOR_PARAMS, tempMode, rgbogo->en, rgbogo->r_pre_offset, rgbogo->g_pre_offset,
+        rgbogo->b_pre_offset, rgbogo->r_gain, rgbogo->g_gain, rgbogo->b_gain, rgbogo->r_post_offset, rgbogo->g_post_offset, rgbogo->b_post_offset);
+    SendMethodCall(buf);
+    SplitRetBuf(mRetBuf);
+
+    //rgbogo->en = atoi(mRet[0].c_str());
+    rgbogo->r_pre_offset = atoi(mRet[1].c_str());
+    rgbogo->g_pre_offset = atoi(mRet[2].c_str());
+    rgbogo->b_pre_offset = atoi(mRet[3].c_str());
+    rgbogo->r_gain = atoi(mRet[4].c_str());
+    rgbogo->g_gain = atoi(mRet[5].c_str());
+    rgbogo->b_gain = atoi(mRet[6].c_str());
+    rgbogo->r_post_offset = atoi(mRet[7].c_str());
+    rgbogo->g_post_offset = atoi(mRet[8].c_str());
+    rgbogo->b_post_offset = atoi(mRet[9].c_str());
+
+    ret = atoi(mRet[0].c_str());
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactorySetDecodeLumaParams(int sourceInput, int sigFmt, int transFmt, int paramType, int value)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pqFactory.set.%d.%d.%d.%d.%d.%d", PQ_FACTORY_SET_DEC_LUMA_PARAMS, sourceInput, sigFmt, transFmt, paramType, value);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactoryGetDecodeLumaParams(int sourceInput, int sigFmt, int transFmt, int paramType)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pqFactory.get.%d.%d.%d.%d.%d", PQ_FACTORY_GET_DEC_LUMA_PARAMS, sourceInput, sigFmt, transFmt, paramType);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
 int PqClient::ResetPictureUiSetting(void)
 {
     LOGD("%s\n", __FUNCTION__);
@@ -1704,6 +1897,64 @@ int PqClient::FactoryGetGrayPattern()
     LOGE("PqClient: ret %d.\n", ret);
 
     return ret;
+}
+
+int PqClient::FactoryGetSharpnessParams(int sourceInput, int sigFmt, int transFmt, int SDHD,int param_type)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pqFactory.get.%d.%d.%d.%d.%d.%d", PQ_FACTORY_GET_Sharpness_Params, sourceInput,sigFmt,transFmt, SDHD,param_type);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactorySetSharpnessParams(int sourceInput, int sigFmt, int transFmt, int SDHD,int param_type,int val)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pqFactory.get.%d.%d.%d.%d.%d.%d.%d", PQ_FACTORY_GET_Sharpness_Params, sourceInput,sigFmt,transFmt, SDHD,param_type,val);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+int PqClient::FactorySetHdmiColorRangeMode(int pq_type, int isEnable)
+{
+    LOGD("%s\n", __FUNCTION__);
+    char buf[32] = {0};
+    int  ret     = -1;
+    sprintf(buf, "pq.set.%d.%d", pq_type, isEnable);
+    SendMethodCall(buf);
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactoryGetHdmiColorRangeMode(int pq_type)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    sprintf(buf, "pq.get.%d", pq_type);
+    SendMethodCall(buf);
+    SplitRetBuf(mRetBuf);
+    int isEnable = atoi(mRet[0].c_str());
+    LOGE("PqClient: [isEnable:%d].\n", isEnable);
+
+    return isEnable;
 }
 
 //ddr

@@ -110,6 +110,8 @@ public:
     int PQ_GetGammaSpecialTable(vpp_gamma_curve_t gamma_curve, const char *f_name, tcon_gamma_table_t *gamma_r);
     int PQ_GetGammaParams(source_input_param_t source_input_param, vpp_gamma_curve_t gamma_curve, const char *f_name, tcon_gamma_table_t *gamma_value);
     int PQ_GetPLLParams(source_input_param_t source_input_param, am_regs_t *regs);
+    int PQ_GetCVD2Param(source_input_param_t source_input_param, int reg_addr, int param_type, int reg_mask);
+    int PQ_SetCVD2Param(source_input_param_t source_input_param, int reg_addr, int value, int param_type, int reg_mask);
     int PQ_GetCVD2Params(source_input_param_t source_input_param, am_regs_t *regs);
     int PQ_GetLCDHDRInfoParams(source_input_param_t source_input_param, struct lcd_optical_info_s *newParams);
     int PQ_GetAIParams(source_input_param_t source_input_param, struct aipq_load_s *regs);
@@ -131,6 +133,10 @@ public:
     int PQ_GetBlueStretchParams(int level, source_input_param_t source_input_param, am_regs_t *regs);
     int PQ_GetChromaCoringParams(int level, source_input_param_t source_input_param, am_regs_t *regs);
     int PQ_GetLocalDimmingParams(int level, source_input_param_t source_input_param, aml_ldim_pq_s *newParams);
+    int PQ_GetSharpnessAdvancedParams(source_input_param_t source_input_param, int reg_addr, int isHd);
+    int getSharpnessRegValues(const char *table_name, source_input_param_t source_input_param,
+                                         am_regs_t *regs, int reg_addr, int isHd);
+    int PQ_SetSharpnessAdvancedParams(source_input_param_t source_input_param, int reg_addr, int value, int isHd);
 
 private:
     std::string GetTableName(const char *GeneralTableName, source_input_param_t source_input_param);
@@ -144,7 +150,7 @@ private:
     int PQ_GetGammaTable(int panel_id, source_input_param_t source_input_param, const char *f_name, tcon_gamma_table_t *val);
     int SetNonlinearMappingByName(const char *name, tvpq_data_type_t data_type, tv_source_input_t source_input, int osd0, int osd25, int osd50, int osd75, int osd100);
     int PQ_SetPQModeParamsByName(const char *name, tv_source_input_t source_input, vpp_picture_mode_t pq_mode, vpp_pq_para_t *params);
-    const char *getSharpnessTableName(source_input_param_t source_input_param, int isHd);
+    void getSharpnessTableName(source_input_param_t source_input_param, int isHd, char *table_name);
     am_regs_t MergeSameAddrVal(am_regs_t regs);
 
     tvpq_data_t pq_bri_data[15];

@@ -143,6 +143,25 @@ typedef enum rgb_ogo_type_e{
     RGB_TYPE_MAX,
 } rgb_ogo_type_t;
 
+typedef enum pq_type_e {
+    ALL,
+    COLOR,
+    SHARPNESS_SD,
+    SHARPNESS_HD,
+    _3D_NR_GAIN,
+    _2D_NR_GAIN,
+    DCI,
+    GAMMA,
+    FMD,
+    CTI_SR0,
+    CTI_SR1,
+    DEJAGGY_SR0,
+    DEJAGGY_SR1,
+    DRT_SR0,
+    DRT_SR1,
+    BLACK_STRETCH,
+} pq_type_t;
+
 class CPQControl: public UEventObserver::IUEventObserverCallBack,
                        public CDevicePollCheckThread::IDevicePollCheckObserver,
                          public CDynamicBackLight::IDynamicBackLightObserver,
@@ -440,6 +459,9 @@ public:
     int FactoryGetLVDSSSCMode(void);
     int GetLVDSSSCParams(struct aml_lcd_ss_ctl_s *param);
     int SaveLVDSSSCParams(struct aml_lcd_ss_ctl_s *param);
+    int SetDecodeLumaParamsCheckVal(int param_type, int val);
+    int FactorySetDecodeLumaParams(source_input_param_t source_input_param, int param_type, int val);
+    int FactoryGetDecodeLumaParams(source_input_param_t source_input_param, int param_type);
 
     int SetGrayPattern(int value);
     int GetGrayPattern();
@@ -501,6 +523,12 @@ public:
     int SaveAmdolbyDarkDetail(int value);
     int Cpq_SetAmdolbyDarkDetail(int mode);
     void resetCurSrcPqUiSetting(void);
+    int SetSharpnessParamsCheckVal(int param_type, int val);
+    int MatchSharpnessRegAddr(int param_type, int isHd);
+    int FactorySetSharpnessParams(source_input_param_t source_input_param, sharpness_timing_t source_timing, int param_type, int val);
+    int FactoryGetSharpnessParams(source_input_param_t source_input_param, sharpness_timing_t source_timing, int param_type);
+    int SetHdmiColorRangeMode(int pq_type, int isEnable);
+    int GetHdmiColorRangeMode(int pq_type);
 
 private:
     int VPPOpenModule(void);

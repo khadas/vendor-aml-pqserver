@@ -20,7 +20,7 @@ using namespace android;
 typedef struct pq_moudle_param_s {
     int moudleId;        //moudleId according to tvcmd.h
     int paramLength;     //length of parambuf
-    int paramBuf[10];    //param for action
+    int paramBuf[20];    //param for action
 } pq_moudle_param_t;
 
 class PqService: public CPQControl::ICPQControlObserver,
@@ -63,7 +63,7 @@ private:
     virtual status_t onTransact(uint32_t code,
                                 const Parcel& data, Parcel* reply,
                                 uint32_t flags = 0);
-    std::string mPqCommand[10];
+    std::string mPqCommand[20];
 
 private:
     //used to send client binder proxy object pointer to pqserver, to realize service <--> client two-way communication

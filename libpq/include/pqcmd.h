@@ -115,6 +115,16 @@ typedef enum pqcmd_e {
     PQ_FACTORY_GET_RGB_PATTERN                = 330,
     PQ_FACTORY_SET_GRAY_PATTERN               = 331,
     PQ_FACTORY_GET_GRAY_PATTERN               = 332,
+    PQ_FACTORY_SET_NOLINE_PARAMS              = 333,
+    PQ_FACTORY_GET_NOLINE_PARAMS              = 334,
+    PQ_FACTORY_SET_COLOR_PARAMS               = 335,
+    PQ_FACTORY_GET_COLOR_PARAMS               = 336,
+    PQ_FACTORY_SET_DEC_LUMA_PARAMS            = 337,
+    PQ_FACTORY_GET_DEC_LUMA_PARAMS            = 338,
+    PQ_FACTORY_GET_Sharpness_Params           = 339,
+    PQ_FACTORY_SET_Sharpness_Params           = 340,
+    PQ_FACTORY_SET_PQ_ENABLE                  = 341,
+    PQ_FACTORY_GET_PQ_ENABLE                  = 342,
 
     PQ_FACTORY_CMD_MAX                        = 399,
 }pqcmd_t;

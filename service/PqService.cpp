@@ -97,8 +97,10 @@ int PqService::SetCmd(pq_moudle_param_t param)
         int i = 0;
         source_input_param_t source_input_param;
         tvin_cutwin_t overscanParam;
+        tcon_rgb_ogo_t tcon_rgbogo;
         memset(&source_input_param, 0, sizeof(source_input_param_t));
         memset(&overscanParam, 0, sizeof(tvin_cutwin_t));
+        memset(&tcon_rgbogo, 0, sizeof(tcon_rgb_ogo_t));
 
         for (i = 0; i < param.paramLength; i++) {
             paramData[i] = param.paramBuf[i];
@@ -285,7 +287,52 @@ int PqService::SetCmd(pq_moudle_param_t param)
         case PQ_FACTORY_SET_GRAY_PATTERN:
             ret = mpPQcontrol->SetGrayPattern(paramData[0]);
             break;
+        case PQ_FACTORY_SET_NOLINE_PARAMS: {
+            noline_params_t noline_params;
+            int type;
+            source_input_param.source_input = (tv_source_input_t)paramData[0];
+            source_input_param.sig_fmt      = (enum tvin_sig_fmt_e)paramData[1];
+            source_input_param.trans_fmt    = (enum tvin_trans_fmt)paramData[2];
+            type = (int)paramData[3];
+            noline_params.osd0 = (int)paramData[4];
+            noline_params.osd25 = (int)paramData[5];
+            noline_params.osd50 = (int)paramData[6];
+            noline_params.osd75 = (int)paramData[7];
+            noline_params.osd100 = (int)paramData[8];
+            ret = mpPQcontrol->FactorySetNolineParams(source_input_param, type, noline_params);
+        }
+            break;
+        case PQ_FACTORY_SET_COLOR_PARAMS:
+            tcon_rgbogo.en = paramData[1];
+            tcon_rgbogo.r_pre_offset = paramData[2];
+            tcon_rgbogo.g_pre_offset = paramData[3];
+            tcon_rgbogo.b_pre_offset = paramData[4];
+            tcon_rgbogo.r_gain = paramData[5];
+            tcon_rgbogo.g_gain = paramData[6];
+            tcon_rgbogo.b_gain = paramData[7];
+            tcon_rgbogo.r_post_offset = paramData[8];
+            tcon_rgbogo.g_post_offset = paramData[9];
+            tcon_rgbogo.b_post_offset = paramData[10];
+            ret = mpPQcontrol->SetColorTemperatureParams((vpp_color_temperature_mode_t)paramData[0], tcon_rgbogo);
+            break;
+        case PQ_FACTORY_SET_DEC_LUMA_PARAMS:
+            source_input_param.source_input = (tv_source_input_t)paramData[0];
+            source_input_param.sig_fmt      = (enum tvin_sig_fmt_e)paramData[1];
+            source_input_param.trans_fmt    = (enum tvin_trans_fmt)paramData[2];
 
+            ret = mpPQcontrol->FactorySetDecodeLumaParams(source_input_param, paramData[3], paramData[4]);
+            break;
+        case PQ_FACTORY_SET_Sharpness_Params:
+            source_input_param.source_input = (tv_source_input_t)paramData[0];
+            source_input_param.sig_fmt      = (enum tvin_sig_fmt_e)paramData[1];
+            source_input_param.trans_fmt    = (enum tvin_trans_fmt)paramData[2];
+            ret = mpPQcontrol->FactorySetSharpnessParams(source_input_param,(sharpness_timing_t)paramData[3],paramData[4],paramData[5]);
+            break;
+
+        case PQ_FACTORY_SET_PQ_ENABLE: {
+            ret = mpPQcontrol->SetHdmiColorRangeMode(paramData[0],    paramData[1]);
+             break;
+            }
         default:
             break;
         }
@@ -310,9 +357,11 @@ char* PqService::GetCmd(pq_moudle_param_t param)
         source_input_param_t source_input_param;
         tvin_cutwin_t overscanParam;
         tvpq_rgb_ogo_t rgbogo;
+        tcon_rgb_ogo_t tcon_rgbogo;
         memset(&source_input_param, 0, sizeof(source_input_param_t));
         memset(&overscanParam, 0, sizeof(tvin_cutwin_t));
         memset(&rgbogo, 0, sizeof(tvpq_rgb_ogo_t));
+        memset(&tcon_rgbogo, 0, sizeof(tcon_rgb_ogo_t));
 
         for (i = 0; i < param.paramLength; i++) {
             paramData[i] = param.paramBuf[i];
@@ -497,7 +546,54 @@ char* PqService::GetCmd(pq_moudle_param_t param)
         case PQ_FACTORY_GET_GRAY_PATTERN:
             ret = mpPQcontrol->GetGrayPattern();
             break;
+        case PQ_FACTORY_GET_NOLINE_PARAMS: {
+            source_input_param.source_input = (tv_source_input_t)paramData[0];
+            source_input_param.sig_fmt      = (enum tvin_sig_fmt_e)paramData[1];
+            source_input_param.trans_fmt    = (enum tvin_trans_fmt)paramData[2];
+            int type = (enum tvin_trans_fmt)paramData[3];
+            noline_params_t noline_params = mpPQcontrol->FactoryGetNolineParams(source_input_param, type);
+            sprintf(mRetBuf, "%d.%d.%d.%d.%d",
+                    noline_params.osd0,
+                    noline_params.osd25,
+                    noline_params.osd50,
+                    noline_params.osd75,
+                    noline_params.osd100);
+            return mRetBuf;
+        }
+        case PQ_FACTORY_GET_COLOR_PARAMS:
+            tcon_rgbogo.en = paramData[1];
+            tcon_rgbogo.r_pre_offset = paramData[2];
+            tcon_rgbogo.g_pre_offset = paramData[3];
+            tcon_rgbogo.b_pre_offset = paramData[4];
+            tcon_rgbogo.r_gain = paramData[5];
+            tcon_rgbogo.g_gain = paramData[6];
+            tcon_rgbogo.b_gain = paramData[7];
+            tcon_rgbogo.r_post_offset = paramData[8];
+            tcon_rgbogo.g_post_offset = paramData[9];
+            tcon_rgbogo.b_post_offset = paramData[10];
+            ret = mpPQcontrol->GetColorTemperatureParams((vpp_color_temperature_mode_t)paramData[0], &tcon_rgbogo);
 
+            sprintf(mRetBuf, "%d.%d.%d.%d.%d.%d.%d.%d.%d.%d", ret, tcon_rgbogo.r_pre_offset, tcon_rgbogo.g_pre_offset, tcon_rgbogo.b_pre_offset,
+                tcon_rgbogo.r_gain, tcon_rgbogo.g_gain, tcon_rgbogo.b_gain, tcon_rgbogo.r_post_offset, tcon_rgbogo.g_post_offset, tcon_rgbogo.b_post_offset);
+            return mRetBuf;
+        case PQ_FACTORY_GET_DEC_LUMA_PARAMS:
+            source_input_param.source_input = (tv_source_input_t)paramData[0];
+            source_input_param.sig_fmt      = (enum tvin_sig_fmt_e)paramData[1];
+            source_input_param.trans_fmt    = (enum tvin_trans_fmt)paramData[2];
+
+            ret = mpPQcontrol->FactoryGetDecodeLumaParams(source_input_param, paramData[3]);
+            break;
+        case PQ_FACTORY_GET_Sharpness_Params:
+            source_input_param.source_input = (tv_source_input_t)paramData[0];
+            source_input_param.sig_fmt      = (enum tvin_sig_fmt_e)paramData[1];
+            source_input_param.trans_fmt    = (enum tvin_trans_fmt)paramData[2];
+            ret = mpPQcontrol->FactoryGetSharpnessParams(source_input_param,(sharpness_timing_t)paramData[3],paramData[4]);
+            break;
+
+        case PQ_FACTORY_GET_PQ_ENABLE: {
+                 ret = mpPQcontrol->GetHdmiColorRangeMode(paramData[0]);
+            break;
+            }
         default:
             break;
         }

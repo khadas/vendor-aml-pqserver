@@ -395,6 +395,25 @@ typedef enum vpp_pq_level_e {
     VPP_PQ_LV_MAX,
 } vpp_pq_level_t;
 
+typedef enum CTI_param_type_e {
+    CVD_YC_DELAY = 0,
+    DECODE_CTI,
+    SR0_CTI_GAIN0,
+    SR0_CTI_GAIN1,
+    SR0_CTI_GAIN2,
+    SR0_CTI_GAIN3,
+    SR1_CTI_GAIN0,
+    SR1_CTI_GAIN1,
+    SR1_CTI_GAIN2,
+    SR1_CTI_GAIN3,
+} CTI_param_type_t;
+
+typedef enum decode_luma_e {
+    VIDEO_DECODE_BRIGHTNESS,
+    VIDEO_DECODE_CONTRAST,
+    VIDEO_DECODE_SATURATION,
+} decode_luma_t;
+
 typedef struct source_input_param_s {
     tv_source_input_t source_input;
     enum tvin_sig_fmt_e sig_fmt;
@@ -476,5 +495,29 @@ typedef enum LD_bin_table_index_e {
     LD_BIN_BL_PROFILE,
     LD_BIN_BL_MAX,
 } LD_bin_table_index_t;
+
+typedef enum sharpness_param_type_e {
+    H_GAIN_HIGH,
+    H_GAIN_LOW,
+    V_GAIN_HIGH,
+    V_GAIN_LOW,
+    D_GAIN_HIGH,
+    D_GAIN_LOW,
+    HP_DIAG_CORE,
+    BP_DIAG_CORE,
+    PKGAIN_VSLUMALUT7,
+    PKGAIN_VSLUMALUT6,
+    PKGAIN_VSLUMALUT5 = 10,
+    PKGAIN_VSLUMALUT4,
+    PKGAIN_VSLUMALUT3,
+    PKGAIN_VSLUMALUT2,
+    PKGAIN_VSLUMALUT1,
+    PKGAIN_VSLUMALUT0,
+} sharpness_param_type_t;
+
+typedef enum sharpness_timing_e {
+    SHARPNESS_TIMING_SD = 0,
+    SHARPNESS_TIMING_HD,
+} sharpness_timing_t;
 
 #endif

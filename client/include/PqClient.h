@@ -153,6 +153,9 @@ public:
     int FactorySetGrayPattern(int value);
     int FactoryGetGrayPattern();
 
+    int FactoryGetSharpnessParams(int sourceInput, int sigFmt, int transFmt, int SDHD, int param_type);
+    int FactorySetSharpnessParams(int sourceInput, int sigFmt, int transFmt, int SDHD, int param_type, int val);
+
     int FactorySetDDRSSC(int step);
     int FactoryGetDDRSSC(void);
     int FactorySetLVDSSSCLevel(int level);
@@ -161,6 +164,26 @@ public:
     int FactoryGetLVDSSSCFrep(void);
     int FactorySetLVDSSSCMode(int mode);
     int FactoryGetLVDSSSCMode(void);
+    int FactorySetNolineParams(source_input_param_t source_input_param, int type, noline_params_t noline_params);
+    int FactorySetBrightnessNolineParams(source_input_param_t source_input_param, noline_params_t noline_params);
+    int FactorySetContrastNolineParams(source_input_param_t source_input_param, noline_params_t noline_params);
+    int FactorySetSaturationNolineParams(source_input_param_t source_input_param, noline_params_t noline_params);
+    int FactorySetHueNolineParams(source_input_param_t source_input_param, noline_params_t noline_params);
+    int FactorySetSharpnessNolineParams(source_input_param_t source_input_param, noline_params_t noline_params);
+    int FactorySetVolumeNolineParams(source_input_param_t source_input_param, noline_params_t noline_params);
+    noline_params_t FactoryGetNolineParams(source_input_param_t source_input_param, int type);
+    noline_params_t FactoryGetBrightnessNolineParams(source_input_param_t source_input_param);
+    noline_params_t FactoryGetContrastNolineParams(source_input_param_t source_input_param);
+    noline_params_t FactoryGetSaturationNolineParams(source_input_param_t source_input_param);
+    noline_params_t FactoryGetHueNolineParams(source_input_param_t source_input_param);
+    noline_params_t FactoryGetSharpnessNolineParams(source_input_param_t source_input_param);
+    noline_params_t FactoryGetVolumeNolineParams(source_input_param_t source_input_param);
+    int FactorySetColorParams(int tempMode, tvpq_rgb_ogo_t rgbogo);
+    int FactoryGetColorParams(int tempMode, tvpq_rgb_ogo_t *rgbogo);
+    int FactorySetDecodeLumaParams(int sourceInput, int sigFmt, int transFmt, int paramType, int value);
+    int FactoryGetDecodeLumaParams(int sourceInput, int sigFmt, int transFmt, int paramType);
+    int FactorySetHdmiColorRangeMode(int pq_type, int isEnable);
+    int FactoryGetHdmiColorRangeMode(int pq_type);
 
 private:
     void SendMethodCall(char *CmdString);

@@ -7523,6 +7523,150 @@ int CPQControl::SaveLVDSSSCParams(struct aml_lcd_ss_ctl_s *param)
     return ret;
 }
 
+int CPQControl::SetDecodeLumaParamsCheckVal(int param_type, int val)
+{
+    int ret = 0;
+    switch (param_type) {
+        case VIDEO_DECODE_BRIGHTNESS: {
+            if (val < 0 || val > 511) {
+                ret =  -1;
+            } else {
+                ret =  0;
+            }
+            break;
+        }
+        case VIDEO_DECODE_CONTRAST: {
+            if (val < 0 || val > 1023) {
+                ret =  -1;
+            } else {
+                ret =  0;
+            }
+            break;
+        }
+        case VIDEO_DECODE_SATURATION: {
+            if (val < 0 || val > 255) {
+                ret =  -1;
+            } else {
+                ret =  0;
+            }
+            break;
+        }
+        default:
+            break;
+    }
+    return ret;
+}
+
+int CPQControl::FactorySetDecodeLumaParams(source_input_param_t source_input_param, int param_type, int val)
+{
+    unsigned int tmp_val;
+    char tmp_buf[128];
+    int addr, reg_mask;
+    int bri_val, con_val;
+
+    if (SetDecodeLumaParamsCheckVal(param_type, val) < 0) {
+        LOGE("%s, error: val[%d] is out of range", __FUNCTION__, val);
+        return -1;
+    }
+
+    if (param_type == VIDEO_DECODE_BRIGHTNESS) {
+        addr = 0x157;
+        reg_mask = 0x1ff;
+    }else if (param_type == VIDEO_DECODE_CONTRAST) {
+        addr = 0x157;
+        reg_mask = 0x3ff0000;
+    }else if (param_type == VIDEO_DECODE_SATURATION) {
+        addr = DECODE_SAT_ADDR;
+        reg_mask = 0xff;
+    } else {
+        LOGE("%s, error: param_type[%d] is not supported", __FUNCTION__, param_type);
+        return -1;
+    }
+
+    tmp_val = mPQdb->PQ_GetCVD2Param(source_input_param, addr, param_type, reg_mask);
+    LOGD("%s, get value is %d, try to set value: %d\n", __FUNCTION__, tmp_val, val);
+
+    switch (param_type) {
+        case VIDEO_DECODE_BRIGHTNESS: {
+            tmp_val &=  ~0x1ff;
+            tmp_val |= val;
+            tmp_val |= (0x8 << 12);
+            tmp_val |= (0x8 << 28);
+
+            con_val = (mPQdb->PQ_GetCVD2Param(source_input_param, addr, VIDEO_DECODE_CONTRAST, 0x3ff0000) >> 16) & 0x3ff;
+            tmp_val |= (con_val << 16);
+            LOGD("%s: setting val is %d", __FUNCTION__, tmp_val);
+            sprintf(tmp_buf, "%s %x %x", "wv", tmp_val, 0x157);
+            pqWriteSys("/sys/class/tvafe/tvafe0/reg", tmp_buf);
+            break;
+        }
+        case VIDEO_DECODE_CONTRAST: {
+            tmp_val &= ~0x3ff0000;
+            tmp_val |= (val << 16);
+            tmp_val |= (0x8 << 12);
+            tmp_val |= (0x8 << 28);
+
+            bri_val = mPQdb->PQ_GetCVD2Param(source_input_param, addr, VIDEO_DECODE_BRIGHTNESS, 0x1ff) & 0x1ff;
+            tmp_val |= bri_val;
+            sprintf(tmp_buf, "%s %x %x", "wv", tmp_val, 0x157);
+            pqWriteSys("/sys/class/tvafe/tvafe0/reg", tmp_buf);
+            break;
+        }
+        case VIDEO_DECODE_SATURATION: {
+            tmp_val &= ~0xff;
+            tmp_val |= val;
+            sprintf(tmp_buf, "%s %x %x", "wv", tmp_val, DECODE_SAT_ADDR);
+            pqWriteSys("/sys/class/tvafe/tvafe0/reg", tmp_buf);
+            break;
+        }
+    }
+
+    mPQdb->PQ_SetCVD2Param(source_input_param, addr, tmp_val, param_type, reg_mask);
+
+    return 0;
+}
+
+int CPQControl::FactoryGetDecodeLumaParams(source_input_param_t source_input_param, int param_type)
+{
+    unsigned int rval = 0;
+    unsigned int reg_val = 0;
+    int addr, reg_mask;
+
+    if (param_type == VIDEO_DECODE_BRIGHTNESS) {
+        addr = 0x157;
+        reg_mask = 0x1ff;
+    }else if (param_type == VIDEO_DECODE_CONTRAST) {
+        addr = 0x157;
+        reg_mask = 0x3ff0000;
+    }else if (param_type == VIDEO_DECODE_SATURATION) {
+        addr = DECODE_SAT_ADDR;
+        reg_mask = 0xff;
+    } else {
+        LOGE("%s, error: param_type[%d] is not supported", __FUNCTION__, param_type);
+        return -1;
+    }
+
+    reg_val = mPQdb->PQ_GetCVD2Param(source_input_param, addr, param_type, reg_mask);
+
+    switch (param_type) {
+        case VIDEO_DECODE_BRIGHTNESS: {
+            rval = reg_val & 0x1ff;
+            break;
+        }
+        case VIDEO_DECODE_CONTRAST: {
+            rval = (reg_val >> 16) & 0x3ff;
+            break;
+        }
+        case VIDEO_DECODE_SATURATION: {
+            rval = reg_val & 0xff;
+            break;
+        }
+    }
+
+    LOGD("%s, type [%d], get reg_val: %u, ret val: %u\n", __FUNCTION__, param_type, reg_val, rval);
+    return rval;
+}
+
 int CPQControl::SetGrayPattern(int value) {
     if (value < 0) {
         value = 0;
@@ -8396,5 +8540,466 @@ int CPQControl::Cpq_SetHdrType(int data)
     }
 
     return 0;
+}
+
+int CPQControl::SetSharpnessParamsCheckVal(int param_type, int val)
+{
+    int ret = 0;
+    switch (param_type) {
+        case H_GAIN_HIGH:
+        case H_GAIN_LOW:
+        case V_GAIN_HIGH:
+        case V_GAIN_LOW:
+        case D_GAIN_HIGH:
+        case D_GAIN_LOW:
+        case PKGAIN_VSLUMALUT7:
+        case PKGAIN_VSLUMALUT6:
+        case PKGAIN_VSLUMALUT5:
+        case PKGAIN_VSLUMALUT4:
+        case PKGAIN_VSLUMALUT3:
+        case PKGAIN_VSLUMALUT2:
+        case PKGAIN_VSLUMALUT1:
+        case PKGAIN_VSLUMALUT0: {
+            if (val < 0 || val > 15) {
+                ret =  -1;
+            } else {
+                ret = 0;
+            }
+            break;
+        }
+        case HP_DIAG_CORE:
+        case BP_DIAG_CORE: {
+            if (val < 0 || val > 63) {
+                ret =  -1;
+            } else {
+                ret = 0;
+            }
+            break;
+        }
+    }
+
+    return ret;
+}
+
+int CPQControl::MatchSharpnessRegAddr(int param_type, int isHd)
+{
+    if (isHd) {
+        if (param_type >= H_GAIN_HIGH && param_type <= D_GAIN_LOW) {
+            return SHARPNESS_HD_GAIN;
+        } else if (param_type == HP_DIAG_CORE) {
+            return SHARPNESS_HD_HP_DIAG_CORE;
+        } else if (param_type == BP_DIAG_CORE) {
+            return SHARPNESS_HD_BP_DIAG_CORE;
+        } else if (param_type >= PKGAIN_VSLUMALUT7 && param_type <=PKGAIN_VSLUMALUT0) {
+            return SHARPNESS_HD_PKGAIN_VSLUMA;
+        } else {
+            LOGD("%s, error: param_type[%d] is not supported", __FUNCTION__, param_type);
+            return -1;
+        }
+    }
+
+    if (param_type >= H_GAIN_HIGH && param_type <= D_GAIN_LOW) {
+        return SHARPNESS_SD_GAIN;
+    } else if (param_type == HP_DIAG_CORE) {
+        return SHARPNESS_SD_HP_DIAG_CORE;
+    } else if (param_type == BP_DIAG_CORE) {
+        return SHARPNESS_SD_BP_DIAG_CORE;
+    } else if (param_type >= PKGAIN_VSLUMALUT7 && param_type <=PKGAIN_VSLUMALUT0) {
+        return SHARPNESS_SD_PKGAIN_VSLUMA;
+    } else {
+        LOGD("%s, error: param_type[%d] is not supported", __FUNCTION__, param_type);
+        return -1;
+    }
+    return -1;
+}
+
+unsigned int CPQControl::GetSharpnessRegVal(int addr)
+{
+    char tmp_buf[128] = {0};
+    char rval[32] = {0};
+
+    sprintf(tmp_buf, "%s %x", "r", addr);
+    pqWriteSys(PQ_SET_RW_INTERFACE, tmp_buf);
+    pqReadSys(PQ_SET_RW_INTERFACE, rval, sizeof(rval));
+    return atoi(rval);
+}
+
+int CPQControl::FactorySetSharpnessParams(source_input_param_t source_input_param, sharpness_timing_t source_timing, int param_type, int val)
+{
+    int tmp_val;
+    char tmp_buf[128];
+    int addr;
+
+    if (SetSharpnessParamsCheckVal(param_type, val) < 0) {
+        LOGD("%s, error: val[%d] is out of range", __FUNCTION__, val);
+        return -1;
+    }
+
+    addr = MatchSharpnessRegAddr(param_type, source_timing);
+    tmp_val = mPQdb->PQ_GetSharpnessAdvancedParams(source_input_param, addr, source_timing);
+    if (tmp_val == 0) {
+        tmp_val = GetSharpnessRegVal(addr);
+    }
+
+    LOGD("%s, get value is %d, try to set value: %d\n", __FUNCTION__, tmp_val, val);
+
+    switch (param_type) {
+        case H_GAIN_HIGH: {
+            LOGD("%s, type [%d], get val: %u\n", __FUNCTION__, param_type, tmp_val);
+            tmp_val = tmp_val & (~(0xf << 28));
+            LOGD("%s, type [%d], get val: %u\n", __FUNCTION__, param_type, tmp_val);
+            tmp_val |= (val << 28);
+            LOGD("%s, setting value : %u", __FUNCTION__, tmp_val);
+            sprintf(tmp_buf, "%s %x %x", "w", SHARPNESS_SD_GAIN, tmp_val);
+            pqWriteSys( PQ_SET_RW_INTERFACE, tmp_buf);
+            break;
+        }
+        case H_GAIN_LOW: {
+            LOGD("%s, type [%d], get val: %d\n", __FUNCTION__, param_type, tmp_val);
+            tmp_val &= (~(0xf << 12));
+            tmp_val |= (val << 12);
+            LOGD("%s, setting value : %d", __FUNCTION__, tmp_val);
+            sprintf(tmp_buf, "%s %x %x", "w", SHARPNESS_SD_GAIN, tmp_val);
+            pqWriteSys(PQ_SET_RW_INTERFACE, tmp_buf);
+            break;
+        }
+        case V_GAIN_HIGH: {
+            tmp_val &= (~(0xf << 24));
+            tmp_val |= (val << 24);
+            sprintf(tmp_buf, "%s %x %x", "w", SHARPNESS_SD_GAIN, tmp_val);
+            pqWriteSys(PQ_SET_RW_INTERFACE, tmp_buf);
+            break;
+        }
+        case V_GAIN_LOW: {
+            tmp_val &= ~(0xf << 8);
+            tmp_val |= (val << 8);
+            sprintf(tmp_buf, "%s %x %x", "w", SHARPNESS_SD_GAIN, tmp_val);
+            pqWriteSys(PQ_SET_RW_INTERFACE, tmp_buf);
+            break;
+        }
+        case D_GAIN_HIGH: {
+            tmp_val &= ~(0xf << 20);
+            tmp_val |= (val << 20);
+            sprintf(tmp_buf, "%s %x %x", "w", SHARPNESS_SD_GAIN, tmp_val);
+            pqWriteSys(PQ_SET_RW_INTERFACE, tmp_buf);
+            break;
+        }
+        case D_GAIN_LOW: {
+            tmp_val &= ~(0xf << 4);
+            tmp_val |= (val << 4);
+            sprintf(tmp_buf, "%s %x %x", "w", SHARPNESS_SD_GAIN, tmp_val);
+            pqWriteSys(PQ_SET_RW_INTERFACE, tmp_buf);
+            break;
+        }
+        case HP_DIAG_CORE: {
+            tmp_val &= ~0x3f;
+            tmp_val |= val;
+            sprintf(tmp_buf, "%s %x %x", "w", SHARPNESS_SD_HP_DIAG_CORE, tmp_val);
+            pqWriteSys(PQ_SET_RW_INTERFACE, tmp_buf);
+            break;
+        }
+        case BP_DIAG_CORE: {
+            tmp_val &= ~0x3f;
+            tmp_val |= val;
+            sprintf(tmp_buf, "%s %x %x", "w", SHARPNESS_SD_BP_DIAG_CORE, tmp_val);
+            pqWriteSys(PQ_SET_RW_INTERFACE, tmp_buf);
+            break;
+        }
+        case PKGAIN_VSLUMALUT7: {
+            tmp_val &= ~(0xf << 28);
+            tmp_val |= (val << 28);
+            sprintf(tmp_buf, "%s %x %x", "w", SHARPNESS_SD_PKGAIN_VSLUMA, tmp_val);
+            pqWriteSys(PQ_SET_RW_INTERFACE, tmp_buf);
+            break;
+        }
+        case PKGAIN_VSLUMALUT6: {
+            tmp_val &= ~(0xf << 24);
+            tmp_val |= (val << 24);
+            sprintf(tmp_buf, "%s %x %x", "w", SHARPNESS_SD_PKGAIN_VSLUMA, tmp_val);
+            pqWriteSys(PQ_SET_RW_INTERFACE, tmp_buf);
+            break;
+        }
+        case PKGAIN_VSLUMALUT5: {
+            tmp_val &= ~(0xf << 20);
+            tmp_val |= (val << 20);
+            sprintf(tmp_buf, "%s %x %x", "w", SHARPNESS_SD_PKGAIN_VSLUMA, tmp_val);
+            pqWriteSys(PQ_SET_RW_INTERFACE, tmp_buf);
+            break;
+        }
+        case PKGAIN_VSLUMALUT4: {
+            tmp_val &= ~(0xf << 16);
+            tmp_val |= (val << 16);
+            sprintf(tmp_buf, "%s %x %x", "w", SHARPNESS_SD_PKGAIN_VSLUMA, tmp_val);
+            pqWriteSys(PQ_SET_RW_INTERFACE, tmp_buf);
+            break;
+        }
+        case PKGAIN_VSLUMALUT3: {
+            tmp_val &= ~(0xf << 12);
+            tmp_val |= (val << 12);
+            sprintf(tmp_buf, "%s %x %x", "w", SHARPNESS_SD_PKGAIN_VSLUMA, tmp_val);
+            pqWriteSys(PQ_SET_RW_INTERFACE, tmp_buf);
+            break;
+        }
+        case PKGAIN_VSLUMALUT2: {
+            tmp_val &= ~(0xf << 8);
+            tmp_val |= (val << 8);
+            sprintf(tmp_buf, "%s %x %x", "w", SHARPNESS_SD_PKGAIN_VSLUMA, tmp_val);
+            pqWriteSys(PQ_SET_RW_INTERFACE, tmp_buf);
+            break;
+        }
+        case PKGAIN_VSLUMALUT1: {
+            tmp_val &= ~(0xf << 4);
+            tmp_val |= (val << 4);
+            sprintf(tmp_buf, "%s %x %x", "w", SHARPNESS_SD_PKGAIN_VSLUMA, tmp_val);
+            pqWriteSys(PQ_SET_RW_INTERFACE, tmp_buf);
+            break;
+        }
+        case PKGAIN_VSLUMALUT0: {
+            tmp_val &= ~0xf;
+            tmp_val |= val;
+            sprintf(tmp_buf, "%s %x %x", "w", SHARPNESS_SD_PKGAIN_VSLUMA, tmp_val);
+            pqWriteSys(PQ_SET_RW_INTERFACE, tmp_buf);
+            break;
+        }
+        default:
+            break;
+    }
+
+    mPQdb->PQ_SetSharpnessAdvancedParams(source_input_param, addr, tmp_val, source_timing);
+
+    return 0;
+}
+
+int CPQControl::FactoryGetSharpnessParams(source_input_param_t source_input_param, sharpness_timing_t source_timing, int param_type)
+{
+    unsigned int rval = 0;
+    unsigned int reg_val = 0;
+    int addr;
+
+    addr = MatchSharpnessRegAddr(param_type, source_timing);
+    reg_val = mPQdb->PQ_GetSharpnessAdvancedParams(source_input_param, addr, source_timing);
+    if (reg_val == 0)
+    {
+        reg_val = GetSharpnessRegVal(addr);
+    }
+
+    switch (param_type) {
+        case H_GAIN_HIGH: {
+            LOGD("%s, type [%d], get val: %u\n", __FUNCTION__, param_type, reg_val);
+            rval = (reg_val >> 28) & 0xf;
+            LOGD("%s, type [%d], get val: %u\n", __FUNCTION__, param_type, rval);
+            break;
+        }
+        case H_GAIN_LOW: {
+            rval = (reg_val >> 12) & 0xf;
+            break;
+        }
+        case V_GAIN_HIGH: {
+            rval = (reg_val >> 24) & 0xf;
+            break;
+        }
+        case V_GAIN_LOW: {
+            rval = (reg_val >> 8) & 0xf;
+            break;
+        }
+        case D_GAIN_HIGH: {
+            rval = (reg_val >> 20) & 0xf;
+            break;
+        }
+        case D_GAIN_LOW: {
+            rval = (reg_val >> 4) & 0xf;
+            break;
+        }
+        case HP_DIAG_CORE: {
+            rval = reg_val & 0x3f;
+            break;
+        }
+        case BP_DIAG_CORE: {
+            rval = reg_val & 0x3f;
+            break;
+        }
+        case PKGAIN_VSLUMALUT7: {
+            rval = (reg_val >> 28) & 0xf;
+            break;
+        }
+        case PKGAIN_VSLUMALUT6: {
+            rval = (reg_val >> 24) & 0xf;
+            break;
+        }
+        case PKGAIN_VSLUMALUT5: {
+            rval = (reg_val >> 20) & 0xf;
+            break;
+        }
+        case PKGAIN_VSLUMALUT4: {
+            rval = (reg_val >> 16) & 0xf;
+            break;
+        }
+        case PKGAIN_VSLUMALUT3: {
+            rval = (reg_val >> 12) & 0xf;
+            break;
+        }
+        case PKGAIN_VSLUMALUT2: {
+            rval = (reg_val >> 8) & 0xf;
+            break;
+        }
+        case PKGAIN_VSLUMALUT1: {
+            rval = (reg_val >> 4) & 0xf;
+            break;
+        }
+        case PKGAIN_VSLUMALUT0: {
+            rval = reg_val & 0xf;
+            break;
+        }
+        default:
+            break;
+    }
+
+    LOGD("%s, type [%d], get reg_val: %u, ret val: %u\n", __FUNCTION__, param_type, reg_val, rval);
+    return rval;
+}
+
+int CPQControl::SetHdmiColorRangeMode(int pq_type, int isEnable)
+{
+    char pq_enable_buf[128];
+
+    LOGD("%s pq_type =%d , isEnable =%d \n",__FUNCTION__,pq_type, isEnable);
+    switch (pq_type) {
+        case ALL: {
+            if (!isEnable) {
+                sprintf(pq_enable_buf, "%s", "vpp_pq disable");
+            } else {
+                sprintf(pq_enable_buf, "%s", "vpp_pq enable");
+            }
+            pqWriteSys("/sys/class/amvecm/debug", pq_enable_buf);
+            break;
+        }
+        case COLOR: {
+            if (!isEnable) {
+                sprintf(pq_enable_buf, "%s", "0");
+            } else {
+                sprintf(pq_enable_buf, "%s", "1");
+            }
+            pqWriteSys("/sys/module/aml_media/parameters/cm_en", pq_enable_buf);
+            break;
+        }
+        case SHARPNESS_SD: {
+            break;
+        }
+        case SHARPNESS_HD: {
+            break;
+        }
+        case _3D_NR_GAIN: {
+            if (!isEnable) {
+                sprintf(pq_enable_buf, "%s %x %x %x %x", "bw", 0x2dff, 0, 18, 1);
+            } else {
+                sprintf(pq_enable_buf, "%s %x %x %x %x", "bw", 0x2dff, 1, 18, 1);
+            }
+            pqWriteSys("/sys/class/amvecm/pq_reg_rw", pq_enable_buf);
+            break;
+        }
+        case _2D_NR_GAIN: {
+            if (!isEnable) {
+                sprintf(pq_enable_buf, "%s %x %x %x %x", "bw", 0x2dff, 0, 4, 1);
+            } else {
+                sprintf(pq_enable_buf, "%s %x %x %x %x", "bw", 0x2dff, 1, 4, 1);
+            }
+            pqWriteSys("/sys/class/amvecm/pq_reg_rw", pq_enable_buf);
+            break;
+        }
+        case DCI: {
+            if (!isEnable) {
+                Cpq_SetDNLPStatus(DNLP_OFF);
+            } else {
+                Cpq_SetDNLPStatus(DNLP_ON);
+            }
+            break;
+        }
+        case GAMMA: {
+            if (!isEnable) {
+                sprintf(pq_enable_buf, "%s", "gamma disable");
+            } else {
+                sprintf(pq_enable_buf, "%s", "gamma enable");
+            }
+            pqWriteSys("/sys/class/amvecm/debug", pq_enable_buf);
+            break;
+        }
+        case FMD: {
+            if (!isEnable) {
+                sprintf(pq_enable_buf, "%s", "37 0");
+            } else {
+                sprintf(pq_enable_buf, "%s", "37 1");
+            }
+            pqWriteSys("/sys/kernel/debug/di_top/mw_di", pq_enable_buf);
+            break;
+        }
+        case CTI_SR0: {
+            if (!isEnable) {
+               sprintf(pq_enable_buf, "%s %x %x %x %x", "bw", 0x322e, 0, 28, 1);
+            } else {
+                sprintf(pq_enable_buf, "%s %x %x %x %x", "bw", 0x322e, 1, 28, 1);
+            }
+            pqWriteSys("/sys/class/amvecm/pq_reg_rw", pq_enable_buf);
+            break;
+        }
+        case CTI_SR1: {
+            if (!isEnable) {
+                sprintf(pq_enable_buf, "%s %x %x %x %x", "bw", 0x32ae, 0, 28, 1);
+            } else {
+                sprintf(pq_enable_buf, "%s %x %x %x %x", "bw", 0x32ae, 1, 28, 1);
+            }
+            pqWriteSys("/sys/class/amvecm/pq_reg_rw", pq_enable_buf);
+            break;
+        }
+        case DEJAGGY_SR0: {
+            if (!isEnable) {
+                sprintf(pq_enable_buf, "%s", "sr0_dejaggy_dis");
+            } else {
+                sprintf(pq_enable_buf, "%s", "sr0_dejaggy_en");
+            }
+            pqWriteSys("/sys/class/amvecm/pq_user_set", pq_enable_buf);
+            break;
+        }
+        case DEJAGGY_SR1: {
+            if (!isEnable) {
+                sprintf(pq_enable_buf, "%s", "sr1_dejaggy_dis");
+            } else {
+                sprintf(pq_enable_buf, "%s", "sr1_dejaggy_en");
+            }
+            pqWriteSys("/sys/class/amvecm/pq_user_set", pq_enable_buf);
+            break;
+        }
+        case DRT_SR0: {
+            if (!isEnable) {
+                sprintf(pq_enable_buf, "%s", "sr0_derec_dis");
+            } else {
+                sprintf(pq_enable_buf, "%s", "sr0_derec_en");
+            }
+            pqWriteSys("/sys/class/amvecm/pq_user_set", pq_enable_buf);
+            break;
+        }
+        case DRT_SR1: {
+            if (!isEnable) {
+                sprintf(pq_enable_buf, "%s", "sr1_derec_dis");
+            } else {
+                sprintf(pq_enable_buf, "%s", "sr1_derec_en");
+            }
+            pqWriteSys("/sys/class/amvecm/pq_user_set", pq_enable_buf);
+            break;
+        }
+        case BLACK_STRETCH: {
+            break;
+        }
+        default:
+            break;
+    }
+
+    return 0;
+}
+
+int CPQControl::GetHdmiColorRangeMode(int pq_type)
+{
+    int ret = -1;
+
+    return ret;
 }
 
