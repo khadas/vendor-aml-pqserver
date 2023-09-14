@@ -3687,12 +3687,12 @@ int CPQControl::Cpq_LoadGamma(vpp_gamma_curve_t gamma_curve)
     return ret;
 }
 
-int CPQControl::Cpq_SetGammaTbl_R(unsigned short red[256])
+int CPQControl::Cpq_SetGammaTbl_R(unsigned short red[GAMMA_NUMBER])
 {
     struct tcon_gamma_table_s Redtbl;
     int ret = -1, i = 0;
 
-    for (i = 0; i < 256; i++) {
+    for (i = 0; i < GAMMA_NUMBER; i++) {
         Redtbl.data[i] = red[i];
     }
 
@@ -3703,12 +3703,12 @@ int CPQControl::Cpq_SetGammaTbl_R(unsigned short red[256])
     return ret;
 }
 
-int CPQControl::Cpq_SetGammaTbl_G(unsigned short green[256])
+int CPQControl::Cpq_SetGammaTbl_G(unsigned short green[GAMMA_NUMBER])
 {
     struct tcon_gamma_table_s Greentbl;
     int ret = -1, i = 0;
 
-    for (i = 0; i < 256; i++) {
+    for (i = 0; i < GAMMA_NUMBER; i++) {
         Greentbl.data[i] = green[i];
     }
 
@@ -3720,12 +3720,12 @@ int CPQControl::Cpq_SetGammaTbl_G(unsigned short green[256])
     return ret;
 }
 
-int CPQControl::Cpq_SetGammaTbl_B(unsigned short blue[256])
+int CPQControl::Cpq_SetGammaTbl_B(unsigned short blue[GAMMA_NUMBER])
 {
     struct tcon_gamma_table_s Bluetbl;
     int ret = -1, i = 0;
 
-    for (i = 0; i < 256; i++) {
+    for (i = 0; i < GAMMA_NUMBER; i++) {
         Bluetbl.data[i] = blue[i];
     }
 

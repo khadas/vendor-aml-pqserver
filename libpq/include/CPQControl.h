@@ -409,9 +409,9 @@ public:
     int Cpq_SetRGBOGO(const struct tcon_rgb_ogo_s *rgbogo);
     int Cpq_GetRGBOGO(const struct tcon_rgb_ogo_s *rgbogo);
     int Cpq_LoadGamma(vpp_gamma_curve_t gamma_curve);
-    int Cpq_SetGammaTbl_R(unsigned short red[256]);
-    int Cpq_SetGammaTbl_G(unsigned short green[256]);
-    int Cpq_SetGammaTbl_B(unsigned short blue[256]);
+    int Cpq_SetGammaTbl_R(unsigned short red[GAMMA_NUMBER]);
+    int Cpq_SetGammaTbl_G(unsigned short green[GAMMA_NUMBER]);
+    int Cpq_SetGammaTbl_B(unsigned short blue[GAMMA_NUMBER]);
     int Cpq_SetGammaOnOff(int onoff);
     int FactorySetDNLPCurveParams(source_input_param_t source_input_param, int level, int final_gain);
     int FactoryGetDNLPCurveParams(source_input_param_t source_input_param, int level);
