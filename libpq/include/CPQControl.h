@@ -613,9 +613,9 @@ private:
     CDolbyVision *mDolbyVision;
 
     tcon_rgb_ogo_t rgbfrompq[3];
-    source_input_param_t mCurentSourceInputInfo;
+    source_input_param_t mCurrentSourceInputInfo;
     tv_source_input_t mSourceInputForSaveParam;
-    pq_src_param_t mCurentPqSource;
+    pq_src_param_t mCurrentPqSource;
     hdr_type_t mCurrentHdrType = HDR_TYPE_NONE;
     tvin_parm_t mCurrentSignalInfo;
     tvin_inputparam_t mCurrentTvinInfo;

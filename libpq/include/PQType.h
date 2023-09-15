@@ -567,7 +567,7 @@ typedef enum vpp_picture_mode_e {
 } vpp_picture_mode_t;
 
 typedef enum pq_sig_fmt_e {
-    PQ_FMT_DEFAUT = 0,
+    PQ_FMT_DEFAULT = 0,
     PQ_FMT_SDR,
     PQ_FMT_HDR,
     PQ_FMT_HDRP,
