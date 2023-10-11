@@ -1381,6 +1381,90 @@ int PqClient::ResetPictureUiSetting(void)
     return ret;
 }
 
+int PqClient::SetColorCustomize(int color, int type, int value, int isSave)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d.%d.%d", PQ_SET_COLOR_CUSTOMIZE, color, type, value, isSave);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+vpp_single_color_param_cm_t PqClient::GetColorCustomize(int color)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+
+    sprintf(buf, "pq.get.%d.%d", PQ_GET_COLOR_CUSTOMIZE, color);
+    SendMethodCall(buf);
+    SplitRetBuf(mRetBuf);
+
+    vpp_single_color_param_cm_t color_param;
+    color_param.sat = atoi(mRet[0].c_str());
+    color_param.hue = atoi(mRet[1].c_str());
+    color_param.luma = atoi(mRet[2].c_str());
+
+    return color_param;
+}
+
+int PqClient::SetColorCustomizeBy3DLut(int color, int type, int value, int isSave)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d.%d.%d", PQ_SET_COLOR_CUSTOMIZE_3DLUT, color, type, value, isSave);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+vpp_single_color_param_3dlut_t PqClient::GetColorCustomizeBy3DLut(int color)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+
+    sprintf(buf, "pq.get.%d.%d", PQ_GET_COLOR_CUSTOMIZE_3DLUT, color);
+    SendMethodCall(buf);
+    SplitRetBuf(mRetBuf);
+
+    vpp_single_color_param_3dlut_t color_param;
+    color_param.red = atoi(mRet[0].c_str());
+    color_param.green = atoi(mRet[1].c_str());
+    color_param.blue = atoi(mRet[2].c_str());
+
+    return color_param;
+}
+
+int PqClient::ResetColorCustomize(int mode)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d", PQ_RESET_COLOR_CUSTOMIZE, mode);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
 //PQ Factory cmd
 int PqClient::FactoryResetPQMode(void)
 {

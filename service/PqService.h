@@ -18,7 +18,7 @@
 using namespace android;
 
 typedef struct pq_moudle_param_s {
-    int moudleId;        //moudleId according to tvcmd.h
+    int moduleId;        //moduleId according to tvcmd.h
     int paramLength;     //length of parambuf
     int paramBuf[20];    //param for action
 } pq_moudle_param_t;

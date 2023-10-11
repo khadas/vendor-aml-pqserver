@@ -390,7 +390,7 @@ dolby_pq_mode_t CDolbyVision::MappingPQModeToAmdolbyVisionPQMode(enum hdr_type_e
         break;
     }
 
-    LOGD("%s: curent hdr type is %d, PQmode is %d, amdolby PQmode is %d.\n",
+    LOGD("%s: current hdr type is %d, PQmode is %d, amdolby PQmode is %d.\n",
              __FUNCTION__, hdrType, pq_mode, amdolbyMode);
 */
     return amdolbyMode;

@@ -539,7 +539,7 @@ int CPQdb::PQ_GetSmoothPlusParams(vpp_smooth_plus_mode_t smoothplus_mode, source
     return rval;
 }
 
-int CPQdb::PQ_GetDemoSquitoParams(vpp_DemoSquito_mode_e dem_mode, source_input_param_t source_input_param,  am_regs_t *regs)
+int CPQdb::PQ_GetDemoSquitoParams(vpp_demosquito_mode_e dem_mode, source_input_param_t source_input_param,  am_regs_t *regs)
 {
     int rval = -1;
     std::string TableName = GetTableName("GeneralDemosquitoTable", source_input_param);

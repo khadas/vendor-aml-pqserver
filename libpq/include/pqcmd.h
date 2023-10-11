@@ -11,7 +11,7 @@
 
 typedef enum pqcmd_e {
     //PQ CMD(201~299)
-    PQ_MOUDLE_CMD_START           = 200,
+    PQ_MODULE_CMD_START           = 200,
     PQ_SET_PICTURE_MODE           = 201,
     PQ_GET_PICTURE_MODE           = 202,
     PQ_SET_COLOR_TEMPERATURE_MODE = 203,
@@ -79,8 +79,13 @@ typedef enum pqcmd_e {
     PQ_GET_MPEGNR                 = 265,
     PQ_GET_COLORTEMP_USER_PARAM   = 266,
     PQ_SET_PICTURE_UI_CLEAR       = 267,
+    PQ_SET_COLOR_CUSTOMIZE        = 268,
+    PQ_GET_COLOR_CUSTOMIZE        = 269,
+    PQ_SET_COLOR_CUSTOMIZE_3DLUT  = 270,
+    PQ_GET_COLOR_CUSTOMIZE_3DLUT  = 271,
+    PQ_RESET_COLOR_CUSTOMIZE      = 272,
 
-    PQ_MOUDLE_CMD_MAX             = 299,
+    PQ_MODULE_CMD_MAX             = 299,
     //PQ factory(300~399)
     PQ_FACTORY_CMD_START                      = 300,
     PQ_FACTORY_RESET_PICTURE_MODE             = 301,

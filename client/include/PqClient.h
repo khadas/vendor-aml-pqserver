@@ -118,6 +118,11 @@ public:
     int SetMpegNr(int mode, int isSave);
     int GetMpegNr();
     int ResetPictureUiSetting(void);
+    int SetColorCustomize(int color, int type, int value, int isSave);
+    vpp_single_color_param_cm_t GetColorCustomize(int color);
+    int SetColorCustomizeBy3DLut(int color, int type, int value, int isSave);
+    vpp_single_color_param_3dlut_t GetColorCustomizeBy3DLut(int color);
+    int ResetColorCustomize(int mode);
 
     int FactoryResetPQMode(void);
     int FactoryResetColorTemp(void);

@@ -345,10 +345,10 @@ public:
     int SaveDeblockMode(vpp_deblock_mode_t mode);
     int Cpq_SetDeblockMode(vpp_deblock_mode_t deblock_mode, source_input_param_t source_input_param);
     //DI demosquito
-    int SetDemoSquitoMode(vpp_DemoSquito_mode_t mode, int is_save);
+    int SetDemoSquitoMode(vpp_demosquito_mode_t mode, int is_save);
     int GetDemoSquitoMode(void);
-    int SaveDemoSquitoMode(vpp_DemoSquito_mode_t mode);
-    int Cpq_SetDemoSquitoMode(vpp_DemoSquito_mode_t DeMosquito_mode, source_input_param_t source_input_param);
+    int SaveDemoSquitoMode(vpp_demosquito_mode_t mode);
+    int Cpq_SetDemoSquitoMode(vpp_demosquito_mode_t DeMosquito_mode, source_input_param_t source_input_param);
     //DI MCDI
     int SetMcDiMode(vpp_mcdi_mode_e mode, int is_save);
     int GetMcDiMode(void);
@@ -361,6 +361,12 @@ public:
     int SaveColorBaseModeAllSrc(int value, vpp_picture_mode_t pq_mode);
     int SaveColorBaseMode(vpp_color_basemode_t basemode);
     int Cpq_SetColorBaseMode(vpp_color_basemode_t basemode, source_input_param_t source_input_param);
+    //color customize
+    int SetColorCustomize(vpp_cms_color_t color, vpp_cms_type_t type, int value, int isSave);
+    vpp_single_color_param_cm_t GetColorCustomize(vpp_cms_color_t color);
+    int SetColorCustomizeBy3DLut(vpp_cms_6color_t color, vpp_cms_type_t type, int value, int isSave);
+    vpp_single_color_param_3dlut_t GetColorCustomizeBy3DLut(vpp_cms_6color_t color);
+    int ResetColorCustomize(vpp_cms_method_t mode);
 
     //BlackExtension
     int SetBlackExtensionParam(source_input_param_t source_input_param);
@@ -568,6 +574,14 @@ private:
     bool CheckPQModeTableInDb(void);
     int Cpq_SetVadjEnableStatus(int isvadj1Enable, int isvadj2Enable);
     int SetPqModeForDvGame(void);
+
+    //color customize
+    int SaveColorCustomize(vpp_cms_color_t color, vpp_cms_type_t type, int value);
+    int Cpq_SetColorCustomize(vpp_cms_color_t color, vpp_cms_type_t type, int value);
+    int SaveColorCustomizeBy3DLut(vpp_cms_6color_t color, vpp_cms_type_t type, int value);
+    int Cpq_SetColorCustomizeBy3DLut(vpp_cms_6color_t color, vpp_cms_type_t type, int value);
+    int Cpq_GetColorCustomizeDefValue(vpp_cms_cm_param_t *pCmsCm, vpp_cms_3dlut_param_t *pCms3DLut);
+
     bool mInitialized;
     //cfg
     bool mbCpqCfg_seperate_db_enable;

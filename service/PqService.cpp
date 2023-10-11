@@ -88,11 +88,11 @@ int PqService::SplitCommand(const char *commandData)
 int PqService::SetCmd(pq_moudle_param_t param)
 {
     int ret = 0;
-    int moudleId = param.moudleId;
+    int moduleId = param.moduleId;
     bool enable = false;
 
-    if (((moudleId >= PQ_MOUDLE_CMD_START) && (moudleId <= PQ_MOUDLE_CMD_MAX))
-        || ((moudleId >= PQ_FACTORY_CMD_START) || (moudleId <= PQ_FACTORY_CMD_MAX))) {
+    if (((moduleId >= PQ_MODULE_CMD_START) && (moduleId <= PQ_MODULE_CMD_MAX))
+        || ((moduleId >= PQ_FACTORY_CMD_START) || (moduleId <= PQ_FACTORY_CMD_MAX))) {
         int paramData[32] = {0};
         int i = 0;
         source_input_param_t source_input_param;
@@ -106,7 +106,7 @@ int PqService::SetCmd(pq_moudle_param_t param)
             paramData[i] = param.paramBuf[i];
         }
 
-        switch (moudleId) {
+        switch (moduleId) {
         case PQ_SET_PICTURE_MODE:
             ret = mpPQcontrol->SetPQMode(paramData[0], paramData[1]);
             break;
@@ -184,7 +184,7 @@ int PqService::SetCmd(pq_moudle_param_t param)
             ret = mpPQcontrol->SetDeblockMode((vpp_deblock_mode_t)paramData[0], paramData[1]);
             break;
         case PQ_SET_DEMOSQUITO:
-            ret = mpPQcontrol->SetDemoSquitoMode((vpp_DemoSquito_mode_t)paramData[0], paramData[1]);
+            ret = mpPQcontrol->SetDemoSquitoMode((vpp_demosquito_mode_t)paramData[0], paramData[1]);
             break;
         case PQ_SET_BLACKSTRETCH:
             ret = mpPQcontrol->SetBlackStretch(paramData[0], paramData[1]);
@@ -204,6 +204,15 @@ int PqService::SetCmd(pq_moudle_param_t param)
             break;
         case PQ_SET_PICTURE_UI_CLEAR:
             mpPQcontrol->resetCurSrcPqUiSetting();
+            break;
+        case PQ_SET_COLOR_CUSTOMIZE:
+            ret = mpPQcontrol->SetColorCustomize((vpp_cms_color_t)paramData[0], (vpp_cms_type_t)paramData[1], paramData[2], paramData[3]);
+            break;
+        case PQ_SET_COLOR_CUSTOMIZE_3DLUT:
+            ret = mpPQcontrol->SetColorCustomizeBy3DLut((vpp_cms_6color_t)paramData[0], (vpp_cms_type_t)paramData[1], paramData[2], paramData[3]);
+            break;
+        case PQ_RESET_COLOR_CUSTOMIZE:
+            ret = mpPQcontrol->ResetColorCustomize((vpp_cms_method_t)paramData[0]);
             break;
 
         //Factory cmd
@@ -337,7 +346,7 @@ int PqService::SetCmd(pq_moudle_param_t param)
             break;
         }
     } else {
-        LOGE("%s: invalid PQ cmd: %d\n", __FUNCTION__, moudleId);
+        LOGE("%s: invalid PQ cmd: %d\n", __FUNCTION__, moduleId);
         ret = -1;
     }
 
@@ -347,27 +356,31 @@ int PqService::SetCmd(pq_moudle_param_t param)
 char* PqService::GetCmd(pq_moudle_param_t param)
 {
     int ret = 0;
-    int moudleId = param.moudleId;
+    int moduleId = param.moduleId;
     bool enable = false;
 
-    if (((moudleId >= PQ_MOUDLE_CMD_START) && (moudleId <= PQ_MOUDLE_CMD_MAX))
-        || ((moudleId >= PQ_FACTORY_CMD_START) || (moudleId <= PQ_FACTORY_CMD_MAX))) {
+    if (((moduleId >= PQ_MODULE_CMD_START) && (moduleId <= PQ_MODULE_CMD_MAX))
+        || ((moduleId >= PQ_FACTORY_CMD_START) || (moduleId <= PQ_FACTORY_CMD_MAX))) {
         int paramData[32] = {0};
         int i = 0;
         source_input_param_t source_input_param;
         tvin_cutwin_t overscanParam;
         tvpq_rgb_ogo_t rgbogo;
         tcon_rgb_ogo_t tcon_rgbogo;
+        vpp_single_color_param_cm_t cms_cm;
+        vpp_single_color_param_3dlut_t cms_3dlut;
         memset(&source_input_param, 0, sizeof(source_input_param_t));
         memset(&overscanParam, 0, sizeof(tvin_cutwin_t));
         memset(&rgbogo, 0, sizeof(tvpq_rgb_ogo_t));
         memset(&tcon_rgbogo, 0, sizeof(tcon_rgb_ogo_t));
+        memset(&cms_cm, 0, sizeof(vpp_single_color_param_cm_t));
+        memset(&cms_3dlut, 0, sizeof(vpp_single_color_param_3dlut_t));
 
         for (i = 0; i < param.paramLength; i++) {
             paramData[i] = param.paramBuf[i];
         }
 
-        switch (moudleId) {
+        switch (moduleId) {
         case PQ_GET_PICTURE_MODE:
             ret = mpPQcontrol->GetPQMode();
             break;
@@ -477,6 +490,14 @@ char* PqService::GetCmd(pq_moudle_param_t param)
             rgbogo = mpPQcontrol->GetColorTemperatureUserParam();
             sprintf(mRetBuf, "%d.%d.%d.%d.%d.%d.%d.%d.%d.%d", rgbogo.en, rgbogo.r_pre_offset, rgbogo.g_pre_offset, rgbogo.b_pre_offset,
                     rgbogo.r_gain, rgbogo.g_gain, rgbogo.b_gain, rgbogo.r_post_offset, rgbogo.g_post_offset, rgbogo.b_post_offset);
+            break;
+        case PQ_GET_COLOR_CUSTOMIZE:
+            cms_cm = mpPQcontrol->GetColorCustomize((vpp_cms_color_t)paramData[0]);
+            sprintf(mRetBuf, "%d.%d.%d", cms_cm.sat, cms_cm.hue, cms_cm.luma);
+            break;
+        case PQ_GET_COLOR_CUSTOMIZE_3DLUT:
+            cms_3dlut = mpPQcontrol->GetColorCustomizeBy3DLut((vpp_cms_6color_t)paramData[0]);
+            sprintf(mRetBuf, "%d.%d.%d", cms_3dlut.red, cms_3dlut.green, cms_3dlut.blue);
             break;
 
         //Factory cmd
@@ -598,13 +619,15 @@ char* PqService::GetCmd(pq_moudle_param_t param)
             break;
         }
     } else {
-        LOGE("%s: invalid PQ cmd: %d!\n", __FUNCTION__, moudleId);
+        LOGE("%s: invalid PQ cmd: %d!\n", __FUNCTION__, moduleId);
         ret = -1;
     }
 
-    if ((moudleId != PQ_GET_SOURCE_CHANNEL)
-        && (moudleId != PQ_FACTORY_GET_OVERSCAN)
-        && (moudleId != PQ_GET_COLORTEMP_USER_PARAM)) {
+    if ((moduleId != PQ_GET_SOURCE_CHANNEL)
+        && (moduleId != PQ_FACTORY_GET_OVERSCAN)
+        && (moduleId != PQ_GET_COLORTEMP_USER_PARAM)
+        && (moduleId != PQ_GET_COLOR_CUSTOMIZE)
+        && (moduleId != PQ_GET_COLOR_CUSTOMIZE_3DLUT)) {
         sprintf(mRetBuf, "%d", ret);
     }
 
@@ -626,7 +649,7 @@ void PqService::ParserPqCommand(const char *commandData)
     //parse command
     pq_moudle_param_t pqParam;
     memset(&pqParam, 0, sizeof(pq_moudle_param_t));
-    pqParam.moudleId = atoi(mPqCommand[2].c_str());
+    pqParam.moduleId = atoi(mPqCommand[2].c_str());
     pqParam.paramLength = cmd_size - 3;
 
     for (i = 0; i < pqParam.paramLength; i++)

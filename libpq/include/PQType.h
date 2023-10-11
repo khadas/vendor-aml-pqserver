@@ -22,10 +22,21 @@
 #include "amvecm.h"
 
 
+#define TVIN_SIG_FMT_HDMI_HDR             TVIN_SIG_FMT_HDMI_1600X900_60HZ
+
 #define MAX_PICTUREMODE_PARAM_SIZE        100
 #define MAX_LVDS_SSC_PARAM_SIZE           20
 
-#define TVIN_SIG_FMT_HDMI_HDR             TVIN_SIG_FMT_HDMI_1600X900_60HZ
+#define MAX_COLORCUSTOMIZE_CM_PARAM_SIZE     120
+#define MAX_COLORCUSTOMIZE_3DLUT_PARAM_SIZE  80
+
+#define CMS_SAT_MIN  -100
+#define CMS_SAT_MAX   127
+#define CMS_HUE_MIN  -127
+#define CMS_HUE_MAX   127
+#define CMS_LUMA_MIN -15
+#define CMS_LUMA_MAX  15
+
 
 typedef enum output_type_e {
     OUTPUT_TYPE_LVDS = -1,
@@ -78,13 +89,13 @@ typedef enum vpp_deblock_mode_e {
     VPP_DEBLOCK_MODE_AUTO,
 } vpp_deblock_mode_t;
 
-typedef enum vpp_DemoSquito_mode_e {
+typedef enum vpp_demosquito_mode_e {
     VPP_DEMOSQUITO_MODE_OFF,
     VPP_DEMOSQUITO_MODE_LOW,
     VPP_DEMOSQUITO_MODE_MIDDLE,
     VPP_DEMOSQUITO_MODE_HIGH,
     VPP_DEMOSQUITO_MODE_AUTO,
-} vpp_DemoSquito_mode_t;
+} vpp_demosquito_mode_t;
 
 typedef enum vpp_color_space_type_e {
     VPP_COLOR_SPACE_AUTO,
@@ -519,5 +530,84 @@ typedef enum sharpness_timing_e {
     SHARPNESS_TIMING_SD = 0,
     SHARPNESS_TIMING_HD,
 } sharpness_timing_t;
+
+typedef enum vpp_cms_6color_e {
+    VPP_COLOR_6_RED = 0,
+    VPP_COLOR_6_GREEN,
+    VPP_COLOR_6_BLUE,
+    VPP_COLOR_6_CYAN,
+    VPP_COLOR_6_MAGENTA,
+    VPP_COLOR_6_YELLOW,
+    VPP_COLOR_6_MAX,
+} vpp_cms_6color_t;
+
+typedef enum vpp_cms_color_e {
+    VPP_COLOR_9_PURPLE = 0,
+    VPP_COLOR_9_RED,
+    VPP_COLOR_9_SKIN,
+    VPP_COLOR_9_YELLOW,
+    VPP_COLOR_9_YELLOW_GREEN,
+    VPP_COLOR_9_GREEN,
+    VPP_COLOR_9_BLUE_GREEN,
+    VPP_COLOR_9_CYAN,
+    VPP_COLOR_9_BLUE,
+    VPP_COLOR_9_MAX,
+} vpp_cms_color_t;
+
+typedef enum vpp_cms_14color_e {
+    VPP_COLOR_14_BLUE_PURPLE = 0,
+    VPP_COLOR_14_PURPLE,
+    VPP_COLOR_14_PURPLE_RED,
+    VPP_COLOR_14_RED,
+    VPP_COLOR_14_SKIN_CHEEKS,
+    VPP_COLOR_14_SKIN_HAIR_CHEEKS,
+    VPP_COLOR_14_SKIN_YELLOW,
+    VPP_COLOR_14_YELLOW,
+    VPP_COLOR_14_YELLOW_GREEN,
+    VPP_COLOR_14_GREEN,
+    VPP_COLOR_14_GREEN_CYAN,
+    VPP_COLOR_14_CYAN,
+    VPP_COLOR_14_CYAN_BLUE,
+    VPP_COLOR_14_BLUE,
+    VPP_COLOR_14_MAX,
+} vpp_cms_14color_t;
+
+typedef enum vpp_cms_type_e {
+    VPP_CMS_TYPE_SAT = 0, //CM
+    VPP_CMS_TYPE_HUE,
+    VPP_CMS_TYPE_LUMA,
+
+    VPP_CMS_TYPE_RED = 3, //3DLUT
+    VPP_CMS_TYPE_GREEN,
+    VPP_CMS_TYPE_BLUE,
+
+    VPP_CMS_TYPE_MAX,
+} vpp_cms_type_t;
+
+typedef struct vpp_single_color_param_cm_s {
+    int sat;
+    int hue;
+    int luma;
+} vpp_single_color_param_cm_t;
+
+typedef struct vpp_single_color_3dlut_param_s {
+    int red;
+    int green;
+    int blue;
+} vpp_single_color_param_3dlut_t;
+
+typedef struct vpp_cms_cm_param_e {
+    vpp_single_color_param_cm_t data[VPP_COLOR_9_MAX];
+} vpp_cms_cm_param_t;
+
+typedef struct vpp_cms_3dlut_param_e {
+    vpp_single_color_param_3dlut_t data[VPP_COLOR_6_MAX];
+} vpp_cms_3dlut_param_t;
+
+typedef enum vpp_cms_method_e {
+    VPP_CMS_METHOD_CM,
+    VPP_CMS_METHOD_3DLUT,
+    VPP_CMS_METHOD_MAX,
+} vpp_cms_method_t;
 
 #endif

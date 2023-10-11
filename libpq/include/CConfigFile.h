@@ -127,6 +127,25 @@
 #define CFG_AUTO_NR_MOTION_HP_CGAIN             "auto.nr.motion_hp_cgain"
 #define CFG_AUTO_NR_APL_GAIN                    "auto.nr.apl_gain"
 
+//for CMS
+#define CFG_SECTION_CMS                         "CMS"
+#define CFG_CMS_CM_READ                         "color.customize.cm.red"
+#define CFG_CMS_CM_GREEN                        "color.customize.cm.green"
+#define CFG_CMS_CM_BLUE                         "color.customize.cm.blue"
+#define CFG_CMS_CM_CYAN                         "color.customize.cm.cyan"
+#define CFG_CMS_CM_PURPLE                       "color.customize.cm.purple"
+#define CFG_CMS_CM_YELLOW                       "color.customize.cm.yellow"
+#define CFG_CMS_CM_SKIN                         "color.customize.cm.skin"
+#define CFG_CMS_CM_YELLOW_GREEN                 "color.customize.cm.yellow.green"
+#define CFG_CMS_CM_BLUE_GREEN                   "color.customize.cm.blue.green"
+#define CFG_CMS_3DLUT_EN                        "color.customize.3dlut.en"
+#define CFG_CMS_3DLUT_RED                       "color.customize.3dlut.red"
+#define CFG_CMS_3DLUT_GREEN                     "color.customize.3dlut.green"
+#define CFG_CMS_3DLUT_BLUE                      "color.customize.3dlut.blue"
+#define CFG_CMS_3DLUT_CYAN                      "color.customize.3dlut.cyan"
+#define CFG_CMS_3DLUT_MAGENTA                   "color.customize.3dlut.magenta"
+#define CFG_CMS_3DLUT_YELLOW                    "color.customize.3dlut.yellow"
+
 static const int MAX_CONFIG_FILE_LINE_LEN = 512;
 
 typedef enum _LINE_TYPE {

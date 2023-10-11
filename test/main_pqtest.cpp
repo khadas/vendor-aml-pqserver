@@ -66,105 +66,105 @@ public:
             break;
         case PQ_GET_PICTURE_MODE:
             ret = mpPqClient->GetPQMode();
-            printf("%s: curent pq mode is %d.\n", __FUNCTION__, ret);
+            printf("%s: current pq mode is %d.\n", __FUNCTION__, ret);
             break;
         case PQ_SET_COLOR_TEMPERATURE_MODE:
             ret = mpPqClient->SetColorTemperature(setValue[0], setValue[1], setValue[2], setValue[3]);
             break;
         case PQ_GET_COLOR_TEMPERATURE_MODE:
             ret = mpPqClient->GetColorTemperature();
-            printf("%s: curent colortempture mode is %d.\n", __FUNCTION__, ret);
+            printf("%s: current colortempture mode is %d.\n", __FUNCTION__, ret);
             break;
         case PQ_SET_BRIGHTNESS:
             ret = mpPqClient->SetBrightness(setValue[0], setValue[1]);
             break;
         case PQ_GET_BRIGHTNESS:
             ret = mpPqClient->GetBrightness();
-            printf("%s: curent Brightness value is %d.\n", __FUNCTION__, ret);
+            printf("%s: current Brightness value is %d.\n", __FUNCTION__, ret);
             break;
         case PQ_SET_CONTRAST:
             ret = mpPqClient->SetContrast(setValue[0], setValue[1]);
             break;
         case PQ_GET_CONTRAST:
             ret = mpPqClient->GetContrast();
-            printf("%s: curent contrast value is %d.\n", __FUNCTION__, ret);
+            printf("%s: current contrast value is %d.\n", __FUNCTION__, ret);
             break;
         case PQ_SET_SATUATION:
             ret = mpPqClient->SetSaturation(setValue[0], setValue[1]);
             break;
         case PQ_GET_SATUATION:
             ret = mpPqClient->GetSaturation();
-            printf("%s: curent saturation value is %d.\n", __FUNCTION__, ret);
+            printf("%s: current saturation value is %d.\n", __FUNCTION__, ret);
             break;
         case PQ_SET_HUE:
             ret = mpPqClient->SetHue(setValue[0], setValue[1]);
             break;
         case PQ_GET_HUE:
             ret = mpPqClient->GetHue();
-            printf("%s: curent hue value is %d.\n", __FUNCTION__, ret);
+            printf("%s: current hue value is %d.\n", __FUNCTION__, ret);
             break;
         case PQ_SET_SHARPNESS:
             ret = mpPqClient->SetSharpness(setValue[0], setValue[1], setValue[2]);
             break;
         case PQ_GET_SHARPNESS:
             ret = mpPqClient->GetSharpness();
-            printf("%s: curent sharpness value is %d.\n", __FUNCTION__, ret);
+            printf("%s: current sharpness value is %d.\n", __FUNCTION__, ret);
             break;
         case PQ_SET_NOISE_REDUCTION_MODE:
             ret = mpPqClient->SetNoiseReductionMode(setValue[0], setValue[1]);
             break;
         case PQ_GET_NOISE_REDUCTION_MODE:
             ret = mpPqClient->GetNoiseReductionMode();
-            printf("%s: curent NoiseReduction value is %d.\n", __FUNCTION__, ret);
+            printf("%s: current NoiseReduction value is %d.\n", __FUNCTION__, ret);
             break;
         case PQ_SET_EYE_PROTECTION_MODE:
             ret = mpPqClient->SetEyeProtectionMode(setValue[0], setValue[1], setValue[2]);
             break;
         case PQ_GET_EYE_PROTECTION_MODE:
             ret = mpPqClient->GetEyeProtectionMode();
-            printf("%s: curent Protection mode is %d.\n", __FUNCTION__, ret);
+            printf("%s: current Protection mode is %d.\n", __FUNCTION__, ret);
             break;
         case PQ_SET_GAMMA:
             ret = mpPqClient->SetGammaValue(setValue[0], setValue[1]);
             break;
         case PQ_GET_GAMMA:
             ret = mpPqClient->GetGammaValue();
-            printf("%s: curent Protection mode is %d.\n", __FUNCTION__, ret);
+            printf("%s: current Protection mode is %d.\n", __FUNCTION__, ret);
             break;
         case PQ_SET_DISPLAY_MODE:
             ret = mpPqClient->SetDisplayMode(setValue[0], setValue[1], setValue[2]);
             break;
         case PQ_GET_DISPLAY_MODE:
             ret = mpPqClient->GetDisplayMode();
-            printf("%s: curent Display mode is %d.\n", __FUNCTION__, ret);
+            printf("%s: current Display mode is %d.\n", __FUNCTION__, ret);
             break;
         case PQ_SET_BACKLIGHT:
             ret = mpPqClient->SetBacklight(setValue[0], setValue[1]);
             break;
         case PQ_GET_BACKLIGHT:
             ret = mpPqClient->GetBacklight();
-            printf("%s: curent backlight value is %d.\n", __FUNCTION__, ret);
+            printf("%s: current backlight value is %d.\n", __FUNCTION__, ret);
             break;
         case PQ_SET_DYNAMICBACKLIGHT:
             ret = mpPqClient->SetDynamicBacklight(setValue[0], setValue[1]);
             break;
         case PQ_GET_DYNAMICBACKLIGHT:
             ret = mpPqClient->GetDynamicBacklight();
-            printf("%s: curent backlight value is %d.\n", __FUNCTION__, ret);
+            printf("%s: current backlight value is %d.\n", __FUNCTION__, ret);
             break;
         case PQ_SET_LOCALCONTRAST:
             ret = mpPqClient->SetLocalContrastMode(setValue[0], setValue[1]);
             break;
         case PQ_GET_LOCALCONTRAST:
             ret = mpPqClient->GetLocalContrastMode();
-            printf("%s: curent Local contrast mode is %d.\n", __FUNCTION__, ret);
+            printf("%s: current Local contrast mode is %d.\n", __FUNCTION__, ret);
             break;
         case PQ_SET_CM:
             ret = mpPqClient->SetColorBaseMode(setValue[0], setValue[1]);
             break;
         case PQ_GET_CM:
             ret = mpPqClient->GetColorBaseMode();
-            printf("%s: curent Color base mode is %d.\n", __FUNCTION__, ret);
+            printf("%s: current Color base mode is %d.\n", __FUNCTION__, ret);
             break;
         case PQ_SET_SOURCE_CHANNEL:
             ret = mpPqClient->setCurrentSourceInfo(setValue[0], setValue[1], setValue[2]);
@@ -172,7 +172,7 @@ public:
         case PQ_GET_SOURCE_CHANNEL:
             source_input_param_t source_param;
             source_param = mpPqClient->getCurrentSourceInfo();
-            printf("%s: curent source info: source_input:%d sig_fmt:%d trans_fmt:%d.\n",
+            printf("%s: current source info: source_input:%d sig_fmt:%d trans_fmt:%d.\n",
                 __FUNCTION__, source_param.source_input, source_param.sig_fmt, source_param.trans_fmt);
             break;
         case PQ_SET_COLORGAMUT:
@@ -180,81 +180,81 @@ public:
             break;
         case PQ_GET_COLORGAMUT:
             ret = mpPqClient->GetColorGamutMode();
-            printf("%s: curent Color gamut mode is %d\n", __FUNCTION__, ret);
+            printf("%s: current Color gamut mode is %d\n", __FUNCTION__, ret);
             break;
         case PQ_GET_SOURCE_HDR_TYPE:
             ret = mpPqClient->GetSourceHDRType();
-            printf("%s: curent HDR type is %d\n", __FUNCTION__, ret);
+            printf("%s: current HDR type is %d\n", __FUNCTION__, ret);
             break;
         case PQ_SET_DYNAMICCONTRAST:
             ret = mpPqClient->SetDynamicContrastMode(setValue[0], setValue[1]);
             break;
         case PQ_GET_DYNAMICCONTRAST:
             ret = mpPqClient->GetDynamicContrastMode();
-            printf("%s: curent Dynamic contrast mode is %d\n", __FUNCTION__, ret);
+            printf("%s: current Dynamic contrast mode is %d\n", __FUNCTION__, ret);
             break;
         case PQ_SET_RECOVERYPQ:
             ret = mpPqClient->SSMRecovery();
             break;
         case PQ_GET_HAS_MEMC:
             ret = mpPqClient->HasMemcFunc();
-            printf("%s: curent hasmemc is %d\n", __FUNCTION__, ret);
+            printf("%s: current hasmemc is %d\n", __FUNCTION__, ret);
             break;
         case PQ_SET_MEMCMODE:
             ret = mpPqClient->SetMemcMode(setValue[0], setValue[1]);
             break;
         case PQ_GET_MEMCMODE:
             ret = mpPqClient->GetMemcMode();
-            printf("%s: curent Memc mode is %d\n", __FUNCTION__, ret);
+            printf("%s: current Memc mode is %d\n", __FUNCTION__, ret);
             break;
         case PQ_SET_MEMC_DEBLUR:
             ret = mpPqClient->SetMemcDeBlurLevel(setValue[0], setValue[1]);
             break;
         case PQ_GET_MEMC_DEBLUR:
             ret = mpPqClient->GetMemcDeBlurLevel();
-            printf("%s: curent Memc DeBlurLevel level is %d\n", __FUNCTION__, ret);
+            printf("%s: current Memc DeBlurLevel level is %d\n", __FUNCTION__, ret);
             break;
         case PQ_SET_MEMC_DEJUDDER:
             ret = mpPqClient->SetMemcDeJudderLevel(setValue[0], setValue[1]);
             break;
         case PQ_GET_MEMC_DEJUDDER:
             ret = mpPqClient->GetMemcDeJudderLevel();
-            printf("%s: curent Memc DeJudderLevel level is %d\n", __FUNCTION__, ret);
+            printf("%s: current Memc DeJudderLevel level is %d\n", __FUNCTION__, ret);
             break;
         case PQ_SET_DECONTOUR:
             ret = mpPqClient->SetDecontourMode(setValue[0], setValue[1]);
             break;
         case PQ_GET_DECONTOUR:
             ret = mpPqClient->GetDecontourMode();
-            printf("%s: curent Memc Decontour Mode is %d\n", __FUNCTION__, ret);
+            printf("%s: current Memc Decontour Mode is %d\n", __FUNCTION__, ret);
             break;
         case PQ_SET_DEBLOCK:
             ret = mpPqClient->SetDeBlockMode(setValue[0], setValue[1]);
             break;
         case PQ_GET_DEBLOCK:
             ret = mpPqClient->GetDeBlockMode();
-            printf("%s: curent DeBlock Mode is %d\n", __FUNCTION__, ret);
+            printf("%s: current DeBlock Mode is %d\n", __FUNCTION__, ret);
             break;
         case PQ_SET_DEMOSQUITO:
             ret = mpPqClient->SetDeMosquitoMode(setValue[0], setValue[1]);
             break;
         case PQ_GET_DEMOSQUITO:
             ret = mpPqClient->GetDeMosquitoMode();
-            printf("%s: curent DeMosquito Mode is %d\n", __FUNCTION__, ret);
+            printf("%s: current DeMosquito Mode is %d\n", __FUNCTION__, ret);
             break;
         case PQ_SET_BLACKSTRETCH:
             ret = mpPqClient->SetBlackStretch(setValue[0], setValue[1]);
             break;
         case PQ_GET_BLACKSTRETCH:
             ret = mpPqClient->GetBlackStretch();
-            printf("%s: curent BlackStretch Mode is %d\n", __FUNCTION__, ret);
+            printf("%s: current BlackStretch Mode is %d\n", __FUNCTION__, ret);
             break;
         case PQ_SET_BLUESTRETCH:
             ret = mpPqClient->SetBlueStretch(setValue[0], setValue[1]);
             break;
         case PQ_GET_BLUESTRETCH:
             ret = mpPqClient->GetBlueStretch();
-            printf("%s: curent BlueStretch Mode is %d\n", __FUNCTION__, ret);
+            printf("%s: current BlueStretch Mode is %d\n", __FUNCTION__, ret);
             break;
         case PQ_GET_HAS_AIPQ:
             ret = mpPqClient->HasAipqFunc();
@@ -264,7 +264,7 @@ public:
             break;
         case PQ_GET_AIPQ:
             ret = mpPqClient->GetAipqEnable();
-            printf("%s: curent Aipq Enable is %d\n", __FUNCTION__, ret);
+            printf("%s: current Aipq Enable is %d\n", __FUNCTION__, ret);
             break;
         case PQ_GET_HAS_AISR:
             ret = mpPqClient->HasAisrFunc();
@@ -274,32 +274,53 @@ public:
             break;
         case PQ_GET_AISR:
             ret = mpPqClient->GetAiSrEnable();
-            printf("%s: curent AiSr Enable is %d\n", __FUNCTION__, ret);
+            printf("%s: current AiSr Enable is %d\n", __FUNCTION__, ret);
             break;
         case PQ_SET_LDIM:
             ret = mpPqClient->SetLdim(setValue[0], setValue[1]);
             break;
         case PQ_GET_LDIM:
             ret = mpPqClient->GetLdim();
-            printf("%s: curent LDIM mode is %d\n", __FUNCTION__, ret);
+            printf("%s: current LDIM mode is %d\n", __FUNCTION__, ret);
             break;
         case PQ_SET_MPEGNR:
             ret = mpPqClient->SetMpegNr(setValue[0], setValue[1]);
             break;
         case PQ_GET_MPEGNR:
             ret = mpPqClient->GetMpegNr();
-            printf("%s: curent MPEG NR mode is %d\n", __FUNCTION__, ret);
+            printf("%s: current MPEG NR mode is %d\n", __FUNCTION__, ret);
             break;
         case PQ_GET_COLORTEMP_USER_PARAM:
             tvpq_rgb_ogo_t rgbogo;
             rgbogo = mpPqClient->GetColorTemperatureUserParam();
-            printf("%s: curent RGB GAIN&OFFSET is %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n", __FUNCTION__,
+            printf("%s: current RGB GAIN&OFFSET is %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n", __FUNCTION__,
                     rgbogo.en, rgbogo.r_pre_offset, rgbogo.g_pre_offset, rgbogo.b_pre_offset,
                     rgbogo.r_gain, rgbogo.g_gain, rgbogo.b_gain, rgbogo.r_post_offset, rgbogo.g_post_offset, rgbogo.b_post_offset);
             break;
         case PQ_SET_PICTURE_UI_CLEAR:
             ret = mpPqClient->ResetPictureUiSetting();
             printf("%s: reset picture ui setting result is %d\n", __FUNCTION__, ret);
+            break;
+        case PQ_SET_COLOR_CUSTOMIZE:
+            ret = mpPqClient->SetColorCustomize(setValue[0], setValue[1], setValue[2], setValue[3]);
+            break;
+        case PQ_GET_COLOR_CUSTOMIZE:
+            vpp_single_color_param_cm_t cms_cm;
+            cms_cm = mpPqClient->GetColorCustomize(setValue[0]);
+            printf("%s: current color customize(CMS):%d %d %d\n", __FUNCTION__,
+                cms_cm.sat, cms_cm.hue, cms_cm.luma);
+            break;
+         case PQ_SET_COLOR_CUSTOMIZE_3DLUT:
+            ret = mpPqClient->SetColorCustomizeBy3DLut(setValue[0], setValue[1], setValue[2], setValue[3]);
+            break;
+        case PQ_GET_COLOR_CUSTOMIZE_3DLUT:
+            vpp_single_color_param_3dlut_t cms_3dlut;
+            cms_3dlut = mpPqClient->GetColorCustomizeBy3DLut(setValue[0]);
+            printf("%s: current color customize(3DLUT):%d %d %d\n", __FUNCTION__,
+                cms_3dlut.red, cms_3dlut.green, cms_3dlut.blue);
+            break;
+        case PQ_RESET_COLOR_CUSTOMIZE:
+            ret = mpPqClient->ResetColorCustomize(setValue[0]);
             break;
 
         //factory API
@@ -314,35 +335,35 @@ public:
             break;
         case PQ_FACTORY_GET_COLOR_TEMPERATURE_MODE:
             ret = mpPqClient->FactoryWhiteBalanceGetColorTemperature();
-            printf("%s: curent colortempture mode is %d.\n", __FUNCTION__, ret);
+            printf("%s: current colortempture mode is %d.\n", __FUNCTION__, ret);
             break;
         case PQ_FACTORY_SET_BRIGHTNESS:
             ret = mpPqClient->FactorySetPQMode_Brightness(setValue[0], setValue[1], setValue[2], setValue[3], setValue[4]);
             break;
         case PQ_FACTORY_GET_BRIGHTNESS:
             ret = mpPqClient->FactoryGetPQMode_Brightness(setValue[0], setValue[1], setValue[2], setValue[3]);
-            printf("%s: curent brightness mode is %d.\n", __FUNCTION__, ret);
+            printf("%s: current brightness mode is %d.\n", __FUNCTION__, ret);
             break;
         case PQ_FACTORY_SET_CONTRAST:
             ret = mpPqClient->FactorySetPQMode_Contrast(setValue[0], setValue[1], setValue[2], setValue[3], setValue[4]);
             break;
         case PQ_FACTORY_GET_CONTRAST:
             ret = mpPqClient->FactoryGetPQMode_Contrast(setValue[0], setValue[1], setValue[2], setValue[3]);
-            printf("%s: curent contrast mode is %d.\n", __FUNCTION__, ret);
+            printf("%s: current contrast mode is %d.\n", __FUNCTION__, ret);
             break;
         case PQ_FACTORY_SET_SATUATION:
             ret = mpPqClient->FactorySetPQMode_Saturation(setValue[0], setValue[1], setValue[2], setValue[3], setValue[4]);
             break;
         case PQ_FACTORY_GET_SATUATION:
             ret = mpPqClient->FactoryGetPQMode_Saturation(setValue[0], setValue[1], setValue[2], setValue[3]);
-            printf("%s: curent saturation mode is %d.\n", __FUNCTION__, ret);
+            printf("%s: current saturation mode is %d.\n", __FUNCTION__, ret);
             break;
         case PQ_FACTORY_SET_HUE:
             ret = mpPqClient->FactorySetPQMode_Hue(setValue[0], setValue[1], setValue[2], setValue[3], setValue[4]);
             break;
         case PQ_FACTORY_GET_HUE:
             ret = mpPqClient->FactoryGetPQMode_Hue(setValue[0], setValue[1], setValue[2], setValue[3]);
-            printf("%s: curent hue mode is %d.\n", __FUNCTION__, ret);
+            printf("%s: current hue mode is %d.\n", __FUNCTION__, ret);
             break;
 
         case PQ_FACTORY_SET_SHARPNESS:
@@ -351,7 +372,7 @@ public:
 
         case PQ_FACTORY_GET_SHARPNESS:
             ret = mpPqClient->FactoryGetPQMode_Sharpness(setValue[0], setValue[1], setValue[2], setValue[3]);
-            printf("%s: curent sharpness mode is %d.\n", __FUNCTION__, ret);
+            printf("%s: current sharpness mode is %d.\n", __FUNCTION__, ret);
             break;
         case PQ_FACTORY_SET_OVERSCAN:
             tvin_cutwin_t overscanParam;
@@ -429,7 +450,7 @@ public:
     }
 
     PqClient *mpPqClient;
-    pqcmd_t cmdID = PQ_MOUDLE_CMD_MAX;
+    pqcmd_t cmdID = PQ_MODULE_CMD_MAX;
     int setValue[10] = {0};
 };
 
@@ -524,6 +545,11 @@ int main(int argc, char **argv) {
     printf("#### select 265 to get MpegNr ####\n");
     printf("#### select 266 to get RGB Gain/Offset ####\n");
     printf("#### select 267 to reset picture ui setting ####\n");
+    printf("#### select 268 to set color customize ####\n");
+    printf("#### select 269 to get color customize ####\n");
+    printf("#### select 270 to set color customize by 3dlut ####\n");
+    printf("#### select 271 to get color customize by 3d lut ####\n");
+    printf("#### select 272 to reset color customize ####\n");
 
     printf("#### below is factory cmd####\n");
     printf("#### select 301 to reset pq mode ####\n");
@@ -563,6 +589,7 @@ int main(int argc, char **argv) {
         int mode = 0, is_save = 0;
         int source = 0, sig_fmt = 0, fmt_3d = 0, pq_mode = 0;
         int colortemp_mode = 0;
+        int color = 0, type = 0, value = 0;
         int scanf_ret = 0;
 
         int ret = scanf("%10s", Command);
@@ -575,7 +602,7 @@ int main(int argc, char **argv) {
 
         switch (conmmand) {
           case 299: {
-            test->cmdID = PQ_MOUDLE_CMD_MAX;
+            test->cmdID = PQ_MODULE_CMD_MAX;
             run = 0;
             break;
           }
@@ -885,6 +912,36 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_GET_MEMCMODE;
               break;
           }
+          case 248: {
+              printf("please input 2 parameters:\n"
+                   "mode value:(0~3) refer vpp_deblock_mode_t\n"
+                   "is save:(0~1)\n");
+              scanf_ret = scanf("%d %d", &mode, &is_save);
+              if (scanf_ret != 2)    break;
+              test->setValue[0] = mode;
+              test->setValue[1] = is_save;
+              test->cmdID = PQ_SET_DEBLOCK;
+              break;
+          }
+          case 249: {
+              test->cmdID = PQ_GET_DEBLOCK;
+              break;
+          }
+          case 250: {
+              printf("please input 2 parameters:\n"
+                   "mode value:(0~3) refer vpp_demosquito_mode_t\n"
+                   "is save:(0~1)\n");
+              scanf_ret = scanf("%d %d", &mode, &is_save);
+              if (scanf_ret != 2)    break;
+              test->setValue[0] = mode;
+              test->setValue[1] = is_save;
+              test->cmdID = PQ_SET_DEMOSQUITO;
+              break;
+          }
+          case 251: {
+              test->cmdID = PQ_GET_DEMOSQUITO;
+              break;
+          }
           case 256: {
               test->cmdID = PQ_GET_HAS_AIPQ;
               break;
@@ -918,6 +975,63 @@ int main(int argc, char **argv) {
           case 261: {
               test->cmdID = PQ_GET_AISR;
               break;
+          }
+          case 268: {
+              printf("please input 4 parameters:\n"
+                   "color:(0~8); refer vpp_cms_color_t\n"
+                   "type:(0~2); refer vpp_cms_type_t\n"
+                   "value:(-50~50)\n"
+                   "is save:(0~1)\n");
+              scanf_ret = scanf("%d %d %d %d", &color, &type, &value, &is_save);
+              if (scanf_ret != 4)    break;
+              test->setValue[0] = color;
+              test->setValue[1] = type;
+              test->setValue[2] = value;
+              test->setValue[3] = is_save;
+              test->cmdID = PQ_SET_COLOR_CUSTOMIZE;
+              break;
+          }
+          case 269: {
+              printf("please input 1 parameters:\n"
+                   "color:(0~8); refer vpp_cms_color_t\n");
+              scanf_ret = scanf("%d", &color);
+              if (scanf_ret != 1)    break;
+              test->setValue[0] = color;
+              test->cmdID = PQ_GET_COLOR_CUSTOMIZE;
+              break;
+          }
+          case 270: {
+              printf("please input 4 parameters:\n"
+                   "color:(0~5); refer vpp_cms_6color_t\n"
+                   "type:(3~5); refer vpp_cms_type_t\n"
+                   "value:(-100~100)\n"
+                   "is save:(0~1)\n");
+              scanf_ret = scanf("%d %d %d %d", &color, &type, &value, &is_save);
+              if (scanf_ret != 4)    break;
+              test->setValue[0] = color;
+              test->setValue[1] = type;
+              test->setValue[2] = value;
+              test->setValue[3] = is_save;
+              test->cmdID = PQ_SET_COLOR_CUSTOMIZE_3DLUT;
+              break;
+          }
+          case 271: {
+              printf("please input 1 parameters:\n"
+                   "color:(0~5); refer vpp_cms_6color_t\n");
+              scanf_ret = scanf("%d", &color);
+              if (scanf_ret != 1)    break;
+              test->setValue[0] = color;
+              test->cmdID = PQ_GET_COLOR_CUSTOMIZE_3DLUT;
+              break;
+          }
+          case 272: {
+            printf("please input 1 parameters:\n"
+                   "color:(0~1); refer vpp_cms_method_t\n");
+              scanf_ret = scanf("%d", &value);
+              if (scanf_ret != 1)    break;
+              test->setValue[0] = value;
+            test->cmdID = PQ_RESET_COLOR_CUSTOMIZE;
+            break;
           }
 
           //factory cmd
@@ -1344,7 +1458,7 @@ int main(int argc, char **argv) {
           }
 
           default: {
-              test->cmdID = PQ_MOUDLE_CMD_MAX;
+              test->cmdID = PQ_MODULE_CMD_MAX;
               run = 0;
               break;
           }

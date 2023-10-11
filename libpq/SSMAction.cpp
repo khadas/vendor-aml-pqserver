@@ -1344,3 +1344,19 @@ int SSMAction::SSMSavePictureModeParams(int offset, int size, int *rw_val) {
 int SSMAction::SSMReadPictureModeParams(int offset, int size, int *rw_val) {
     return SSMReadNTypes(VPP_DATA_POS_PICTURE_MODE_PARAM_START, size, rw_val, offset);
 }
+
+int SSMAction::SSMSaveColorCustomizeParams(int offset, int size, int *rw_val) {
+    return SSMWriteNTypes(VPP_DATA_POS_COLORCUSTOMIZE_CM_START, size, rw_val, offset);
+}
+
+int SSMAction::SSMReadColorCustomizeParams(int offset, int size, int *rw_val) {
+    return SSMReadNTypes(VPP_DATA_POS_COLORCUSTOMIZE_CM_START, size, rw_val, offset);
+}
+
+int SSMAction::SSMSaveColorCustomizeParamsBy3DLut(int offset, int size, int *rw_val) {
+    return SSMWriteNTypes(VPP_DATA_POS_COLORCUSTOMIZE_3DLUT_START, size, rw_val, offset);
+}
+
+int SSMAction::SSMReadColorCustomizeParamsBy3DLut(int offset, int size, int *rw_val) {
+    return SSMReadNTypes(VPP_DATA_POS_COLORCUSTOMIZE_3DLUT_START, size, rw_val, offset);
+}

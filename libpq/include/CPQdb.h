@@ -63,7 +63,7 @@ public:
     int PQ_GetDeblockParams(vpp_deblock_mode_t mode, source_input_param_t source_input_param, am_regs_t *regs);
     int PQ_GetNR2Params(vpp_noise_reduction_mode_t nr_mode, source_input_param_t source_input_param, am_regs_t *regs);
     int PQ_GetSmoothPlusParams(vpp_smooth_plus_mode_t smoothplus_mode, source_input_param_t source_input_param, am_regs_t *regs);
-    int PQ_GetDemoSquitoParams(vpp_DemoSquito_mode_e dem_mode, source_input_param_t source_input_param,  am_regs_t *regs);
+    int PQ_GetDemoSquitoParams(vpp_demosquito_mode_e dem_mode, source_input_param_t source_input_param,  am_regs_t *regs);
     int getDIRegValuesByValue(const char *name, const char *f_name, const char *f2_name, const int val, const int val2, am_regs_t *regs);
     int PQ_GetColorTemperatureParams(vpp_color_temperature_mode_t Tempmode, source_input_param_t source_input_param, tcon_rgb_ogo_t *params);
     int PQ_SetColorTemperatureParams(vpp_color_temperature_mode_t Tempmode, source_input_param_t source_input_param, tcon_rgb_ogo_t params);

@@ -393,4 +393,21 @@ typedef enum pq_type_e {
 } pq_type_t;
 #endif
 
+#ifndef __CMS_CM_PARAM__
+#define __CMS_CM_PARAM__
+typedef struct vpp_single_color_param_cm_s {
+    int sat;
+    int hue;
+    int luma;
+} vpp_single_color_param_cm_t;
+#endif
+
+#ifndef __CMS_3DLUT_PARAM__
+#define __CMS_3DLUT_PARAM__
+typedef struct vpp_single_color_param_3dlut_s {
+    int red;
+    int green;
+    int blue;
+} vpp_single_color_param_3dlut_t;
+#endif
 #endif

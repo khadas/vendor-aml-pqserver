@@ -1014,6 +1014,16 @@ int CPQControl::LoadPQTableSettings()
     vpp_smooth_plus_mode_t smoothplus_mode = VPP_SMOOTH_PLUS_MODE_OFF;
     ret |= Cpq_SetSmoothPlusMode(smoothplus_mode, mCurrentSourceInputInfo);
 
+    //color customize (CM)
+    vpp_cms_cm_param_t param;
+    memset(&param, 0, sizeof(vpp_cms_cm_param_t));
+    mSSMAction->SSMReadColorCustomizeParams(0, sizeof(vpp_cms_cm_param_t), (int *)&param);
+    for (int i = VPP_COLOR_9_PURPLE; i < VPP_COLOR_9_MAX; i++) {
+        ret |= Cpq_SetColorCustomize((vpp_cms_color_t)i, VPP_CMS_TYPE_SAT, param.data[i].sat);
+        ret |= Cpq_SetColorCustomize((vpp_cms_color_t)i, VPP_CMS_TYPE_HUE, param.data[i].hue);
+        ret |= Cpq_SetColorCustomize((vpp_cms_color_t)i, VPP_CMS_TYPE_LUMA, param.data[i].luma);
+    }
+
     return ret;
 }
 
@@ -1232,6 +1242,16 @@ void CPQControl::resetPQTableSetting(void)
     //ai pq/sr
     mSSMAction->SSMSaveAipqEnableVal(0);
     mSSMAction->SSMSaveAiSrEnable(1);
+
+    //color customize
+    int offset = 0;
+    vpp_cms_cm_param_t param_cm;
+    vpp_cms_3dlut_param_t param_3dlut;
+    memset(&param_cm, 0, sizeof(vpp_cms_cm_param_t));
+    memset(&param_3dlut, 0, sizeof(vpp_cms_3dlut_param_t));
+    Cpq_GetColorCustomizeDefValue(&param_cm, &param_3dlut);
+    mSSMAction->SSMSaveColorCustomizeParams(offset, sizeof(vpp_cms_cm_param_t), (int *)&param_cm);
+    mSSMAction->SSMSaveColorCustomizeParamsBy3DLut(offset, sizeof(vpp_cms_3dlut_param_t), (int *)&param_3dlut);
 
     return;
 }
@@ -4881,8 +4901,6 @@ vpp_color_basemode_t CPQControl::GetColorBaseMode(void)
     return data;
 }
 
-
-
 int CPQControl::SaveColorBaseMode(vpp_color_basemode_t basemode)
 {
     LOGD("%s: mode is %d\n", __FUNCTION__, basemode);
@@ -4896,8 +4914,6 @@ int CPQControl::SaveColorBaseMode(vpp_color_basemode_t basemode)
 
     return ret;
 }
-
-
 
 int CPQControl::Cpq_SetColorBaseMode(vpp_color_basemode_t basemode, source_input_param_t source_input_param)
 {
@@ -4917,6 +4933,423 @@ int CPQControl::Cpq_SetColorBaseMode(vpp_color_basemode_t basemode, source_input
     }
 
     return ret;
+}
+
+int CPQControl::SetColorCustomize(vpp_cms_color_t color, vpp_cms_type_t type, int value, int isSave)
+{
+    int ret = -1;
+
+    LOGD("%s color:%d, type:%d, value:%d, isSave:%d\n", __FUNCTION__, color, type, value, isSave);
+
+    if (type > VPP_CMS_TYPE_LUMA) {
+        LOGE("%s type is error, not CM module request\n",__FUNCTION__);
+        return ret;
+    }
+
+    ret = Cpq_SetColorCustomize(color, type, value);
+
+    if ((ret ==0) && (isSave == 1)) {
+        ret = SaveColorCustomize(color, type, value);
+    }
+
+    if (ret < 0) {
+        LOGE("%s failed\n",__FUNCTION__);
+    } else {
+        LOGD("%s success\n",__FUNCTION__);
+    }
+
+    return ret;
+}
+
+vpp_single_color_param_cm_t CPQControl::GetColorCustomize(vpp_cms_color_t color)
+{
+    int offset = 0;
+    vpp_cms_cm_param_t param;
+    vpp_single_color_param_cm_t single_param;
+    memset(&param, 0, sizeof(vpp_cms_cm_param_t));
+    memset(&single_param, 0, sizeof(vpp_single_color_param_cm_t));
+
+    LOGD("%s color:%d\n", __FUNCTION__, color);
+
+    if (mSSMAction->SSMReadColorCustomizeParams(offset, sizeof(vpp_cms_cm_param_t), (int *)&param) < 0) {
+        LOGE("%s SSMReadColorCustomizeParams failed!\n", __FUNCTION__);
+    }
+
+    for (int i = VPP_COLOR_9_PURPLE; i < VPP_COLOR_9_MAX; i++) {
+        LOGD("%s param.data[%d].sat/hue/luma: %d %d %d\n", __FUNCTION__,
+            i, param.data[i].sat, param.data[i].hue, param.data[i].luma);
+    }
+
+    single_param.sat = param.data[color].sat;
+    single_param.hue = param.data[color].hue;
+    single_param.luma = param.data[color].luma;
+
+    return single_param;
+}
+
+int CPQControl::SaveColorCustomize(vpp_cms_color_t color, vpp_cms_type_t type, int value)
+{
+    int offset = 0;
+    vpp_cms_cm_param_t param;
+    memset(&param, 0, sizeof(vpp_cms_cm_param_t));
+
+    if (mSSMAction->SSMReadColorCustomizeParams(offset, sizeof(vpp_cms_cm_param_t), (int *)&param) < 0) {
+        LOGE("%s SSMReadColorCustomizeParams failed!\n", __FUNCTION__);
+        return -1;
+    }
+
+    if (type == VPP_CMS_TYPE_SAT) {
+        param.data[color].sat = value;
+    } else if (type == VPP_CMS_TYPE_HUE) {
+        param.data[color].hue = value;
+    } else if (type == VPP_CMS_TYPE_LUMA) {
+        param.data[color].luma = value;
+    }
+
+    if (mSSMAction->SSMSaveColorCustomizeParams(offset, sizeof(vpp_cms_cm_param_t), (int *)&param) < 0) {
+        LOGE("%s SSMSaveCustomizeColorParams failed!\n", __FUNCTION__);
+        return -1;
+    }
+
+    return 0;
+}
+
+int CPQControl::Cpq_SetColorCustomize(vpp_cms_color_t color, vpp_cms_type_t type, int value)
+{
+    struct cm_color_md pData;
+    memset(&pData, 0, sizeof(struct cm_color_md));
+
+    if (type == VPP_CMS_TYPE_SAT) {
+        if (value < 0) {
+            value = (value * (0 - CMS_SAT_MIN)) / 50;
+        } else {
+            value = (value * CMS_SAT_MAX) / 50;
+        }
+        if (value < CMS_SAT_MIN) value = CMS_SAT_MIN;
+        if (value > CMS_SAT_MAX) value = CMS_SAT_MAX;
+    } else if (type == VPP_CMS_TYPE_HUE) {
+        value = (((value + 50) * (CMS_HUE_MAX - CMS_HUE_MIN)) / 100) - CMS_HUE_MAX;
+        if (value < CMS_HUE_MIN) value = CMS_HUE_MIN;
+        if (value > CMS_HUE_MAX) value = CMS_HUE_MAX;
+    } else if (type == VPP_CMS_TYPE_LUMA) {
+        value = (((value + 50) * (CMS_LUMA_MAX - CMS_LUMA_MIN)) / 100) - CMS_LUMA_MAX;
+        if (value < CMS_LUMA_MIN) value = CMS_LUMA_MIN;
+        if (value > CMS_LUMA_MAX) value = CMS_LUMA_MAX;
+    }
+
+    pData.color_type = cm_9_color;
+    pData.cm_9_color_md = (enum ecm2colormode)color;
+    pData.cm_14_color_md = cm_14_ecm2colormode_max;
+    pData.color_value = value;
+
+    LOGD("%s cm_9_color_md = %d, cm_14_color_md = %d, color_value = %d.\n", __FUNCTION__,
+        pData.cm_9_color_md, pData.cm_14_color_md, pData.color_value);
+
+    if (type == VPP_CMS_TYPE_SAT) {
+        if (VPPDeviceIOCtl(AMVECM_IOC_S_CMS_SAT, &pData) < 0) {
+            LOGE("%s VPP_IOC_SET_CMS_SAT error(%s)\n", __FUNCTION__, strerror(errno));
+            return -1;
+        }
+    } else if (type == VPP_CMS_TYPE_HUE) {
+        if (VPPDeviceIOCtl(AMVECM_IOC_S_CMS_HUE_HS, &pData) < 0) {
+            LOGE("%s AMVECM_IOC_S_CMS_HUE_HS error(%s)\n", __FUNCTION__, strerror(errno));
+            return -1;
+        }
+    } else if (type == VPP_CMS_TYPE_LUMA) {
+        if (VPPDeviceIOCtl(AMVECM_IOC_S_CMS_LUMA, &pData) < 0) {
+            LOGE("%s AMVECM_IOC_S_CMS_LUMA error(%s)\n", __FUNCTION__, strerror(errno));
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
+int CPQControl::SetColorCustomizeBy3DLut(vpp_cms_6color_t color, vpp_cms_type_t type, int value, int isSave)
+{
+    int ret = -1;
+
+    LOGD("%s color:%d, type:%d, value:%d, isSave:%d\n", __FUNCTION__, color, type, value, isSave);
+
+    if (type < VPP_CMS_TYPE_RED) {
+        LOGE("%s type is error, not 3DLUT module request\n",__FUNCTION__);
+        return ret;
+    }
+
+    ret = Cpq_SetColorCustomizeBy3DLut(color, type, value);
+
+    if ((ret ==0) && (isSave == 1)) {
+        ret = SaveColorCustomizeBy3DLut(color, type, value);
+    }
+
+    if (ret < 0) {
+        LOGE("%s failed\n",__FUNCTION__);
+    } else {
+        LOGD("%s success\n",__FUNCTION__);
+    }
+
+    return ret;
+}
+
+vpp_single_color_param_3dlut_t CPQControl::GetColorCustomizeBy3DLut(vpp_cms_6color_t color)
+{
+    int offset = 0;
+    vpp_cms_3dlut_param_t param;
+    vpp_single_color_param_3dlut_t single_param;
+    memset(&param, 0, sizeof(vpp_cms_3dlut_param_t));
+    memset(&single_param, 0, sizeof(vpp_single_color_param_3dlut_t));
+
+    if (mSSMAction->SSMReadColorCustomizeParamsBy3DLut(offset, sizeof(vpp_cms_3dlut_param_t), (int *)&param) < 0) {
+        LOGE("%s SSMReadColorCustomizeParamsBy3DLut failed!\n",__FUNCTION__);
+    }
+
+    for (int i = VPP_COLOR_6_RED; i < VPP_COLOR_6_MAX; i++) {
+        LOGD("%s param.data[%d].red/green/blue: %d %d %d\n", __FUNCTION__,
+            i, param.data[i].red, param.data[i].green, param.data[i].blue);
+    }
+
+    single_param.red = param.data[color].red;
+    single_param.green = param.data[color].green;
+    single_param.blue = param.data[color].blue;
+
+    return single_param;
+}
+
+int CPQControl::SaveColorCustomizeBy3DLut(vpp_cms_6color_t color, vpp_cms_type_t type, int value)
+{
+    int offset = 0;
+    vpp_cms_3dlut_param_t param;
+    memset(&param, 0, sizeof(vpp_cms_3dlut_param_t));
+
+    if (mSSMAction->SSMReadColorCustomizeParamsBy3DLut(offset, sizeof(vpp_cms_3dlut_param_t), (int *)&param) < 0) {
+        LOGE("%s SSMReadColorCustomizeParamsBy3DLut failed!\n", __FUNCTION__);
+        return -1;
+    }
+
+    if (type == VPP_CMS_TYPE_RED) {
+        param.data[color].red = value;
+    } else if (type == VPP_CMS_TYPE_GREEN) {
+        param.data[color].green = value;
+    } else if (type == VPP_CMS_TYPE_BLUE) {
+        param.data[color].blue = value;
+    }
+
+    if (mSSMAction->SSMSaveColorCustomizeParamsBy3DLut(offset, sizeof(vpp_cms_3dlut_param_t), (int *)&param) < 0) {
+        LOGE("%s SSMSaveColorCustomizeParamsBy3DLut failed!\n", __FUNCTION__);
+        return -1;
+    }
+
+    return 0;
+}
+
+int CPQControl::Cpq_SetColorCustomizeBy3DLut(vpp_cms_6color_t color, vpp_cms_type_t type, int value)
+{
+    int gain = 0;
+    int offset = 0;
+    vpp_cms_3dlut_param_t param;
+    struct color_tune_parm_s pData;
+    memset(&param, 0, sizeof(vpp_cms_3dlut_param_t));
+    memset(&pData, 0, sizeof(struct color_tune_parm_s));
+
+    if (mSSMAction->SSMReadColorCustomizeParamsBy3DLut(offset, sizeof(struct color_tune_parm_s), (int *)&param) < 0) {
+        LOGE("%s SSMReadColorCustomizeParamsBy3DLut failed!\n", __FUNCTION__);
+        return -1;
+    }
+
+    pData.rgain_r = param.data[VPP_COLOR_6_RED].red;
+    pData.rgain_g = param.data[VPP_COLOR_6_RED].green;
+    pData.rgain_b = param.data[VPP_COLOR_6_RED].blue;
+    pData.ggain_r = param.data[VPP_COLOR_6_GREEN].red;
+    pData.ggain_g = param.data[VPP_COLOR_6_GREEN].green;
+    pData.ggain_b = param.data[VPP_COLOR_6_GREEN].blue;
+    pData.bgain_r = param.data[VPP_COLOR_6_BLUE].red;
+    pData.bgain_g = param.data[VPP_COLOR_6_BLUE].green;
+    pData.bgain_b = param.data[VPP_COLOR_6_BLUE].blue;
+    pData.cgain_r = param.data[VPP_COLOR_6_CYAN].red;
+    pData.cgain_g = param.data[VPP_COLOR_6_CYAN].green;
+    pData.cgain_b = param.data[VPP_COLOR_6_CYAN].blue;
+    pData.mgain_r = param.data[VPP_COLOR_6_MAGENTA].red;
+    pData.mgain_g = param.data[VPP_COLOR_6_MAGENTA].green;
+    pData.mgain_b = param.data[VPP_COLOR_6_MAGENTA].blue;
+    pData.ygain_r = param.data[VPP_COLOR_6_YELLOW].red;
+    pData.ygain_g = param.data[VPP_COLOR_6_YELLOW].green;
+    pData.ygain_b = param.data[VPP_COLOR_6_YELLOW].blue;
+
+    if (value < -100 || value > 100) {
+        value = 0;
+    }
+    gain = value * 2048 / 200;
+
+    switch (color) {
+        case VPP_COLOR_6_RED:
+            if (type == VPP_CMS_TYPE_RED) {
+                pData.rgain_r = gain;
+            } else if (type == VPP_CMS_TYPE_GREEN) {
+                pData.rgain_g = gain;
+            } else if (type == VPP_CMS_TYPE_BLUE) {
+                pData.rgain_b = gain;
+            }
+            break;
+        case VPP_COLOR_6_GREEN:
+            if (type == VPP_CMS_TYPE_RED) {
+                pData.ggain_r = gain;
+            } else if (type == VPP_CMS_TYPE_GREEN) {
+                pData.ggain_g = gain;
+            } else if (type == VPP_CMS_TYPE_BLUE) {
+                pData.ggain_b = gain;
+            }
+            break;
+        case VPP_COLOR_6_BLUE:
+            if (type == VPP_CMS_TYPE_RED) {
+                pData.bgain_r = gain;
+            } else if (type == VPP_CMS_TYPE_GREEN) {
+                pData.bgain_g = gain;
+            } else if (type == VPP_CMS_TYPE_BLUE) {
+                pData.bgain_b = gain;
+            }
+            break;
+        case VPP_COLOR_6_CYAN:
+            if (type == VPP_CMS_TYPE_RED) {
+                pData.cgain_r = gain;
+            } else if (type == VPP_CMS_TYPE_GREEN) {
+                pData.cgain_g = gain;
+            } else if (type == VPP_CMS_TYPE_BLUE) {
+                pData.cgain_b = gain;
+            }
+            break;
+        case VPP_COLOR_6_MAGENTA:
+            if (type == VPP_CMS_TYPE_RED) {
+                pData.mgain_r = gain;
+            } else if (type == VPP_CMS_TYPE_GREEN) {
+                pData.mgain_g = gain;
+            } else if (type == VPP_CMS_TYPE_BLUE) {
+                pData.mgain_b = gain;
+            }
+            break;
+        case VPP_COLOR_6_YELLOW:
+            if (type == VPP_CMS_TYPE_RED) {
+                pData.ygain_r = gain;
+            } else if (type == VPP_CMS_TYPE_GREEN) {
+                pData.ygain_g = gain;
+            } else if (type == VPP_CMS_TYPE_BLUE) {
+                pData.ygain_b = gain;
+            }
+            break;
+        default:
+            break;
+    }
+
+    pData.en = mPQConfigFile->GetInt(CFG_SECTION_CMS, CFG_CMS_3DLUT_EN, 0);
+
+    if (VPPDeviceIOCtl(AMVECM_IOC_S_COLOR_TUNE, &pData) < 0) {
+        LOGE("%s AMVECM_IOC_S_COLOR_TUNE error(%s)\n", __FUNCTION__, strerror(errno));
+        return -1;
+    }
+
+    return 0;
+}
+
+int CPQControl::Cpq_GetColorCustomizeDefValue(vpp_cms_cm_param_t *pCmsCm, vpp_cms_3dlut_param_t *pCms3DLut)
+{
+    int i = 0;
+    const char *buff = NULL;
+
+    //color customize(CM) default value
+    buff = mPQConfigFile->GetString(CFG_SECTION_CMS, CFG_CMS_CM_READ, NULL);
+    pqTransformStringToInt(buff, (int *)&pCmsCm->data[VPP_COLOR_9_RED]);
+    if (!buff)   return -1;
+
+    buff = mPQConfigFile->GetString(CFG_SECTION_CMS, CFG_CMS_CM_GREEN, NULL);
+    pqTransformStringToInt(buff, (int *)&pCmsCm->data[VPP_COLOR_9_GREEN]);
+    if (!buff)   return -1;
+
+    buff = mPQConfigFile->GetString(CFG_SECTION_CMS, CFG_CMS_CM_BLUE, NULL);
+    pqTransformStringToInt(buff, (int *)&pCmsCm->data[VPP_COLOR_9_BLUE]);
+    if (!buff)   return -1;
+
+    buff = mPQConfigFile->GetString(CFG_SECTION_CMS, CFG_CMS_CM_CYAN, NULL);
+    pqTransformStringToInt(buff, (int *)&pCmsCm->data[VPP_COLOR_9_CYAN]);
+    if (!buff)   return -1;
+
+    buff = mPQConfigFile->GetString(CFG_SECTION_CMS, CFG_CMS_CM_PURPLE, NULL);
+    pqTransformStringToInt(buff, (int *)&pCmsCm->data[VPP_COLOR_9_PURPLE]);
+    if (!buff)   return -1;
+
+    buff = mPQConfigFile->GetString(CFG_SECTION_CMS, CFG_CMS_CM_YELLOW, NULL);
+    pqTransformStringToInt(buff, (int *)&pCmsCm->data[VPP_COLOR_9_YELLOW]);
+    if (!buff)   return -1;
+
+    buff = mPQConfigFile->GetString(CFG_SECTION_CMS, CFG_CMS_CM_SKIN, NULL);
+    pqTransformStringToInt(buff, (int *)&pCmsCm->data[VPP_COLOR_9_SKIN]);
+    if (!buff)   return -1;
+
+    buff = mPQConfigFile->GetString(CFG_SECTION_CMS, CFG_CMS_CM_YELLOW_GREEN, NULL);
+    pqTransformStringToInt(buff, (int *)&pCmsCm->data[VPP_COLOR_9_YELLOW_GREEN]);
+    if (!buff)   return -1;
+
+    buff = mPQConfigFile->GetString(CFG_SECTION_CMS, CFG_CMS_CM_BLUE_GREEN, NULL);
+    pqTransformStringToInt(buff, (int *)&pCmsCm->data[VPP_COLOR_9_BLUE_GREEN]);
+    if (!buff)   return -1;
+
+    for (i = VPP_COLOR_9_PURPLE; i < VPP_COLOR_9_MAX; i++) {
+        LOGD("%s pCmsCm color:%d, %d %d %d\n", __FUNCTION__,
+            i, pCmsCm->data[i].sat, pCmsCm->data[i].hue, pCmsCm->data[i].luma);
+    }
+
+    //color customize(3DLUT) default value
+    buff = mPQConfigFile->GetString(CFG_SECTION_CMS, CFG_CMS_3DLUT_RED, NULL);
+    pqTransformStringToInt(buff, (int *)&pCms3DLut->data[VPP_COLOR_6_RED]);
+    if (!buff)   return -1;
+
+    buff = mPQConfigFile->GetString(CFG_SECTION_CMS, CFG_CMS_3DLUT_GREEN, NULL);
+    pqTransformStringToInt(buff, (int *)&pCms3DLut->data[VPP_COLOR_6_GREEN]);
+    if (!buff)   return -1;
+
+    buff = mPQConfigFile->GetString(CFG_SECTION_CMS, CFG_CMS_3DLUT_BLUE, NULL);
+    pqTransformStringToInt(buff, (int *)&pCms3DLut->data[VPP_COLOR_6_BLUE]);
+    if (!buff)   return -1;
+
+    buff = mPQConfigFile->GetString(CFG_SECTION_CMS, CFG_CMS_3DLUT_CYAN, NULL);
+    pqTransformStringToInt(buff, (int *)&pCms3DLut->data[VPP_COLOR_6_CYAN]);
+    if (!buff)   return -1;
+
+    buff = mPQConfigFile->GetString(CFG_SECTION_CMS, CFG_CMS_3DLUT_MAGENTA, NULL);
+    pqTransformStringToInt(buff, (int *)&pCms3DLut->data[VPP_COLOR_6_MAGENTA]);
+    if (!buff)   return -1;
+
+    buff = mPQConfigFile->GetString(CFG_SECTION_CMS, CFG_CMS_3DLUT_YELLOW, NULL);
+    pqTransformStringToInt(buff, (int *)&pCms3DLut->data[VPP_COLOR_6_YELLOW]);
+    if (!buff)   return -1;
+
+    for (i = VPP_COLOR_6_RED; i < VPP_COLOR_6_MAX; i++) {
+        LOGD("%s pCms3DLut color:%d, %d %d %d\n", __FUNCTION__,
+            i, pCms3DLut->data[i].red, pCms3DLut->data[i].green, pCms3DLut->data[i].blue);
+    }
+
+    return 0;
+}
+
+int CPQControl::ResetColorCustomize(vpp_cms_method_t mode)
+{
+    int offset = 0;
+    vpp_cms_cm_param_t param_cm;
+    vpp_cms_3dlut_param_t param_3dlut;
+
+    memset(&param_cm, 0, sizeof(vpp_cms_cm_param_t));
+    memset(&param_3dlut, 0, sizeof(vpp_cms_3dlut_param_t));
+
+    Cpq_GetColorCustomizeDefValue(&param_cm, &param_3dlut);
+
+    if (mode == VPP_CMS_METHOD_CM) {
+        mSSMAction->SSMSaveColorCustomizeParams(offset, sizeof(vpp_cms_cm_param_t), (int *)&param_cm);
+    } else if (mode == VPP_CMS_METHOD_3DLUT) {
+        mSSMAction->SSMSaveColorCustomizeParamsBy3DLut(offset, sizeof(vpp_cms_3dlut_param_t), (int *)&param_3dlut);
+    } else {
+        LOGE("%s mode is out of range\n", __FUNCTION__);
+        return -1;
+    }
+
+    return 0;
 }
 
 int CPQControl::SetColorGamutMode(vpp_colorgamut_mode_t value, int is_save)
@@ -5244,7 +5677,7 @@ int CPQControl::Cpq_SetMpegNr(vpp_pq_level_t mode, source_input_param_t source_i
     int ret = -1;
 
     ret = Cpq_SetDeblockMode((vpp_deblock_mode_t) mode, source_input_param);
-    ret |= Cpq_SetDemoSquitoMode((vpp_DemoSquito_mode_t) mode, source_input_param);
+    ret |= Cpq_SetDemoSquitoMode((vpp_demosquito_mode_t) mode, source_input_param);
 
     if (ret < 0)
         LOGE("%s failed!\n",__FUNCTION__);
@@ -5336,7 +5769,7 @@ int CPQControl::Cpq_SetDeblockMode(vpp_deblock_mode_t deblock_mode, source_input
     return ret;
 }
 
-int CPQControl::SetDemoSquitoMode(vpp_DemoSquito_mode_t mode, int is_save)
+int CPQControl::SetDemoSquitoMode(vpp_demosquito_mode_t mode, int is_save)
 {
     LOGD("%s: mode is %d\n", __FUNCTION__, mode);
     int ret = -1;
@@ -5368,7 +5801,7 @@ int CPQControl::GetDemoSquitoMode(void)
     return mode;
 }
 
-int CPQControl::SaveDemoSquitoMode(vpp_DemoSquito_mode_t mode)
+int CPQControl::SaveDemoSquitoMode(vpp_demosquito_mode_t mode)
 {
     int ret = -1;
 
@@ -5380,7 +5813,7 @@ int CPQControl::SaveDemoSquitoMode(vpp_DemoSquito_mode_t mode)
     return ret;
 }
 
-int CPQControl::Cpq_SetDemoSquitoMode(vpp_DemoSquito_mode_t DeMosquito_mode, source_input_param_t source_input_param)
+int CPQControl::Cpq_SetDemoSquitoMode(vpp_demosquito_mode_t DeMosquito_mode, source_input_param_t source_input_param)
 {
     int ret = -1;
     am_regs_t regs;
@@ -8271,6 +8704,16 @@ void CPQControl::resetAllUserSettingParam()
 
     mSSMAction->SSMSaveAipqEnableVal(0);
     mSSMAction->SSMSaveAiSrEnable(1);
+
+    //color customize
+    int offset = 0;
+    vpp_cms_cm_param_t param_cm;
+    vpp_cms_3dlut_param_t param_3dlut;
+    memset(&param_cm, 0, sizeof(vpp_cms_cm_param_t));
+    memset(&param_3dlut, 0, sizeof(vpp_cms_3dlut_param_t));
+    Cpq_GetColorCustomizeDefValue(&param_cm, &param_3dlut);
+    mSSMAction->SSMSaveColorCustomizeParams(offset, sizeof(vpp_cms_cm_param_t), (int *)&param_cm);
+    mSSMAction->SSMSaveColorCustomizeParamsBy3DLut(offset, sizeof(vpp_cms_3dlut_param_t), (int *)&param_3dlut);
 
     return;
 }
