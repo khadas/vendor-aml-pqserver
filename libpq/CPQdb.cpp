@@ -184,7 +184,7 @@ int CPQdb::getRegValues(const char *table_name, am_regs_t *regs)
         LOGE("%s, Select value error!\n", __FUNCTION__);
         regs->length = 0;
         return rval;
-    } else if (count > REGS_MAX_NUMBER) {
+    } else if (count > am_reg_size) {
         LOGE("%s, regs is too more, in pq.db count = %d", __FUNCTION__, count);
         regs->length = 0;
         return rval;
@@ -236,7 +236,7 @@ int CPQdb::getRegValuesByValue(const char *name, const char *f_name, const char 
         LOGE("%s, Select value error!\n", __FUNCTION__);
         regs->length = 0;
         return -1;
-    } else if (count > REGS_MAX_NUMBER) {
+    } else if (count > am_reg_size) {
         LOGE("%s, regs is too more, in pq.db count = %d", __FUNCTION__, count);
         regs->length = 0;
         return -1;
@@ -580,7 +580,7 @@ int CPQdb::getDIRegValuesByValue(const char *name, const char *f_name, const cha
     if (count < 0) {
         LOGE("%s, select value error!\n", __FUNCTION__);
         return -1;
-    } else if (count > REGS_MAX_NUMBER) {
+    } else if (count > am_reg_size) {
         LOGE("%s, regs is too more, in pq.db count = %d", __FUNCTION__, count);
         return -1;
     }
@@ -726,75 +726,114 @@ int CPQdb::PQ_ResetAllColorTemperatureParams(void)
     return rval;
 }
 
-int CPQdb::PQ_GetHDRTMOParams(source_input_param_t source_input_param, hdr_tmo_t mode, hdr_tmo_sw_s *newParams)
+int CPQdb::PQ_GetHDRTMOParams(source_input_param_t source_input_param, hdr_tmo_t mode, struct hdr_tmo_sw *newParams)
 {
     CSqlite::Cursor c;
     char sqlmaster[256];
     int rval = -1;
+    char buf[512];
+    char *buffer = NULL;
+    char *aa = NULL;
+    char *aa_save[100];
+    unsigned int index = 0;
 
-    memset(newParams, 0, sizeof(hdr_tmo_sw_s));
+    if (CheckHdrStatus("GeneralHDRNodeTable"))
+        source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HDR;
+
+    std::string TableName = GetTableName("GeneralHDRNodeTable", source_input_param);
+    if ((TableName.c_str() == NULL) || (TableName.length() == 0) ) {
+        LOGD("%s, GeneralHDRNodeTable don't have this table!\n", __FUNCTION__);
+        return -1;
+    }
+
+    memset(newParams, 0, sizeof(struct hdr_tmo_sw));
 
     {// for param
-        getSqlParams(__FUNCTION__, sqlmaster, "select value from %s where level = %d",
-                    PQ_DB_HDRTMO_TABLE_NAME, mode);
-        rval = this->select(sqlmaster, c);
+          getSqlParams(__FUNCTION__, sqlmaster, "select value from %s where regnum < %d and level = %d",
+                      TableName.c_str(), HDR_oo_init_lut,mode);
 
-        if (c.moveToFirst()) {
-            newParams->tmo_en            = c.getInt(0);
-            newParams->reg_highlight     = c.getInt(1);
-            newParams->reg_hist_th       = c.getInt(2);
-            newParams->reg_light_th      = c.getInt(3);
-            newParams->reg_highlight_th1 = c.getInt(4);
-            newParams->reg_highlight_th2 = c.getInt(5);
-            newParams->reg_display_e     = c.getInt(6);
-            newParams->reg_middle_a      = c.getInt(7);
-            newParams->reg_middle_a_adj  = c.getInt(8);
-            newParams->reg_middle_b      = c.getInt(9);
-            newParams->reg_middle_s      = c.getInt(10);
-            newParams->reg_max_th1       = c.getInt(11);
-            newParams->reg_middle_th     = c.getInt(12);
-            newParams->reg_thold1        = c.getInt(13);
-            newParams->reg_thold2        = c.getInt(14);
-            newParams->reg_thold3        = c.getInt(15);
-            newParams->reg_thold4        = c.getInt(16);
-            newParams->reg_max_th2       = c.getInt(17);
-            newParams->reg_pnum_th       = c.getInt(18);
-            newParams->reg_hl0           = c.getInt(19);
-            newParams->reg_hl1           = c.getInt(20);
-            newParams->reg_hl2           = c.getInt(21);
-            newParams->reg_hl3           = c.getInt(22);
-            newParams->reg_display_adj   = c.getInt(23);
-            newParams->reg_avg_th        = c.getInt(24);
-            newParams->reg_avg_adj       = c.getInt(25);
-            newParams->reg_low_adj       = c.getInt(26);
-            newParams->reg_high_en       = c.getInt(27);
-            newParams->reg_high_adj1     = c.getInt(28);
-            newParams->reg_high_adj2     = c.getInt(29);
-            newParams->reg_high_maxdiff  = c.getInt(30);
-            newParams->reg_high_mindiff  = c.getInt(31);
-            newParams->alpha             = c.getInt(32);
+          rval = this->select(sqlmaster, c);
 
-        }else {
-            LOGE("%s, read hdr tmo param fail\n", __FUNCTION__);
-        }
+          if (c.moveToFirst()) {
+              newParams->tmo_en            = c.getInt(0);
+              newParams->reg_highlight     = c.getInt(1);
+              newParams->reg_hist_th       = c.getInt(2);
+              newParams->reg_light_th      = c.getInt(3);
+              newParams->reg_highlight_th1 = c.getInt(4);
+              newParams->reg_highlight_th2 = c.getInt(5);
+              newParams->reg_display_e     = c.getInt(6);
+              newParams->reg_middle_a      = c.getInt(7);
+              newParams->reg_middle_a_adj  = c.getInt(8);
+              newParams->reg_middle_b      = c.getInt(9);
+              newParams->reg_middle_s      = c.getInt(10);
+              newParams->reg_max_th1       = c.getInt(11);
+              newParams->reg_middle_th     = c.getInt(12);
+              newParams->reg_thold1        = c.getInt(13);
+              newParams->reg_thold2        = c.getInt(14);
+              newParams->reg_thold3        = c.getInt(15);
+              newParams->reg_thold4        = c.getInt(16);
+              newParams->reg_max_th2       = c.getInt(17);
+              newParams->reg_pnum_th       = c.getInt(18);
+              newParams->reg_hl0           = c.getInt(19);
+              newParams->reg_hl1           = c.getInt(20);
+              newParams->reg_hl2           = c.getInt(21);
+              newParams->reg_hl3           = c.getInt(22);
+              newParams->reg_display_adj   = c.getInt(23);
+              newParams->reg_avg_th        = c.getInt(24);
+              newParams->reg_avg_adj       = c.getInt(25);
+              newParams->reg_low_adj       = c.getInt(26);
+              newParams->reg_high_en       = c.getInt(27);
+              newParams->reg_high_adj1     = c.getInt(28);
+              newParams->reg_high_adj2     = c.getInt(29);
+              newParams->reg_high_maxdiff  = c.getInt(30);
+              newParams->reg_high_mindiff  = c.getInt(31);
+              newParams->alpha             = c.getInt(32);
+              newParams->reg_ratio         = c.getInt(33);
+              newParams->reg_max_th3       = c.getInt(34);
+          }else {
+              LOGE("%s, read hdr tmo param fail\n", __FUNCTION__);
+          }
 
-        LOGD("%s - hdr tmo param is tmo_en:%d reg_highlight:%d reg_hist_th:%d reg_light_th:%d"
-            " reg_highlight_th1:%d reg_highlight_th2:%d reg_display_e:%d reg_middle_a:%d"
-            " reg_middle_a_adj:%d reg_middle_b:%d reg_middle_s:%d reg_max_th1:%d"
-            " reg_middle_th:%d reg_thold1:%d reg_thold2:%d reg_thold3:%d reg_thold4:%d"
-            " reg_max_th2:%d reg_pnum_th:%d reg_hl0:%d reg_hl1:%d reg_hl2:%d"
-            " reg_hl3:%d reg_display_adj:%d reg_avg_th:%d reg_avg_adj:%d reg_low_adj:%d"
-            " reg_high_en:%d reg_high_adj1:%d reg_high_adj2:%d reg_high_maxdiff:%d"
-            " reg_high_mindiff:%d alpha:%d\n",
-            __FUNCTION__, newParams->tmo_en, newParams->reg_highlight, newParams->reg_hist_th, newParams->reg_light_th,
-            newParams->reg_highlight_th1, newParams->reg_highlight_th2, newParams->reg_display_e, newParams->reg_middle_a,
-            newParams->reg_middle_a_adj, newParams->reg_middle_b, newParams->reg_middle_s, newParams->reg_max_th1,
-            newParams->reg_middle_th, newParams->reg_thold1, newParams->reg_thold2, newParams->reg_thold3, newParams->reg_thold4,
-            newParams->reg_max_th2, newParams->reg_pnum_th, newParams->reg_hl0, newParams->reg_hl1, newParams->reg_hl2,
-            newParams->reg_hl3, newParams->reg_display_adj, newParams->reg_avg_th, newParams->reg_avg_adj, newParams->reg_low_adj,
-            newParams->reg_high_en, newParams->reg_high_adj1, newParams->reg_high_adj2, newParams->reg_high_maxdiff,
-            newParams->reg_high_mindiff, newParams->alpha);
-    }
+          LOGD("%s - hdr tmo param is tmo_en:%d reg_highlight:%d reg_hist_th:%d reg_light_th:%d"
+              " reg_highlight_th1:%d reg_highlight_th2:%d reg_display_e:%d reg_middle_a:%d"
+              " reg_middle_a_adj:%d reg_middle_b:%d reg_middle_s:%d reg_max_th1:%d"
+              " reg_middle_th:%d reg_thold1:%d reg_thold2:%d reg_thold3:%d reg_thold4:%d"
+              " reg_max_th2:%d reg_pnum_th:%d reg_hl0:%d reg_hl1:%d reg_hl2:%d"
+              " reg_hl3:%d reg_display_adj:%d reg_avg_th:%d reg_avg_adj:%d reg_low_adj:%d"
+              " reg_high_en:%d reg_high_adj1:%d reg_high_adj2:%d reg_high_maxdiff:%d"
+              " reg_high_mindiff:%d alpha:%d\n",
+              __FUNCTION__, newParams->tmo_en, newParams->reg_highlight, newParams->reg_hist_th, newParams->reg_light_th,
+              newParams->reg_highlight_th1, newParams->reg_highlight_th2, newParams->reg_display_e, newParams->reg_middle_a,
+              newParams->reg_middle_a_adj, newParams->reg_middle_b, newParams->reg_middle_s, newParams->reg_max_th1,
+              newParams->reg_middle_th, newParams->reg_thold1, newParams->reg_thold2, newParams->reg_thold3, newParams->reg_thold4,
+              newParams->reg_max_th2, newParams->reg_pnum_th, newParams->reg_hl0, newParams->reg_hl1, newParams->reg_hl2,
+              newParams->reg_hl3, newParams->reg_display_adj, newParams->reg_avg_th, newParams->reg_avg_adj, newParams->reg_low_adj,
+              newParams->reg_high_en, newParams->reg_high_adj1, newParams->reg_high_adj2, newParams->reg_high_maxdiff,
+              newParams->reg_high_mindiff, newParams->alpha);
+      }
+
+      //HDR_oo_init_lut
+      {
+          index = 0;
+          aa = NULL;
+          getSqlParams(__FUNCTION__, sqlmaster, "select value from %s where "
+                      "regnum = %d and level = %d",
+                      TableName.c_str(), HDR_oo_init_lut, mode);
+
+          rval = this->select(sqlmaster, c);
+          memset(buf, 0, sizeof(buf));
+          strcpy(buf, c.getString(index).c_str());
+          //LOGD ("%s - HDR_oo_init_lut is %s\n", __FUNCTION__, buf);
+          buffer = buf;
+          while ((aa_save[index] = strtok_r(buffer, ",", &aa)) != NULL) {
+              newParams->oo_init_lut[index] = atoi(aa_save[index]);
+              index ++;
+              if (index >= sizeof(newParams->oo_init_lut)/sizeof(unsigned int)) {
+                  break;
+              }
+              buffer = NULL;
+          }
+      }
 
     return rval;
 }
@@ -1091,13 +1130,13 @@ int CPQdb::PQ_GetCABCParams(source_input_param_t source_input_param, cabc_param_
     return rval;
 }
 
-int CPQdb::PQ_GetLCDHDRInfoParams(source_input_param_t source_input_param, lcd_optical_info_t *newParams)
+int CPQdb::PQ_GetLCDHDRInfoParams(source_input_param_t source_input_param, struct lcd_optical_info_s *newParams)
 {
     CSqlite::Cursor c;
     char sqlmaster[256];
     int rval = -1;
 
-    memset(newParams, 0, sizeof(lcd_optical_info_t));
+    memset(newParams, 0, sizeof(struct lcd_optical_info_s));
 
     {// for param
         getSqlParams(__FUNCTION__, sqlmaster, "select Value from %s;", PQ_DB_LCD_HDRINFO_TABLE_NAME);
@@ -1134,7 +1173,7 @@ int CPQdb::PQ_GetLCDHDRInfoParams(source_input_param_t source_input_param, lcd_o
     return rval;
 }
 
-int CPQdb::PQ_GetDNLPParams(source_input_param_t source_input_param, Dynamic_contrast_mode_t mode, ve_dnlp_curve_param_t *newParams)
+int CPQdb::PQ_GetDNLPParams(source_input_param_t source_input_param, Dynamic_contrast_mode_t mode, struct ve_dnlp_curve_param_s *newParams)
 {
     CSqlite::Cursor c;
     CSqlite::Cursor c1;
@@ -1146,7 +1185,7 @@ int CPQdb::PQ_GetDNLPParams(source_input_param_t source_input_param, Dynamic_con
     unsigned int index = 0;
     int rval = -1;
 
-    memset(newParams, 0, sizeof(ve_dnlp_curve_param_s));
+    memset(newParams, 0, sizeof(struct ve_dnlp_curve_param_s));
 
     std::string TableName = GetTableName("GeneralDNLPTable", source_input_param);
     if ((TableName.c_str() != NULL) && (TableName.length() != 0) ) {
@@ -1512,7 +1551,7 @@ int CPQdb::PQ_GetDNLPParams(source_input_param_t source_input_param, Dynamic_con
     return rval;
 }
 
-int CPQdb::PQ_GetLocalContrastNodeParams(source_input_param_t source_input_param, local_contrast_mode_t mode, ve_lc_curve_parm_t *Params)
+int CPQdb::PQ_GetLocalContrastNodeParams(source_input_param_t source_input_param, local_contrast_mode_t mode, struct ve_lc_curve_parm_s *Params)
 {
     CSqlite::Cursor c;
     char sqlmaster[256];
@@ -1989,7 +2028,7 @@ int CPQdb::PQ_GetCVD2Params(source_input_param_t source_input_param, am_regs_t *
     return ret;
 }
 
-int CPQdb::PQ_GetAIParams(source_input_param_t source_input_param, ai_pic_table_t *aiRegs)
+int CPQdb::PQ_GetAIParams(source_input_param_t source_input_param, struct aipq_load_s *aiRegs)
 {
     CSqlite::Cursor c;
     char sqlmaster[256];
@@ -2470,10 +2509,10 @@ std::string CPQdb::GetTableName(const char *GeneralTableName, source_input_param
             (strcmp(GeneralTableName, "GeneralLocalContrastNodeTable") == 0) ||
             (strcmp(GeneralTableName, "GeneralLocalContrastRegTable") == 0) ||
             (strcmp(GeneralTableName, PQ_DB_GENERALPICTUREMODE_TABLE_NAME) == 0)) {
-            if ((mHdrType == HDR_TYPE_HDR10) ||
-                (mHdrType == HDR_TYPE_HDR10PLUS) ||
-                (mHdrType == HDR_TYPE_HLG) ||
-                (mHdrType == HDR_TYPE_DOVI)) {
+            if ((mHdrType == HDRTYPE_HDR10) ||
+                (mHdrType == HDRTYPE_HDR10PLUS) ||
+                (mHdrType == HDRTYPE_HLG) ||
+                (mHdrType == HDRTYPE_DOVI)) {
                 source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HDR;
             } else {
                 LOGD("%s: SDR source\n", __FUNCTION__);
@@ -2492,17 +2531,19 @@ std::string CPQdb::GetTableName(const char *GeneralTableName, source_input_param
             (strcmp(GeneralTableName, "GeneralLocalContrastRegTable") == 0) ||
             (strcmp(GeneralTableName, PQ_DB_GENERALGAMMA_TABLE_NAME) == 0) ||
             (strcmp(GeneralTableName, PQ_DB_GENERALPICTUREMODE_TABLE_NAME) == 0)) {
-            if (mHdrType == HDR_TYPE_HDR10) {
+        #if 0 //cdy
+            if (mHdrType == HDRTYPE_HDR10) {
                 source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HDR10;
-            } else if (mHdrType == HDR_TYPE_HDR10PLUS) {
+            } else if (mHdrType == HDRTYPE_HDR10PLUS) {
                 source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HDR10PLUS;
-            } else if (mHdrType == HDR_TYPE_HLG) {
+            } else if (mHdrType == HDRTYPE_HLG) {
                 source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HLG;
-            } else if (mHdrType == HDR_TYPE_DOVI) {
+            } else if (mHdrType == HDRTYPE_DOVI) {
                 source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_DOLBY;
             } else {
                 LOGD("%s: SDR source\n", __FUNCTION__);
             }
+        #endif
         }
     }
 

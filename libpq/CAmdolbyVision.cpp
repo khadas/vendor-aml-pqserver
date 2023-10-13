@@ -123,8 +123,8 @@ int CDolbyVision::DV_DeviceIOCtl( int request, ... )
 }
 
 int CDolbyVision::SetAmdolbyCfgFile(const char *binFilePath, const char *cfgFilePath) {
-    dolby_config_file_t amdolbyCfgFile;
-    memset(&amdolbyCfgFile, 0, sizeof(dolby_config_file_t));
+    struct dv_config_file_s amdolbyCfgFile;
+    memset(&amdolbyCfgFile, 0, sizeof(struct dv_config_file_s));
     if ((binFilePath == NULL) || (cfgFilePath == NULL)) {
         LOGD("%s: file path invalid\n", __FUNCTION__);
         return -1;
@@ -172,10 +172,10 @@ dolby_pq_mode_t CDolbyVision::GetAmdolbyPQMode(void) {
     return amdolbyPQmode;
 }
 
-int CDolbyVision::SetAmdolbyPQParam(dolby_pq_mode_t mode, dolby_pq_item_t iteamID, int value) {
-    dolby_pq_info_t amdolbyPQInfo;
+int CDolbyVision::SetAmdolbyPQParam(dolby_pq_mode_t mode, enum pq_item_e iteamID, int value) {
+    struct dv_pq_info_s amdolbyPQInfo;
     memset(&amdolbyPQInfo, 0, sizeof(amdolbyPQInfo));
-    amdolbyPQInfo.dolby_pic_mode_id = mode;
+    amdolbyPQInfo.pic_mode_id = mode;
     amdolbyPQInfo.item              = iteamID;
     amdolbyPQInfo.value             = value;
 
@@ -189,10 +189,10 @@ int CDolbyVision::SetAmdolbyPQParam(dolby_pq_mode_t mode, dolby_pq_item_t iteamI
     return ret;
 }
 
-int CDolbyVision::GetAmdolbyPQParam(dolby_pq_mode_t mode, dolby_pq_item_t iteamID) {
-    dolby_pq_info_t amdolbyPQInfo;
+int CDolbyVision::GetAmdolbyPQParam(dolby_pq_mode_t mode, enum pq_item_e iteamID) {
+    struct dv_pq_info_s amdolbyPQInfo;
     memset(&amdolbyPQInfo, 0, sizeof(amdolbyPQInfo));
-    amdolbyPQInfo.dolby_pic_mode_id = mode;
+    amdolbyPQInfo.pic_mode_id = mode;
     amdolbyPQInfo.item              = iteamID;
 
     int ret = DV_DeviceIOCtl(DV_IOC_GET_DV_SINGLE_PQ_VALUE, &amdolbyPQInfo);
@@ -205,7 +205,7 @@ int CDolbyVision::GetAmdolbyPQParam(dolby_pq_mode_t mode, dolby_pq_item_t iteamI
     return ret;
 }
 
-int CDolbyVision::SetAmdolbyPQFullParam(dolby_full_pq_info_t fullInfo) {
+int CDolbyVision::SetAmdolbyPQFullParam(struct dv_full_pq_info_s fullInfo) {
     int ret = DV_DeviceIOCtl(DV_IOC_GET_DV_FULL_PQ_VALUE, &fullInfo);
     if (ret < 0) {
         LOGD("%s failed!\n", __FUNCTION__);
@@ -216,9 +216,9 @@ int CDolbyVision::SetAmdolbyPQFullParam(dolby_full_pq_info_t fullInfo) {
     return ret;
 }
 
-int CDolbyVision::GetAmdolbyPQFullParam(dolby_full_pq_info_t *fullInfo) {
+int CDolbyVision::GetAmdolbyPQFullParam(struct dv_full_pq_info_s *fullInfo) {
     int ret = 0;
-    dolby_full_pq_info_t amdolbyPQFullInfo;
+    struct dv_full_pq_info_s amdolbyPQFullInfo;
     memset(&amdolbyPQFullInfo, 0, sizeof(amdolbyPQFullInfo));
     amdolbyPQFullInfo.pic_mode_id = fullInfo->pic_mode_id;
 
@@ -238,7 +238,7 @@ int CDolbyVision::GetAmdolbyPQFullParam(dolby_full_pq_info_t *fullInfo) {
     return ret;
 }
 
-bool CDolbyVision::isSourceCallAmdolbyCore(hdr_type_t hdrType)
+bool CDolbyVision::isSourceCallAmdolbyCore(enum hdr_type_e hdrType)
 {
     bool ret = false;
     char temp[8];
@@ -251,35 +251,34 @@ bool CDolbyVision::isSourceCallAmdolbyCore(hdr_type_t hdrType)
     if (readRet > 0) {
         int hdr10PolicyValue = atoi(temp);
         switch (hdrType) {
-        case HDR_TYPE_HDR10:
+        case HDRTYPE_HDR10:
             if (((hdr10PolicyValue & HDR_BY_DV_F_SINK) == HDR_BY_DV_F_SINK)
                 || ((hdr10PolicyValue & HDR_BY_DV_F_SRC) == HDR_BY_DV_F_SRC)) {
                 ret = true;
             }
             break;
-        case HDR_TYPE_HDR10PLUS:
+        case HDRTYPE_HDR10PLUS:
             if ((hdr10PolicyValue & HDRP_BY_DV) == HDRP_BY_DV) {
                 ret = true;
             }
             break;
-        case HDR_TYPE_HLG:
+        case HDRTYPE_HLG:
             if (((hdr10PolicyValue & HLG_BY_DV_F_SINK) == HLG_BY_DV_F_SINK)
                 || ((hdr10PolicyValue & HLG_BY_DV_F_SRC) == HLG_BY_DV_F_SRC)) {
                 ret = true;
             }
             break;
-        case HDR_TYPE_DOVI:
+        case HDRTYPE_DOVI:
             ret = true;
             break;
-        case HDR_TYPE_SDR:
+        case HDRTYPE_SDR:
             if ((hdr10PolicyValue & SDR_BY_DV) == SDR_BY_DV) {
                 ret = true;
             }
             break;
-        case HDR_TYPE_MVC:
-        case HDR_TYPE_PRIMESL:
-        case HDR_TYPE_NONE:
-        case HDR_TYPE_MAX:
+        case HDRTYPE_MVC:
+        case HDRTYPE_PRIMESL:
+        case HDRTYPE_NONE:
         default:
             ret = false;
             break;
@@ -293,12 +292,12 @@ bool CDolbyVision::isSourceCallAmdolbyCore(hdr_type_t hdrType)
     return ret;
 }
 
-dolby_pq_mode_t CDolbyVision::MappingPQModeToAmdolbyVisionPQMode(hdr_type_t hdrType, vpp_picture_mode_t pq_mode)
+dolby_pq_mode_t CDolbyVision::MappingPQModeToAmdolbyVisionPQMode(enum hdr_type_e hdrType, vpp_picture_mode_t pq_mode)
 {
     dolby_pq_mode_t amdolbyMode = DOLBY_PQ_MODE_INVALID;
 /*
     switch (hdrType) {
-    case HDR_TYPE_SDR:
+    case HDRTYPE_SDR:
         if (pq_mode == VPP_PICTURE_MODE_DYNAMIC) {
             amdolbyMode = DOLBY_PQ_MODE_DYNAMIC_SDR;
         } else if (pq_mode == VPP_PICTURE_MODE_STANDARD) {
@@ -319,7 +318,7 @@ dolby_pq_mode_t CDolbyVision::MappingPQModeToAmdolbyVisionPQMode(hdr_type_t hdrT
         }
         break;
 
-    case HDR_TYPE_HDR10:
+    case HDRTYPE_HDR10:
         if (pq_mode == VPP_PICTURE_MODE_DYNAMIC) {
             amdolbyMode = DOLBY_PQ_MODE_DYNAMIC_HDR10;
         } else if (pq_mode == VPP_PICTURE_MODE_STANDARD) {
@@ -340,7 +339,7 @@ dolby_pq_mode_t CDolbyVision::MappingPQModeToAmdolbyVisionPQMode(hdr_type_t hdrT
         }
         break;
 
-    case HDR_TYPE_HLG:
+    case HDRTYPE_HLG:
         if (pq_mode == VPP_PICTURE_MODE_DYNAMIC) {
             amdolbyMode = DOLBY_PQ_MODE_DYNAMIC_HLG;
         } else if (pq_mode == VPP_PICTURE_MODE_STANDARD) {
@@ -361,7 +360,7 @@ dolby_pq_mode_t CDolbyVision::MappingPQModeToAmdolbyVisionPQMode(hdr_type_t hdrT
         }
         break;
 
-    case HDR_TYPE_DOVI:
+    case HDRTYPE_DOVI:
         if (pq_mode == VPP_PICTURE_MODE_DYNAMIC) {
             amdolbyMode = DOLBY_PQ_MODE_DYNAMIC_DV;
         } else if (pq_mode == VPP_PICTURE_MODE_STANDARD) {
@@ -381,11 +380,10 @@ dolby_pq_mode_t CDolbyVision::MappingPQModeToAmdolbyVisionPQMode(hdr_type_t hdrT
             amdolbyMode = DOLBY_PQ_MODE_MAX;
         }
         break;
-    case HDR_TYPE_HDR10PLUS:
-    case HDR_TYPE_MVC:
-    case HDR_TYPE_PRIMESL:
-    case HDR_TYPE_NONE:
-    case HDR_TYPE_MAX:
+    case HDRTYPE_HDR10PLUS:
+    case HDRTYPE_MVC:
+    case HDRTYPE_PRIMESL:
+    case HDRTYPE_NONE:
     default:
         LOGD("%s: not supported mode.\n", __FUNCTION__);
         amdolbyMode = DOLBY_PQ_MODE_MAX;

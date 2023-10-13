@@ -152,8 +152,8 @@ int PqService::SetCmd(pq_moudle_param_t param)
             break;
         case PQ_SET_SOURCE_CHANNEL:
             source_input_param.source_input = (tv_source_input_t)paramData[0];
-            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
-            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+            source_input_param.sig_fmt      = (enum tvin_sig_fmt_e)paramData[1];
+            source_input_param.trans_fmt    = (enum tvin_trans_fmt)paramData[2];
 
             ret = mpPQcontrol->SetCurrentSource((tv_source_input_t)paramData[0]);
             break;
@@ -216,43 +216,43 @@ int PqService::SetCmd(pq_moudle_param_t param)
             break;
         case PQ_FACTORY_SET_BRIGHTNESS:
             source_input_param.source_input = (tv_source_input_t)paramData[0];
-            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
-            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+            source_input_param.sig_fmt      = (enum tvin_sig_fmt_e)paramData[1];
+            source_input_param.trans_fmt    = (enum tvin_trans_fmt)paramData[2];
 
             ret = mpPQcontrol->FactorySetPQMode_Brightness(source_input_param, paramData[3], paramData[4]);
             break;
         case PQ_FACTORY_SET_CONTRAST:
             source_input_param.source_input = (tv_source_input_t)paramData[0];
-            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
-            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+            source_input_param.sig_fmt      = (enum tvin_sig_fmt_e)paramData[1];
+            source_input_param.trans_fmt    = (enum tvin_trans_fmt)paramData[2];
 
             ret = mpPQcontrol->FactorySetPQMode_Contrast(source_input_param, paramData[3], paramData[4]);
             break;
         case PQ_FACTORY_SET_SATUATION:
             source_input_param.source_input = (tv_source_input_t)paramData[0];
-            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
-            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+            source_input_param.sig_fmt      = (enum tvin_sig_fmt_e)paramData[1];
+            source_input_param.trans_fmt    = (enum tvin_trans_fmt)paramData[2];
 
             ret = mpPQcontrol->FactorySetPQMode_Saturation(source_input_param, paramData[3], paramData[4]);
             break;
         case PQ_FACTORY_SET_HUE:
             source_input_param.source_input = (tv_source_input_t)paramData[0];
-            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
-            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+            source_input_param.sig_fmt      = (enum tvin_sig_fmt_e)paramData[1];
+            source_input_param.trans_fmt    = (enum tvin_trans_fmt)paramData[2];
 
             ret = mpPQcontrol->FactorySetPQMode_Hue(source_input_param, paramData[3], paramData[4]);
             break;
         case PQ_FACTORY_SET_SHARPNESS:
             source_input_param.source_input = (tv_source_input_t)paramData[0];
-            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
-            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+            source_input_param.sig_fmt      = (enum tvin_sig_fmt_e)paramData[1];
+            source_input_param.trans_fmt    = (enum tvin_trans_fmt)paramData[2];
 
             ret = mpPQcontrol->FactorySetPQMode_Sharpness(source_input_param, paramData[3], paramData[4]);
             break;
         case PQ_FACTORY_SET_OVERSCAN:
             source_input_param.source_input = (tv_source_input_t)paramData[0];
-            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
-            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+            source_input_param.sig_fmt      = (enum tvin_sig_fmt_e)paramData[1];
+            source_input_param.trans_fmt    = (enum tvin_trans_fmt)paramData[2];
 
             overscanParam.hs = (unsigned short)paramData[4];
             overscanParam.he = (unsigned short)paramData[5];
@@ -436,39 +436,39 @@ char* PqService::GetCmd(pq_moudle_param_t param)
             break;
         case PQ_FACTORY_GET_BRIGHTNESS:
             source_input_param.source_input = (tv_source_input_t)paramData[0];
-            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
-            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+            source_input_param.sig_fmt      = (enum tvin_sig_fmt_e)paramData[1];
+            source_input_param.trans_fmt    = (enum tvin_trans_fmt)paramData[2];
             ret = mpPQcontrol->FactoryGetPQMode_Brightness(source_input_param, paramData[3]);
             break;
         case PQ_FACTORY_GET_CONTRAST:
             source_input_param.source_input = (tv_source_input_t)paramData[0];
-            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
-            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+            source_input_param.sig_fmt      = (enum tvin_sig_fmt_e)paramData[1];
+            source_input_param.trans_fmt    = (enum tvin_trans_fmt)paramData[2];
             ret = mpPQcontrol->FactoryGetPQMode_Contrast(source_input_param, paramData[3]);
             break;
 
         case PQ_FACTORY_GET_SATUATION:
             source_input_param.source_input = (tv_source_input_t)paramData[0];
-            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
-            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+            source_input_param.sig_fmt      = (enum tvin_sig_fmt_e)paramData[1];
+            source_input_param.trans_fmt    = (enum tvin_trans_fmt)paramData[2];
             ret = mpPQcontrol->FactoryGetPQMode_Saturation(source_input_param, paramData[3]);
             break;
         case PQ_FACTORY_GET_HUE:
             source_input_param.source_input = (tv_source_input_t)paramData[0];
-            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
-            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+            source_input_param.sig_fmt      = (enum tvin_sig_fmt_e)paramData[1];
+            source_input_param.trans_fmt    = (enum tvin_trans_fmt)paramData[2];
             ret = mpPQcontrol->FactoryGetPQMode_Hue(source_input_param, paramData[3]);
             break;
         case PQ_FACTORY_GET_SHARPNESS:
             source_input_param.source_input = (tv_source_input_t)paramData[0];
-            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
-            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+            source_input_param.sig_fmt      = (enum tvin_sig_fmt_e)paramData[1];
+            source_input_param.trans_fmt    = (enum tvin_trans_fmt)paramData[2];
             ret = mpPQcontrol->FactoryGetPQMode_Sharpness(source_input_param, paramData[3]);
             break;
         case PQ_FACTORY_GET_OVERSCAN:
             source_input_param.source_input = (tv_source_input_t)paramData[0];
-            source_input_param.sig_fmt      = (tvin_sig_fmt_t)paramData[1];
-            source_input_param.trans_fmt    = (tvin_trans_fmt_t)paramData[2];
+            source_input_param.sig_fmt      = (enum tvin_sig_fmt_e)paramData[1];
+            source_input_param.trans_fmt    = (enum tvin_trans_fmt)paramData[2];
 
             overscanParam = mpPQcontrol->FactoryGetOverscanParam(source_input_param, (vpp_display_mode_t)paramData[3]);
             sprintf(mRetBuf, "%d.%d.%d.%d", overscanParam.hs, overscanParam.he, overscanParam.vs, overscanParam.ve);

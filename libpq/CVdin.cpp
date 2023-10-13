@@ -104,9 +104,9 @@ int CVdin::VDIN_DeviceIOCtl( int request, ... )
     return -1;
 }
 
-int CVdin::VDIN_OpenPort(tvin_port_t port)
+int CVdin::VDIN_OpenPort(enum tvin_port_e port)
 {
-    tvin_parm_t vdinParam;
+    struct tvin_parm_s vdinParam;
 
     vdinParam.port = port;
     vdinParam.index = 0;
@@ -128,7 +128,7 @@ int CVdin::VDIN_ClosePort()
     return ret;
 }
 
-int CVdin::VDIN_StartDec(const tvin_parm_t *vdinParam)
+int CVdin::VDIN_StartDec(const struct tvin_parm_s *vdinParam)
 {
     if ( vdinParam == NULL ) {
         return -1;
@@ -155,7 +155,7 @@ int CVdin::VDIN_StopDec()
     return ret;
 }
 
-int CVdin::VDIN_GetSignalEventInfo(struct vdin_event_info_s *SignalEventInfo)
+int CVdin::VDIN_GetSignalEventInfo(struct vdin_event_info *SignalEventInfo)
 {
     int ret = VDIN_DeviceIOCtl(TVIN_IOC_G_EVENT_INFO, SignalEventInfo);
     if (ret < 0) {
@@ -174,7 +174,7 @@ int CVdin::VDIN_GetSignalInfo(struct tvin_info_s *SignalInfo )
     return ret;
 }
 
-int CVdin::VDIN_GetVdinParam(tvin_parm_s *vdinParam)
+int CVdin::VDIN_GetVdinParam(struct tvin_parm_s *vdinParam)
 {
     int ret = VDIN_DeviceIOCtl(TVIN_IOC_G_PARM, vdinParam);
     if ( ret < 0 ) {
@@ -237,7 +237,7 @@ int CVdin::VDIN_SetGameMode(game_pc_mode_t mode)
     return ret;
 }
 
-int CVdin::VDIN_GetVrrFreesyncParm(tvin_vrr_freesync_param_t *vrrparm)
+int CVdin::VDIN_GetVrrFreesyncParm(struct vdin_vrr_freesync_param_s *vrrparm)
 {
     int ret = -1;
     if (vrrparm == NULL) {
@@ -283,7 +283,7 @@ int CVdin::Tvin_GetAllmInfo(tvin_latency_s *AllmInfo)
     return ret;
 }
 
-int CVdin::Tvin_GetVdinParam(tvin_parm_s *vdinParam)
+int CVdin::Tvin_GetVdinParam(struct tvin_parm_s *vdinParam)
 {
     int ret = -1;
     if (vdinParam == NULL) {
@@ -295,7 +295,7 @@ int CVdin::Tvin_GetVdinParam(tvin_parm_s *vdinParam)
     return ret;
 }
 
-int CVdin::Tvin_GetSignalEventInfo(vdin_event_info_s *SignalEventInfo)
+int CVdin::Tvin_GetSignalEventInfo(struct vdin_event_info *SignalEventInfo)
 {
     int ret = -1;
     if (SignalEventInfo == NULL) {
@@ -307,7 +307,7 @@ int CVdin::Tvin_GetSignalEventInfo(vdin_event_info_s *SignalEventInfo)
     return ret;
 }
 
-int CVdin::Tvin_GetSignalInfo(tvin_info_s *SignalInfo)
+int CVdin::Tvin_GetSignalInfo(struct tvin_info_s *SignalInfo)
 {
     int ret = -1;
     if (SignalInfo == NULL) {
@@ -393,13 +393,13 @@ unsigned int CVdin::Tvin_TransPortStringToValue(const char *port_str)
         return TVIN_PORT_CVBS2;
     } else if (strcasecmp(port_str, "TVIN_PORT_CVBS3") == 0) {
         return TVIN_PORT_CVBS3;
-    } else if (strcasecmp(port_str, "TVIN_PORT_COMP0") == 0) {
+    }/*else if (strcasecmp(port_str, "TVIN_PORT_COMP0") == 0) {
         return TVIN_PORT_COMP0;
     } else if (strcasecmp(port_str, "TVIN_PORT_COMP1") == 0) {
         return TVIN_PORT_COMP1;
     } else if (strcasecmp(port_str, "TVIN_PORT_VGA0") == 0) {
         return TVIN_PORT_VGA0;
-    } else if (strcasecmp(port_str, "TVIN_PORT_HDMI0") == 0) {
+    }*/else if (strcasecmp(port_str, "TVIN_PORT_HDMI0") == 0) {
         return TVIN_PORT_HDMI0;
     } else if (strcasecmp(port_str, "TVIN_PORT_HDMI1") == 0) {
         return TVIN_PORT_HDMI1;
@@ -424,10 +424,10 @@ void CVdin::Tvin_LoadPortToSourceInputMap()
     mPortToSourceInputMap[SOURCE_AV1] = Tvin_TransPortStringToValue(config_value);
     config_value = ConfigGetStr(CFG_SECTION_SRC_INPUT, CFG_TVCHANNEL_AV2, "TVIN_PORT_CVBS2");
     mPortToSourceInputMap[SOURCE_AV2] = Tvin_TransPortStringToValue(config_value);
-    config_value = ConfigGetStr(CFG_SECTION_SRC_INPUT, CFG_TVCHANNEL_YPBPR1, "TVIN_PORT_COMP0");
+    /*config_value = ConfigGetStr(CFG_SECTION_SRC_INPUT, CFG_TVCHANNEL_YPBPR1, "TVIN_PORT_COMP0");
     mPortToSourceInputMap[SOURCE_YPBPR1] = Tvin_TransPortStringToValue(config_value);
     config_value = ConfigGetStr(CFG_SECTION_SRC_INPUT, CFG_TVCHANNEL_YPBPR2, "TVIN_PORT_COMP1");
-    mPortToSourceInputMap[SOURCE_YPBPR2] = Tvin_TransPortStringToValue(config_value);
+    mPortToSourceInputMap[SOURCE_YPBPR2] = Tvin_TransPortStringToValue(config_value);*/
     config_value = ConfigGetStr(CFG_SECTION_SRC_INPUT, CFG_TVCHANNEL_HDMI1, "TVIN_PORT_HDMI0");
     mPortToSourceInputMap[SOURCE_HDMI1] = Tvin_TransPortStringToValue(config_value);
     config_value = ConfigGetStr(CFG_SECTION_SRC_INPUT, CFG_TVCHANNEL_HDMI2, "TVIN_PORT_HDMI2");
@@ -436,15 +436,15 @@ void CVdin::Tvin_LoadPortToSourceInputMap()
     mPortToSourceInputMap[SOURCE_HDMI3] = Tvin_TransPortStringToValue(config_value);
     config_value = ConfigGetStr(CFG_SECTION_SRC_INPUT, CFG_TVCHANNEL_HDMI4, "TVIN_PORT_HDMI3");
     mPortToSourceInputMap[SOURCE_HDMI4] = Tvin_TransPortStringToValue(config_value);
-    config_value = ConfigGetStr(CFG_SECTION_SRC_INPUT, CFG_TVCHANNEL_VGA, "TVIN_PORT_VGA0");
-    mPortToSourceInputMap[SOURCE_VGA]   = Tvin_TransPortStringToValue(config_value);
+    /*config_value = ConfigGetStr(CFG_SECTION_SRC_INPUT, CFG_TVCHANNEL_VGA, "TVIN_PORT_VGA0");
+    mPortToSourceInputMap[SOURCE_VGA]   = Tvin_TransPortStringToValue(config_value);*/
     mPortToSourceInputMap[SOURCE_MPEG]  = TVIN_PORT_MPEG0;
-    mPortToSourceInputMap[SOURCE_DTV]   = TVIN_PORT_DTV;
+    /*mPortToSourceInputMap[SOURCE_DTV]   = TVIN_PORT_DTV;*/
     mPortToSourceInputMap[SOURCE_IPTV]  = TVIN_PORT_BT656;
     mPortToSourceInputMap[SOURCE_SPDIF] = TVIN_PORT_CVBS3;
 }
 
-tv_source_input_t CVdin::Tvin_PortToSourceInput ( tvin_port_t port )
+tv_source_input_t CVdin::Tvin_PortToSourceInput ( enum tvin_port_e port )
 {
     for ( int i = SOURCE_TV; i < SOURCE_MAX; i++ ) {
         if ( mPortToSourceInputMap[i] == (int)port ) {
@@ -456,7 +456,7 @@ tv_source_input_t CVdin::Tvin_PortToSourceInput ( tvin_port_t port )
     return SOURCE_MAX;
 }
 
-int CVdin::Tvin_GetVrrFreesyncParm(tvin_vrr_freesync_param_t *vrrparm)
+int CVdin::Tvin_GetVrrFreesyncParm(struct vdin_vrr_freesync_param_s *vrrparm)
 {
     int ret = -1;
 

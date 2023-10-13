@@ -11,10 +11,8 @@
 #define CONFIG_FILE_H_
 
 
-
 #define DV_BIN_FILE_DEFAULT_PATH               "/vendor/etc/tvconfig/panel/dv_config.bin"
 #define DV_CFG_FILE_DEFAULT_PATH               "/vendor/etc/tvconfig/panel/Amlogic_dv.cfg"
-
 
 //for pq config
 #define CFG_SECTION_PQ                          "PQ"

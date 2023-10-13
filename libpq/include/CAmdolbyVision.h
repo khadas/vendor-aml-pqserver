@@ -70,87 +70,6 @@ typedef enum dolby_pq_mode_e {
     DOLBY_PQ_MODE_MAX,
 } dolby_pq_mode_t;
 
-typedef enum dolby_pq_item_e {
-    DOLBY_PQ_BRIGHTNESS = 0,     /*Brightness */
-    DOLBY_PQ_CONTRAST   = 1,       /*Contrast */
-    DOLBY_PQ_COLORSHIFT = 2,     /*ColorShift or Tint*/
-    DOLBY_PQ_SATURATION = 3      /*Saturation or color */
-} dolby_pq_item_t;
-
-typedef enum dolby_pq_reset_e {
-    DOLBY_RESET_ALL        = 0,         /*reset picture mode / pq for all picture mode*/
-    DOLBY_RESET_PQ_FOR_ALL = 1,  /*reset pq for all picture mode*/
-    DOLBY_RESET_PQ_FOR_CUR = 2   /*reset pq for current picture mode */
-} dolby_pq_reset_t;
-
-
-// ***************************************************************************
-// *** STRUCT definitions **********
-// ***************************************************************************
-typedef struct dolby_pic_mode_info_s {
-    int dolby_pic_mode_id;
-    unsigned char name[32];
-}  __attribute__ ((aligned (8))) dolby_pic_mode_info_t;
-
-typedef struct dolby_pq_info_s {
-    int dolby_pic_mode_id;
-    dolby_pq_item_e item;
-    short value;
-} __attribute__ ((aligned (8))) dolby_pq_info_t ;
-
-typedef struct dolby_full_pq_info_s {
-    int pic_mode_id;
-    short brightness;  /*Brightness */
-    short contrast;    /*Contrast */
-    short colorshift;  /*ColorShift or Tint*/
-    short saturation;  /*Saturation or color */
-}  __attribute__ ((aligned (8))) dolby_full_pq_info_t;
-
-typedef struct dolby_config_file_s {
-    unsigned char bin_name[256];
-    unsigned char cfg_name[256];
-} __attribute__ ((aligned(8))) dolby_config_file_t;
-
-typedef struct ambient_cfg_s {
-    unsigned int update_flag;
-    unsigned int ambient; /* 1<<16 */
-    unsigned int t_rearLum;
-    unsigned int t_frontLux;
-    unsigned int t_whiteX; /* 1<<15 */
-    unsigned int t_whiteY; /* 1<<15 */
-    unsigned int dark_detail;
-} __attribute__ ((aligned(8))) ambient_cfg_t;
-
-// ***************************************************************************
-// *** IOCTL definitions **********
-// ***************************************************************************
-#define DV_M  'D'
-/* get Number of Picture Mode */
-#define DV_IOC_GET_DV_PIC_MODE_NUM         _IOR((DV_M), 0x0, int)
-/* get Picture Mode Name of input pic_mode_id */
-#define DV_IOC_GET_DV_PIC_MODE_NAME        _IOWR((DV_M), 0x1, struct dolby_pic_mode_info_s)
-/* get current active picture mode */
-#define DV_IOC_GET_DV_PIC_MODE_ID          _IOR((DV_M), 0x2, int)
-/* select active picture mode */
-#define DV_IOC_SET_DV_PIC_MODE_ID          _IOW((DV_M), 0x3, int)
-/* get single pq(contrast or brightness or colorshift or saturation) */
-#define DV_IOC_GET_DV_SINGLE_PQ_VALUE      _IOWR((DV_M), 0x4, struct dolby_pq_info_s)
-/* get all pq(contrast, brightness,colorshift ,saturation) */
-#define DV_IOC_GET_DV_FULL_PQ_VALUE        _IOWR((DV_M), 0x5, struct dolby_full_pq_info_s)
-/* set single pq(contrast or brightness or colorshift or saturation) */
-#define DV_IOC_SET_DV_SINGLE_PQ_VALUE      _IOWR((DV_M), 0x6, struct dolby_pq_info_s)
-/* set all pq(contrast,brightness ,colorshift , saturation) */
-#define DV_IOC_SET_DV_FULL_PQ_VALUE        _IOWR((DV_M), 0x7, struct dolby_full_pq_info_s)
-/* reset all pq item  for current picture mode */
-#define DV_IOC_SET_DV_PQ_RESET             _IOWR((DV_M), 0x8, enum dolby_pq_reset_e)
-/* set Amlogic_cfg.txt and dv_config.bin patch */
-#define DV_IOC_SET_DV_CONFIG_FILE          _IOW((DV_M), 0x9, struct dolby_config_file_s)
-/* set Ambient light */
-#define DV_IOC_SET_DV_AMBIENT              _IOW((DV_M), 0xa, struct ambient_cfg_s)
-/* 1: enable dv gd, 0: disable dv gd */
-#define DV_IOC_SET_DV_BL                   _IOW((DV_M), 0xb, int)
-/* 1: enable dv dark detail, 0: disable dv dark detail */
-#define DV_IOC_SET_DV_DARK_DETAIL          _IOW((DV_M), 0xc, int)
 
 class CDolbyVision {
 public:
@@ -159,12 +78,12 @@ public:
     int SetAmdolbyCfgFile(const char *binFilePath, const char *cfgFilePath);
     int SetAmdolbyPQMode(dolby_pq_mode_t mode);
     dolby_pq_mode_t GetAmdolbyPQMode(void);
-    int SetAmdolbyPQParam(dolby_pq_mode_t mode, dolby_pq_item_t iteamID, int value);
-    int GetAmdolbyPQParam(dolby_pq_mode_t mode, dolby_pq_item_t iteamID);
-    int SetAmdolbyPQFullParam(dolby_full_pq_info_t fullInfo);
-    int GetAmdolbyPQFullParam(dolby_full_pq_info_t *fullInfo);
-    bool isSourceCallAmdolbyCore(hdr_type_t hdrType);
-    dolby_pq_mode_t MappingPQModeToAmdolbyVisionPQMode(hdr_type_t hdrType, vpp_picture_mode_t pq_mode);
+    int SetAmdolbyPQParam(dolby_pq_mode_t mode, enum pq_item_e iteamID, int value);
+    int GetAmdolbyPQParam(dolby_pq_mode_t mode, enum pq_item_e iteamID);
+    int SetAmdolbyPQFullParam(struct dv_full_pq_info_s fullInfo);
+    int GetAmdolbyPQFullParam(struct dv_full_pq_info_s *fullInfo);
+    bool isSourceCallAmdolbyCore(enum hdr_type_e hdrType);
+    dolby_pq_mode_t MappingPQModeToAmdolbyVisionPQMode(enum hdr_type_e hdrType, vpp_picture_mode_t pq_mode);
     int SetAmdolbyPQDarkDetail(int mode);
 
 private:

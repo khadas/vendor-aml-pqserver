@@ -37,7 +37,7 @@ namespace  PqClientCb {
     public:
         HdrTypeCb() : CPqClientCb(CPqClientCb::PQ_CB_TYPE_HDRTYPE)
         {
-            mHdrType = 6; //HDR_TYPE_SDR
+            mHdrType = 6; //HDRTYPE_SDR
         }
         ~HdrTypeCb() {}
         int mHdrType;

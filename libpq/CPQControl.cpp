@@ -99,11 +99,11 @@ CPQControl::CPQControl()
     mSourceInputForSaveParam = SOURCE_MPEG;
     memset(rgbfrompq, 0, sizeof(tcon_rgb_ogo_t));
     memset(&mCurrentSourceInputInfo, 0, sizeof(source_input_param_t));
-    memset(&mCurrentSignalInfo, 0, sizeof(tvin_parm_t));
+    memset(&mCurrentSignalInfo, 0, sizeof(struct tvin_parm_s));
     memset(&mCurrentTvinInfo, 0, sizeof(tvin_inputparam_t));
     memset(&mCurrentPqSource, 0, sizeof(pq_src_param_t));
-    memset(&mPreAllmInfo, 0, sizeof(tvin_latency_t));
-    memset(&mPreVrrParm, 0, sizeof(tvin_vrr_freesync_param_t));
+    memset(&mPreAllmInfo, 0, sizeof(struct tvin_latency_s));
+    memset(&mPreVrrParm, 0, sizeof(struct vdin_vrr_freesync_param_s));
 }
 
 CPQControl::~CPQControl()
@@ -218,7 +218,7 @@ void CPQControl::CPQControlInit()
     //init source
     mCurrentSourceInputInfo.source_input = SOURCE_MPEG;
     mCurrentSourceInputInfo.trans_fmt    = TVIN_TFMT_2D;
-    mCurrentHdrType                     = HDR_TYPE_SDR;
+    mCurrentHdrType                     = HDRTYPE_SDR;
     mSourceInputForSaveParam            = SOURCE_MPEG;
     mCurrentPqSource.pq_source_input     = SOURCE_MPEG;
     mCurrentPqSource.pq_sig_fmt          = PQ_FMT_DEFAULT;
@@ -269,9 +269,9 @@ void CPQControl::CPQControlInit()
 
     //Set DNLP
     if (mbCpqCfg_dnlp_enable) {
-        Cpq_SetDNLPStatus(VE_DNLP_STATE_ON);
+        Cpq_SetDNLPStatus(DNLP_ON);
     } else {
-        Cpq_SetDNLPStatus(VE_DNLP_STATE_OFF);
+        Cpq_SetDNLPStatus(DNLP_OFF);
     }
 
     //load display mode setting
@@ -656,12 +656,12 @@ int CPQControl::GetWindowStatus(void)
     return (int)newWindowStatus;
 }
 
-tvin_sig_fmt_t CPQControl::getVideoResolutionToFmt()
+enum tvin_sig_fmt_e CPQControl::getVideoResolutionToFmt()
 {
     int ret = -1;
     int fd = -1;
     char buf[32] = {0};
-    tvin_sig_fmt_t sig_fmt = TVIN_SIG_FMT_HDMI_1920X1080P_60HZ;
+    enum tvin_sig_fmt_e sig_fmt = TVIN_SIG_FMT_HDMI_1920X1080P_60HZ;
 
     fd = open(SYS_VIDEO_FRAME_HEIGHT, O_RDONLY);
     if (fd < 0) {
@@ -689,18 +689,18 @@ tvin_sig_fmt_t CPQControl::getVideoResolutionToFmt()
     return sig_fmt;
 }
 
-int CPQControl::SetCurrenSourceInfo(tvin_parm_t sig_info)
+int CPQControl::SetCurrenSourceInfo(struct tvin_parm_s sig_info)
 {
     if (mCurrentSignalInfo.info.trans_fmt  != sig_info.info.trans_fmt
         || mCurrentSignalInfo.info.fmt     != sig_info.info.fmt
         || mCurrentSignalInfo.info.status  != sig_info.info.status
         || mCurrentSignalInfo.port         != sig_info.port
-        || mCurrentSignalInfo.info.hdr_info != sig_info.info.hdr_info) {
+        || mCurrentSignalInfo.info.signal_type != sig_info.info.signal_type) {
         mCurrentSignalInfo.info.trans_fmt    = sig_info.info.trans_fmt;
         mCurrentSignalInfo.info.fmt          = sig_info.info.fmt;
         mCurrentSignalInfo.info.status       = sig_info.info.status;
         mCurrentSignalInfo.info.cfmt         = sig_info.info.cfmt;
-        mCurrentSignalInfo.info.hdr_info     = sig_info.info.hdr_info;
+        mCurrentSignalInfo.info.signal_type     = sig_info.info.signal_type;
         mCurrentSignalInfo.info.fps          = sig_info.info.fps;
         mCurrentSignalInfo.info.is_dvi       = sig_info.info.is_dvi;
         mCurrentSignalInfo.info.aspect_ratio = sig_info.info.aspect_ratio;
@@ -712,27 +712,27 @@ int CPQControl::SetCurrenSourceInfo(tvin_parm_t sig_info)
 
         if ((SourceInput == SOURCE_MPEG)
             || (SourceInput != SOURCE_MPEG && mCurrentSignalInfo.info.status == TVIN_SIG_STATUS_STABLE)) {
-            tvin_latency_t allmInfo;
-            memset(&allmInfo, 0x0, sizeof(tvin_latency_t));
+            struct tvin_latency_s allmInfo;
+            memset(&allmInfo, 0x0, sizeof(struct tvin_latency_s));
             mpVdin->Tvin_GetAllmInfo(&allmInfo);
             mCurrentTvinInfo.allmInfo.allm_mode  = allmInfo.allm_mode;
             mCurrentTvinInfo.allmInfo.it_content = allmInfo.it_content;
             mCurrentTvinInfo.allmInfo.cn_type    = allmInfo.cn_type;
             mCurrentTvinInfo.is_dvi              = mCurrentSignalInfo.info.is_dvi;
-            mCurrentTvinInfo.hdr_info            = mCurrentSignalInfo.info.hdr_info;
+            mCurrentTvinInfo.hdr_info            = mCurrentSignalInfo.info.signal_type;
             LOGD("%s allmInfo.allm_mode: %d, allmInfo.it_content: %d, cn_type: %d, is_dvi: %d, hdr_info: %d\n", __FUNCTION__,
                 mCurrentTvinInfo.allmInfo.allm_mode, mCurrentTvinInfo.allmInfo.it_content,
                 mCurrentTvinInfo.allmInfo.cn_type, mCurrentTvinInfo.is_dvi, mCurrentTvinInfo.hdr_info);
 
-            tvin_vrr_freesync_param_t vrrparm;
-            memset(&vrrparm, 0x0, sizeof(tvin_vrr_freesync_param_t));
+            struct vdin_vrr_freesync_param_s vrrparm;
+            memset(&vrrparm, 0x0, sizeof(struct vdin_vrr_freesync_param_s));
             mpVdin->Tvin_GetVrrFreesyncParm(&vrrparm);
-            mCurrentTvinInfo.vrrparm.vrr_status = vrrparm.vrr_status;
+            mCurrentTvinInfo.vrrparm.cur_vrr_status = vrrparm.cur_vrr_status;
             mCurrentTvinInfo.vrrparm.tone_mapping_en = vrrparm.tone_mapping_en;
             mCurrentTvinInfo.vrrparm.local_dimming_disable = vrrparm.local_dimming_disable;
             mCurrentTvinInfo.vrrparm.native_color_en = vrrparm.native_color_en;
-            LOGD("%s vrr_status: %d tone_mapping_en: %d local_dimming_disable: %d native_color_en: %d\n", __FUNCTION__,
-                mCurrentTvinInfo.vrrparm.vrr_status, mCurrentTvinInfo.vrrparm.tone_mapping_en,
+            LOGD("%s cur_vrr_status: %d tone_mapping_en: %d local_dimming_disable: %d native_color_en: %d\n", __FUNCTION__,
+                mCurrentTvinInfo.vrrparm.cur_vrr_status, mCurrentTvinInfo.vrrparm.tone_mapping_en,
                 mCurrentTvinInfo.vrrparm.local_dimming_disable, mCurrentTvinInfo.vrrparm.native_color_en);
 
             source_input_param_t source_input_param;
@@ -748,16 +748,16 @@ int CPQControl::SetCurrenSourceInfo(tvin_parm_t sig_info)
 
 void CPQControl::onSigStatusChange(void)
 {
-    tvin_parm_s tempSignalInfo;
+    struct tvin_parm_s tempSignalInfo;
     int ret = mpVdin->Tvin_GetVdinParam(&tempSignalInfo);
 
     if (ret < 0) {
         LOGD("%s Get Signal Info error\n", __FUNCTION__);
     } else {
         SetCurrenSourceInfo(tempSignalInfo);
-        LOGD("%s source_input is %d, port is %d, sig_fmt is %d, status is %d, isDVI is %d, hdr_info is 0x%x\n", __FUNCTION__,
+        LOGD("%s source_input is %d, port is %d, sig_fmt is %d, status is %d, isDVI is %d, signal_type is 0x%x\n", __FUNCTION__,
             mCurrentSourceInputInfo.source_input, mCurrentSignalInfo.port, mCurrentSignalInfo.info.fmt, mCurrentSignalInfo.info.status,
-            mCurrentSignalInfo.info.is_dvi, mCurrentSignalInfo.info.hdr_info);
+            mCurrentSignalInfo.info.is_dvi, mCurrentSignalInfo.info.signal_type);
     }
 
     return;
@@ -766,8 +766,8 @@ void CPQControl::onSigStatusChange(void)
 void CPQControl::onVrrStatusChange(void)
 {
     int ret = -1;
-    tvin_latency_t allmInfo;
-    memset(&allmInfo, 0x0, sizeof(tvin_latency_t));
+    struct tvin_latency_s allmInfo;
+    memset(&allmInfo, 0x0, sizeof(struct tvin_latency_s));
     ret = mpVdin->Tvin_GetAllmInfo(&allmInfo);
     mCurrentTvinInfo.allmInfo.allm_mode  = allmInfo.allm_mode;
     mCurrentTvinInfo.allmInfo.it_content = allmInfo.it_content;
@@ -776,15 +776,15 @@ void CPQControl::onVrrStatusChange(void)
         mCurrentTvinInfo.allmInfo.allm_mode, mCurrentTvinInfo.allmInfo.it_content,
         mCurrentTvinInfo.allmInfo.cn_type, mCurrentTvinInfo.is_dvi, mCurrentTvinInfo.hdr_info);
 
-    tvin_vrr_freesync_param_t vrrparm;
-    memset(&vrrparm, 0x0, sizeof(tvin_vrr_freesync_param_t));
+    struct vdin_vrr_freesync_param_s vrrparm;
+    memset(&vrrparm, 0x0, sizeof(struct vdin_vrr_freesync_param_s));
     ret |= mpVdin->Tvin_GetVrrFreesyncParm(&vrrparm);
-    mCurrentTvinInfo.vrrparm.vrr_status = vrrparm.vrr_status;
+    mCurrentTvinInfo.vrrparm.cur_vrr_status = vrrparm.cur_vrr_status;
     mCurrentTvinInfo.vrrparm.tone_mapping_en = vrrparm.tone_mapping_en;
     mCurrentTvinInfo.vrrparm.local_dimming_disable = vrrparm.local_dimming_disable;
     mCurrentTvinInfo.vrrparm.native_color_en = vrrparm.native_color_en;
-    LOGD("%s vrr_status: %d tone_mapping_en: %d local_dimming_disable: %d native_color_en: %d\n", __FUNCTION__,
-        mCurrentTvinInfo.vrrparm.vrr_status, mCurrentTvinInfo.vrrparm.tone_mapping_en,
+    LOGD("%s cur_vrr_status: %d tone_mapping_en: %d local_dimming_disable: %d native_color_en: %d\n", __FUNCTION__,
+        mCurrentTvinInfo.vrrparm.cur_vrr_status, mCurrentTvinInfo.vrrparm.tone_mapping_en,
         mCurrentTvinInfo.vrrparm.local_dimming_disable, mCurrentTvinInfo.vrrparm.native_color_en);
 
     if (ret < 0) {
@@ -800,12 +800,12 @@ void CPQControl::stopVdin(void)
 {
     SetCurrentSource(SOURCE_MPEG);
 
-    tvin_parm_s tempSignalInfo;
+    struct tvin_parm_s tempSignalInfo;
     tempSignalInfo.info.trans_fmt    = TVIN_TFMT_2D;
     tempSignalInfo.info.fmt          = TVIN_SIG_FMT_NULL;
     tempSignalInfo.info.status       = TVIN_SIG_STATUS_NULL;
     tempSignalInfo.info.cfmt         = TVIN_COLOR_FMT_MAX;
-    tempSignalInfo.info.hdr_info     = 0;
+    tempSignalInfo.info.signal_type     = 0;
     tempSignalInfo.info.fps          = 60;
     tempSignalInfo.info.is_dvi       = 0;
     tempSignalInfo.info.aspect_ratio = TVIN_ASPECT_NULL;
@@ -819,8 +819,8 @@ void CPQControl::onUevent(uevent_data_t ueventData)
     LOGD("%s matchName:%s\n", __FUNCTION__, ueventData.matchName);
     int ret = -1;
 
-    vdin_event_info_s SignalEventInfo;
-    memset(&SignalEventInfo, 0, sizeof(vdin_event_info_s));
+    struct vdin_event_info SignalEventInfo;
+    memset(&SignalEventInfo, 0, sizeof(struct vdin_event_info));
     ret = mpVdin->Tvin_GetSignalEventInfo(&SignalEventInfo);
 
     if (ret < 0) {
@@ -828,25 +828,25 @@ void CPQControl::onUevent(uevent_data_t ueventData)
         LOGD("Get vidn event error!\n");
     } else {
         tv_source_input_type_t source_type   = mpVdin->Tvin_SourceInputToSourceInputType(mCurrentSourceInputInfo.source_input);
-        tvin_sig_change_flag_t vdinEventType = (tvin_sig_change_flag_t)SignalEventInfo.event_sts;
+        enum tvin_sg_chg_flg vdinEventType = (enum tvin_sg_chg_flg)SignalEventInfo.event_sts;
         switch (vdinEventType) {
         case TVIN_SIG_CHG_SDR2HDR:
         case TVIN_SIG_CHG_HDR2SDR:
         case TVIN_SIG_CHG_DV2NO:
         case TVIN_SIG_CHG_NO2DV: {
             LOGD("%s: hdr info change!\n", __FUNCTION__);
-            tvin_info_s vdinSignalInfo;
-            memset(&vdinSignalInfo, 0, sizeof(vdin_info_t));
+            struct tvin_info_s vdinSignalInfo;
+            memset(&vdinSignalInfo, 0, sizeof(struct tvin_info_s));
             ret = mpVdin->Tvin_GetSignalInfo(&vdinSignalInfo);
             if (ret < 0) {
                 LOGD("%s: Get vidn event error!\n", __FUNCTION__);
             } else {
                 if ((mCurrentSignalInfo.info.status == TVIN_SIG_STATUS_STABLE)
-                    && (mCurrentSignalInfo.info.hdr_info != vdinSignalInfo.hdr_info)) {
+                    && (mCurrentSignalInfo.info.signal_type != vdinSignalInfo.signal_type)) {
                     if (source_type == SOURCE_TYPE_HDMI) {
-                        SetCurrentHdrInfo(vdinSignalInfo.hdr_info);
+                        SetCurrentHdrInfo(vdinSignalInfo.signal_type);
                     }
-                    mCurrentSignalInfo.info.hdr_info = vdinSignalInfo.hdr_info;
+                    mCurrentSignalInfo.info.signal_type = vdinSignalInfo.signal_type;
                 } else {
                     LOGD("%s: hdmi signal don't stable!\n", __FUNCTION__);
                 }
@@ -919,10 +919,10 @@ int CPQControl::LoadPQSettings()
 
     if (!mbCpqCfg_pq_enable) {
         LOGD("All PQ moudle disabled\n");
-        pq_ctrl_t pqControlVal;
-        memset(&pqControlVal, 0, sizeof(pq_ctrl_t));
-        vpp_pq_ctrl_t amvecmConfigVal;
-        memset(&amvecmConfigVal, 0, sizeof(vpp_pq_ctrl_t));
+        struct pq_ctrl_s pqControlVal;
+        memset(&pqControlVal, 0, sizeof(struct pq_ctrl_s));
+        struct vpp_pq_ctrl_s amvecmConfigVal;
+        memset(&amvecmConfigVal, 0, sizeof(struct vpp_pq_ctrl_s));
         amvecmConfigVal.length = 14;//this is the count of pq_ctrl_s option
         amvecmConfigVal.ptr    = &pqControlVal;
         ret = VPPDeviceIOCtl(AMVECM_IOC_S_PQ_CTRL, &amvecmConfigVal);
@@ -1192,9 +1192,6 @@ void CPQControl::resetPQTableSetting(void)
 
     config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_DYNAMICBACKLIGHT_DEF, DYNAMIC_BACKLIGHT_OFF);
     mSSMAction->SSMSaveDynamicBacklightMode(config_val);
-
-    config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_COLORDEMOMODE_DEF, VPP_COLOR_DEMO_MODE_ALLON);
-    mSSMAction->SSMSaveColorDemoMode(config_val);
 
     config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_COLORBASEMODE_DEF, VPP_COLOR_BASE_MODE_ENHANCE);
     mSSMAction->SSMSaveColorBaseMode (VPP_COLOR_BASE_MODE_OPTIMIZE);
@@ -1477,23 +1474,23 @@ int CPQControl::SetFacColorParams(source_input_param_t source_input_param, vpp_p
     return ret;
 }
 
-pq_sig_fmt_t CPQControl::CheckPQTimming(hdr_type_t hdr_type)
+pq_sig_fmt_t CPQControl::CheckPQTimming(enum hdr_type_e hdr_type)
 {
     pq_sig_fmt_t timming = PQ_FMT_DEFAULT;
     switch (hdr_type) {
-    case HDR_TYPE_HDR10:
+    case HDRTYPE_HDR10:
         timming = PQ_FMT_HDR;
         break;
-    case HDR_TYPE_HDR10PLUS:
+    case HDRTYPE_HDR10PLUS:
         timming = PQ_FMT_HDRP;
         break;
-    case HDR_TYPE_DOVI:
+    case HDRTYPE_DOVI:
         timming = PQ_FMT_DOBLY;
         break;
-    case HDR_TYPE_HLG:
+    case HDRTYPE_HLG:
         timming = PQ_FMT_HLG;
         break;
-    case HDR_TYPE_SDR:
+    case HDRTYPE_SDR:
         timming = PQ_FMT_SDR;
         break;
     default:
@@ -1594,7 +1591,7 @@ int CPQControl::Cpq_LoadRegs(am_regs_t regs)
     return ret;
 }
 
-int CPQControl::Cpq_LoadDisplayModeRegs(ve_pq_load_t regs)
+int CPQControl::Cpq_LoadDisplayModeRegs(struct ve_pq_load_s regs)
 {
     if (regs.length == 0) {
         LOGD("%s--Regs is NULL!\n", __FUNCTION__);
@@ -1619,7 +1616,7 @@ int CPQControl::Cpq_LoadDisplayModeRegs(ve_pq_load_t regs)
     return ret;
 }
 
-int CPQControl::DI_LoadRegs(am_pq_param_t di_regs)
+int CPQControl::DI_LoadRegs(struct am_pq_parm_s di_regs)
 {
     int count_retry = 20;
     int ret = 0;
@@ -1733,15 +1730,15 @@ int CPQControl::Cpq_SetDIModuleParam(source_input_param_t source_input_param)
 {
     int ret = -1;
     am_regs_t regs;
-    am_pq_param_t di_regs;
+    struct am_pq_parm_s di_regs;
     memset(&regs, 0x0, sizeof(am_regs_t));
-    memset(&di_regs, 0x0, sizeof(am_pq_param_t));
+    memset(&di_regs, 0x0, sizeof(struct am_pq_parm_s));
     if (mbCpqCfg_di_enable) {
         if (mPQdb->PQ_GetDIParams(source_input_param, &regs) == 0) {
             di_regs.table_name |= TABLE_NAME_DI;
             if (regs.length != 0) {
                 di_regs.table_len = regs.length;
-                am_reg_t tmp_buf[regs.length];
+                struct am_reg_s tmp_buf[regs.length];
                 for (unsigned int i=0;i<regs.length;i++) {
                       tmp_buf[i].addr = regs.am_reg[i].addr;
                       tmp_buf[i].mask = regs.am_reg[i].mask;
@@ -2822,7 +2819,7 @@ int CPQControl::Cpq_SetBrightness(int value, source_input_param_t source_input_p
 int CPQControl::Cpq_SetVideoBrightness(int value)
 {
     LOGD("%s brightness:%d\n", __FUNCTION__, value);
-    am_pic_mode_t params;
+    struct am_vdj_mode_s params;
     memset(&params, 0, sizeof(params));
     if (mbCpqCfg_amvecm_basic_enable) {
         params.flag |= 0x1;
@@ -2950,7 +2947,7 @@ int CPQControl::Cpq_SetVideoContrast(int value)
 {
     LOGD("%s Contrast:%d", __FUNCTION__, value);
 
-    am_pic_mode_t params;
+    struct am_vdj_mode_s params;
     memset(&params, 0, sizeof(params));
 
     if (mbCpqCfg_amvecm_basic_enable) {
@@ -3195,7 +3192,7 @@ int CPQControl::Cpq_SetVideoSaturationHue(int satVal, int hueVal)
 {
     signed long temp;
     LOGD("%s: satVal:%d hueVal:%d\n", __FUNCTION__, satVal, hueVal);
-    am_pic_mode_t params;
+    struct am_vdj_mode_s params;
     memset(&params, 0, sizeof(params));
     video_set_saturation_hue(satVal, hueVal, &temp);
 
@@ -3607,15 +3604,15 @@ int CPQControl::Cpq_SetNoiseReductionMode(vpp_noise_reduction_mode_t nr_mode, so
 {
     int ret = -1;
     am_regs_t regs;
-    am_pq_param_t di_regs;
+    struct am_pq_parm_s di_regs;
     memset(&regs, 0x0, sizeof(am_regs_t));
-    memset(&di_regs, 0x0,sizeof(am_pq_param_t));
+    memset(&di_regs, 0x0,sizeof(struct am_pq_parm_s));
 
     if (mbCpqCfg_nr_enable) {
         if (mPQdb->PQ_GetNR2Params((vpp_noise_reduction_mode_t)nr_mode, source_input_param, &regs) == 0) {
             di_regs.table_name = TABLE_NAME_NR;
             di_regs.table_len = regs.length;
-            am_reg_t tmp_buf[regs.length];
+            struct am_reg_s tmp_buf[regs.length];
             for (unsigned int i=0;i<regs.length;i++) {
                   tmp_buf[i].addr = regs.am_reg[i].addr;
                   tmp_buf[i].mask = regs.am_reg[i].mask;
@@ -3697,9 +3694,10 @@ int CPQControl::Cpq_LoadGamma(vpp_gamma_curve_t gamma_curve)
 int CPQControl::Cpq_SetGammaTbl_R(unsigned short red[GAMMA_NUMBER])
 {
     struct tcon_gamma_table_s Redtbl;
-    int ret = -1, i = 0;
+    int ret = -1;
+    unsigned int i = 0;
 
-    for (i = 0; i < GAMMA_NUMBER; i++) {
+    for (i = 0; i < sizeof(Redtbl)/sizeof(__u16); i++) {
         Redtbl.data[i] = red[i];
     }
 
@@ -3713,9 +3711,10 @@ int CPQControl::Cpq_SetGammaTbl_R(unsigned short red[GAMMA_NUMBER])
 int CPQControl::Cpq_SetGammaTbl_G(unsigned short green[GAMMA_NUMBER])
 {
     struct tcon_gamma_table_s Greentbl;
-    int ret = -1, i = 0;
+    int ret = -1;
+    unsigned int i = 0;
 
-    for (i = 0; i < GAMMA_NUMBER; i++) {
+    for (i = 0; i < sizeof(Greentbl)/sizeof(__u16); i++) {
         Greentbl.data[i] = green[i];
     }
 
@@ -3730,9 +3729,10 @@ int CPQControl::Cpq_SetGammaTbl_G(unsigned short green[GAMMA_NUMBER])
 int CPQControl::Cpq_SetGammaTbl_B(unsigned short blue[GAMMA_NUMBER])
 {
     struct tcon_gamma_table_s Bluetbl;
-    int ret = -1, i = 0;
+    int ret = -1;
+    unsigned int i = 0;
 
-    for (i = 0; i < GAMMA_NUMBER; i++) {
+    for (i = 0; i < sizeof(Bluetbl)/sizeof(__u16); i++) {
         Bluetbl.data[i] = blue[i];
     }
 
@@ -3780,7 +3780,7 @@ int CPQControl::initMemc(void) {
 int CPQControl::Memc_enable(int enable)
 {
     int ret = -1;
-    ret = MEMCDeviceIOCtl(MEMDEV_CONTRL, &enable);
+    ret = MEMCDeviceIOCtl(FRC_IOC_SET_MEMC_ON_OFF, &enable);
 
     if (ret >= 0) {
         LOGD("%s, sucess\n", __FUNCTION__);
@@ -4083,8 +4083,8 @@ int CPQControl::Cpq_SetDisplayModeAllTiming(tv_source_input_t source_input, vpp_
 {
     int i = 0, ScreenModeValue = 0;
     int ret = -1;
-    ve_pq_load_t ve_pq_load_reg;
-    memset(&ve_pq_load_reg, 0, sizeof(ve_pq_load_t));
+    struct ve_pq_load_s ve_pq_load_reg;
+    memset(&ve_pq_load_reg, 0, sizeof(struct ve_pq_load_s));
 
     ve_pq_load_reg.param_id = TABLE_NAME_OVERSCAN;
     ve_pq_load_reg.length = SIG_TIMING_TYPE_MAX;
@@ -4094,7 +4094,7 @@ int CPQControl::Cpq_SetDisplayModeAllTiming(tv_source_input_t source_input, vpp_
     memset(ve_pq_table, 0, sizeof(ve_pq_table));
     memset(cutwin, 0, sizeof(cutwin));
 
-    tvin_sig_fmt_t sig_fmt[SIG_TIMING_TYPE_MAX];
+    enum tvin_sig_fmt_e sig_fmt[SIG_TIMING_TYPE_MAX];
     ve_pq_timing_type_t flag[SIG_TIMING_TYPE_MAX];
     sig_fmt[0] = TVIN_SIG_FMT_HDMI_720X480P_60HZ;
     sig_fmt[1] = TVIN_SIG_FMT_HDMI_1280X720P_60HZ;
@@ -4141,7 +4141,7 @@ int CPQControl::Cpq_SetDisplayModeAllTiming(tv_source_input_t source_input, vpp_
                 LOGD("PQ_GetOverscanParams failed!\n");
             }
         }
-        ve_pq_load_reg.param_ptr = (long long)ve_pq_table;
+        ve_pq_load_reg.param_ptr = &ve_pq_table;
     } else if (source_input == SOURCE_TV) {//ATV
         for (i=SIG_TIMING_TYPE_NTSC_M;i<SIG_TIMING_TYPE_MAX;i++) {
             ve_pq_table[i].src_timing = (0x1<<31) | ((ScreenModeValue & 0x7f) << 24) | ((source_input & 0x7f) << 16 ) | (flag[i]);
@@ -4158,12 +4158,12 @@ int CPQControl::Cpq_SetDisplayModeAllTiming(tv_source_input_t source_input, vpp_
                 LOGD("PQ_GetOverscanParams failed!\n");
             }
         }
-        ve_pq_load_reg.param_ptr = (long long)ve_pq_table;
+        ve_pq_load_reg.param_ptr = &ve_pq_table;
     } else {//HDMI && MPEG
         ve_pq_table[0].src_timing = (0x0<<31) | ((ScreenModeValue & 0x7f) << 24) | ((source_input & 0x7f) << 16 ) | (0x0);
         ve_pq_table[0].value1 = 0;
         ve_pq_table[0].value2 = 0;
-        ve_pq_load_reg.param_ptr = (long long)ve_pq_table;
+        ve_pq_load_reg.param_ptr = &ve_pq_table;
 
         ret = 0;
     }
@@ -4266,7 +4266,7 @@ int CPQControl::Cpq_SetNonLinearFactor(int value)
 }
 
 //lcd hdr info
-int CPQControl::Cpq_SetHdrInfo(const lcd_optical_info_t *plcd_hdrinfo)
+int CPQControl::Cpq_SetHdrInfo(const struct lcd_optical_info_s *plcd_hdrinfo)
 {
     int ret = 0;
 
@@ -4281,7 +4281,7 @@ int CPQControl::Cpq_SetHdrInfo(const lcd_optical_info_t *plcd_hdrinfo)
 int CPQControl::SetLCDhdrinfo(void)
 {
     int ret = -1;
-    lcd_optical_info_t lcd_hdrinfo;
+    struct lcd_optical_info_s lcd_hdrinfo;
 
     if (mbCpqCfg_lcd_hdrinfo_enable) {
         if (mPQdb->PQ_GetLCDHDRInfoParams(mCurrentSourceInputInfo, &lcd_hdrinfo) == 0) {
@@ -4455,9 +4455,9 @@ int CPQControl::DynamicBackLightInit(void)
     return ret;
 }
 
-int CPQControl::GetHistParam(ve_hist_t *hist)
+int CPQControl::GetHistParam(struct ve_hist_s *hist)
 {
-    memset(hist, 0, sizeof(ve_hist_s));
+    memset(hist, 0, sizeof(struct ve_hist_s));
     int ret = VPPDeviceIOCtl(AMVECM_IOC_G_HIST_AVG, hist);
     if (ret < 0) {
         //LOGE("GetAVGHistParam, error(%s)!\n", strerror(errno));
@@ -4496,8 +4496,8 @@ void CPQControl::GetDynamicBacklighConfig(int *thtf, int *lut_mode, int *heigh_p
 void CPQControl::GetDynamicBacklighParam(dynamic_backlight_Param_t *DynamicBacklightParam)
 {
     int value = 0;
-    ve_hist_t hist;
-    memset(&hist, 0, sizeof(ve_hist_t));
+    struct ve_hist_s hist;
+    memset(&hist, 0, sizeof(struct ve_hist_s));
     GetHistParam(&hist);
     DynamicBacklightParam->hist.ave = hist.ave;
     DynamicBacklightParam->hist.sum = hist.sum;
@@ -4596,9 +4596,9 @@ int CPQControl::Cpq_SetLocalContrastMode(local_contrast_mode_t mode)
             LOGD("%s: DB don't match chip\n", __FUNCTION__);
             ret = 0;
         } else {
-            ve_lc_curve_parm_t lc_param;
+            struct ve_lc_curve_parm_s lc_param;
             am_regs_t regs;
-            memset(&lc_param, 0x0, sizeof(ve_lc_curve_parm_t));
+            memset(&lc_param, 0x0, sizeof(struct ve_lc_curve_parm_s));
             memset(&regs, 0x0, sizeof(am_regs_t));
 
             ret = mPQdb->PQ_GetLocalContrastNodeParams(mCurrentSourceInputInfo, mode, &lc_param);
@@ -4627,7 +4627,7 @@ int CPQControl::Cpq_SetLocalContrastMode(local_contrast_mode_t mode)
 }
 
 //load aad pq
-int CPQControl::Cpq_SetAAD(const db_aad_param_t *pAAD)
+int CPQControl::Cpq_SetAAD(const struct db_aad_param_s *pAAD)
 {
     int ret = VPPDeviceIOCtl(AMVECM_IOC_S_AAD_PARAM, pAAD);
     if (ret < 0) {
@@ -4644,7 +4644,7 @@ int CPQControl::SetAad(void)
     if (mbCpqCfg_aad_enable) {
         aad_param_t newaad;
         if (mPQdb->PQ_GetAADParams(mCurrentSourceInputInfo, &newaad) == 0) {
-            db_aad_param_t db_newaad;
+            struct db_aad_param_s db_newaad;
             db_newaad.aad_param_cabc_aad_en   = newaad.aad_param_cabc_aad_en;
             db_newaad.aad_param_aad_en        = newaad.aad_param_aad_en;
             db_newaad.aad_param_tf_en         = newaad.aad_param_tf_en;
@@ -4686,7 +4686,7 @@ int CPQControl::SetAad(void)
 }
 
 //load aad pq
-int CPQControl::Cpq_SetCABC(const db_cabc_param_t *pCABC)
+int CPQControl::Cpq_SetCABC(const struct db_cabc_param_s *pCABC)
 {
     int ret = VPPDeviceIOCtl(AMVECM_IOC_S_CABC_PARAM, pCABC);
     if (ret < 0) {
@@ -4701,37 +4701,37 @@ int CPQControl::SetCabc(void)
     int ret = -1;
 
     if (mbCpqCfg_cabc_enable) {
-        cabc_param_t newcabc;
-        if (mPQdb->PQ_GetCABCParams(mCurrentSourceInputInfo, &newcabc) == 0) {
-            db_cabc_param_t db_newcabc;
-            db_newcabc.cabc_param_cabc_en          = newcabc.cabc_param_cabc_en;
-            db_newcabc.cabc_param_hist_mode        = newcabc.cabc_param_hist_mode;
-            db_newcabc.cabc_param_tf_en            = newcabc.cabc_param_tf_en;
-            db_newcabc.cabc_param_sc_flag          = newcabc.cabc_param_sc_flag;
-            db_newcabc.cabc_param_bl_map_mode      = newcabc.cabc_param_bl_map_mode;
-            db_newcabc.cabc_param_bl_map_en        = newcabc.cabc_param_bl_map_en;
-            db_newcabc.cabc_param_temp_proc        = newcabc.cabc_param_temp_proc;
-            db_newcabc.cabc_param_max95_ratio      = newcabc.cabc_param_max95_ratio;
-            db_newcabc.cabc_param_hist_blend_alpha = newcabc.cabc_param_hist_blend_alpha;
-            db_newcabc.cabc_param_init_bl_min      = newcabc.cabc_param_init_bl_min;
-            db_newcabc.cabc_param_init_bl_max      = newcabc.cabc_param_init_bl_max;
-            db_newcabc.cabc_param_tf_alpha         = newcabc.cabc_param_tf_alpha;
-            db_newcabc.cabc_param_sc_hist_diff_thd = newcabc.cabc_param_sc_hist_diff_thd;
-            db_newcabc.cabc_param_sc_apl_diff_thd  = newcabc.cabc_param_sc_apl_diff_thd;
-            db_newcabc.cabc_param_patch_bl_th      = newcabc.cabc_param_patch_bl_th;
-            db_newcabc.cabc_param_patch_on_alpha   = newcabc.cabc_param_patch_on_alpha;
-            db_newcabc.cabc_param_patch_bl_off_th  = newcabc.cabc_param_patch_bl_off_th;
-            db_newcabc.cabc_param_patch_off_alpha  = newcabc.cabc_param_patch_off_alpha;
-            db_newcabc.db_o_bl_cv.length                      = newcabc.cabc_param_o_bl_cv_len;
-            db_newcabc.db_o_bl_cv.cabc_aad_param_ptr_len      = (long long)&(newcabc.cabc_param_o_bl_cv);
-            db_newcabc.db_maxbin_bl_cv.length                 = newcabc.cabc_param_maxbin_bl_cv_len;
-            db_newcabc.db_maxbin_bl_cv.cabc_aad_param_ptr_len = (long long)&(newcabc.cabc_param_maxbin_bl_cv);
+          cabc_param_t newcabc;
+          if (mPQdb->PQ_GetCABCParams(mCurrentSourceInputInfo, &newcabc) == 0) {
+              struct db_cabc_param_s db_newcabc;
+              db_newcabc.cabc_param_cabc_en          = newcabc.cabc_param_cabc_en;
+              db_newcabc.cabc_param_hist_mode        = newcabc.cabc_param_hist_mode;
+              db_newcabc.cabc_param_tf_en            = newcabc.cabc_param_tf_en;
+              db_newcabc.cabc_param_sc_flag          = newcabc.cabc_param_sc_flag;
+              db_newcabc.cabc_param_bl_map_mode      = newcabc.cabc_param_bl_map_mode;
+              db_newcabc.cabc_param_bl_map_en        = newcabc.cabc_param_bl_map_en;
+              db_newcabc.cabc_param_temp_proc        = newcabc.cabc_param_temp_proc;
+              db_newcabc.cabc_param_max95_ratio      = newcabc.cabc_param_max95_ratio;
+              db_newcabc.cabc_param_hist_blend_alpha = newcabc.cabc_param_hist_blend_alpha;
+              db_newcabc.cabc_param_init_bl_min      = newcabc.cabc_param_init_bl_min;
+              db_newcabc.cabc_param_init_bl_max      = newcabc.cabc_param_init_bl_max;
+              db_newcabc.cabc_param_tf_alpha         = newcabc.cabc_param_tf_alpha;
+              db_newcabc.cabc_param_sc_hist_diff_thd = newcabc.cabc_param_sc_hist_diff_thd;
+              db_newcabc.cabc_param_sc_apl_diff_thd  = newcabc.cabc_param_sc_apl_diff_thd;
+              db_newcabc.cabc_param_patch_bl_th      = newcabc.cabc_param_patch_bl_th;
+              db_newcabc.cabc_param_patch_on_alpha   = newcabc.cabc_param_patch_on_alpha;
+              db_newcabc.cabc_param_patch_bl_off_th  = newcabc.cabc_param_patch_bl_off_th;
+              db_newcabc.cabc_param_patch_off_alpha  = newcabc.cabc_param_patch_off_alpha;
+              db_newcabc.db_o_bl_cv.length                      = newcabc.cabc_param_o_bl_cv_len;
+              db_newcabc.db_o_bl_cv.cabc_aad_param_ptr_len      = (long long)&(newcabc.cabc_param_o_bl_cv);
+              db_newcabc.db_maxbin_bl_cv.length                 = newcabc.cabc_param_maxbin_bl_cv_len;
+              db_newcabc.db_maxbin_bl_cv.cabc_aad_param_ptr_len = (long long)&(newcabc.cabc_param_maxbin_bl_cv);
 
-            ret = Cpq_SetCABC(&db_newcabc);
-        } else {
-            LOGE("mPQdb->PQ_GetCABCParams failed\n");
-        }
-    } else {
+              ret = Cpq_SetCABC(&db_newcabc);
+          } else {
+              LOGE("mPQdb->PQ_GetCABCParams failed\n");
+          }
+      } else {
         LOGD("CABC moudle disabled\n");
         ret = 0;
     }
@@ -4804,7 +4804,7 @@ int CPQControl::SaveDnlpMode(Dynamic_contrast_mode_t mode)
     return ret;
 }
 
-int CPQControl::Cpq_SetVENewDNLP(const ve_dnlp_curve_param_t *pDNLP)
+int CPQControl::Cpq_SetVENewDNLP(const struct ve_dnlp_curve_param_s *pDNLP)
 {
     int ret = VPPDeviceIOCtl(AMVECM_IOC_VE_NEW_DNLP, pDNLP);
     if (ret < 0) {
@@ -4817,7 +4817,7 @@ int CPQControl::Cpq_SetVENewDNLP(const ve_dnlp_curve_param_t *pDNLP)
 int CPQControl::Cpq_SetDnlpMode(Dynamic_contrast_mode_t level, source_input_param_t source_input_param)
 {
     int ret = -1;
-    ve_dnlp_curve_param_t newdnlp;
+    struct ve_dnlp_curve_param_s newdnlp;
 
     if (mbCpqCfg_dnlp_enable) {
         if (mPQdb->PQ_GetDNLPParams(mCurrentSourceInputInfo, level, &newdnlp) == 0) {
@@ -4836,81 +4836,11 @@ int CPQControl::Cpq_SetDnlpMode(Dynamic_contrast_mode_t level, source_input_para
     return ret;
 }
 
-int CPQControl::Cpq_SetDNLPStatus(ve_dnlp_state_t status)
+int CPQControl::Cpq_SetDNLPStatus(enum dnlp_state_e status)
 {
     int ret = VPPDeviceIOCtl(AMVECM_IOC_S_DNLP_STATE, &status);
     if (ret < 0) {
         LOGE("%s error(%s)\n", __FUNCTION__, strerror(errno));
-    }
-
-    return ret;
-}
-
-int CPQControl::SetColorDemoMode(vpp_color_demomode_t demomode)
-{
-    LOGD("%s: mode is %d\n", __FUNCTION__, demomode);
-    int ret = -1;
-    cm_regmap_t regmap;
-    unsigned long *temp_regmap;
-    int i = 0;
-    vpp_display_mode_t displaymode = VPP_DISPLAY_MODE_MODE43;
-
-    switch (demomode) {
-    case VPP_COLOR_DEMO_MODE_YOFF:
-        temp_regmap = DemoColorYOffRegMap;
-        break;
-
-    case VPP_COLOR_DEMO_MODE_COFF:
-        temp_regmap = DemoColorCOffRegMap;
-        break;
-
-    case VPP_COLOR_DEMO_MODE_GOFF:
-        temp_regmap = DemoColorGOffRegMap;
-        break;
-
-    case VPP_COLOR_DEMO_MODE_MOFF:
-        temp_regmap = DemoColorMOffRegMap;
-        break;
-
-    case VPP_COLOR_DEMO_MODE_ROFF:
-        temp_regmap = DemoColorROffRegMap;
-        break;
-
-    case VPP_COLOR_DEMO_MODE_BOFF:
-        temp_regmap = DemoColorBOffRegMap;
-        break;
-
-    case VPP_COLOR_DEMO_MODE_RGBOFF:
-        temp_regmap = DemoColorRGBOffRegMap;
-        break;
-
-    case VPP_COLOR_DEMO_MODE_YMCOFF:
-        temp_regmap = DemoColorYMCOffRegMap;
-        break;
-
-    case VPP_COLOR_DEMO_MODE_ALLOFF:
-        temp_regmap = DemoColorALLOffRegMap;
-        break;
-
-    case VPP_COLOR_DEMO_MODE_ALLON:
-    default:
-        if (displaymode == VPP_DISPLAY_MODE_MODE43) {
-            temp_regmap = DemoColorSplit4_3RegMap;
-        }/* else {
-            temp_regmap = DemoColorSplitRegMap;
-        }*/
-        break;
-    }
-
-    for (i = 0; i < CM_REG_NUM; i++) {
-        regmap.reg[i] = temp_regmap[i];
-    }
-
-    ret = VPPDeviceIOCtl(AMSTREAM_IOC_CM_REGMAP, regmap);
-    if (ret < 0) {
-        LOGE("%s failed!\n",__FUNCTION__);
-    } else {
-        LOGD("%s success!\n",__FUNCTION__);
     }
 
     return ret;
@@ -5100,15 +5030,15 @@ int CPQControl::Cpq_SetSmoothPlusMode(vpp_smooth_plus_mode_t smoothplus_mode, so
 {
     int ret = -1;
     am_regs_t regs;
-    am_pq_param_t di_regs;
+    struct am_pq_parm_s di_regs;
     memset(&regs, 0x0, sizeof(am_regs_t));
-    memset(&di_regs, 0x0,sizeof(am_pq_param_t));
+    memset(&di_regs, 0x0,sizeof(struct am_pq_parm_s));
 
     if (mbCpqCfg_smoothplus_enable) {
         if (mPQdb->PQ_GetSmoothPlusParams(smoothplus_mode, source_input_param, &regs) == 0) {
             di_regs.table_name = TABLE_NAME_SMOOTHPLUS;
             di_regs.table_len = regs.length;
-            am_reg_t tmp_buf[regs.length];
+            struct am_reg_s tmp_buf[regs.length];
             for (unsigned int i=0;i<regs.length;i++) {
                   tmp_buf[i].addr = regs.am_reg[i].addr;
                   tmp_buf[i].mask = regs.am_reg[i].mask;
@@ -5138,15 +5068,15 @@ int CPQControl::SetHDRTMData(int *reGain)
     if (reGain == NULL) {
         LOGD("%s: reGain is NULL.\n", __FUNCTION__);
     } else {
-        vpp_hdr_tone_mapping_t hdrToneMapping;
-        memset(&hdrToneMapping, 0, sizeof(vpp_hdr_tone_mapping_t));
-        hdrToneMapping.lut_type = LUT_TYPE_HLG;
+        struct hdr_tone_mapping_s hdrToneMapping;
+        memset(&hdrToneMapping, 0, sizeof(struct hdr_tone_mapping_s));
+        hdrToneMapping.lut_type = HLG_LUT;
         hdrToneMapping.lutlength = 149;
         hdrToneMapping.tm_lut = reGain;
 
         LOGD("hdrToneMapping.lut_type = %d\n", hdrToneMapping.lut_type);
         LOGD("hdrToneMapping.lutlength = %d\n", hdrToneMapping.lutlength);
-        //SYS_LOGD("hdrToneMapping.tm_lut = %s\n", hdrToneMapping.tm_lut);
+        //LOGD("hdrToneMapping.tm_lut = %s\n", hdrToneMapping.tm_lut);
 
         ret = VPPDeviceIOCtl(AMVECM_IOC_S_HDR_TM, &hdrToneMapping);
     }
@@ -5161,7 +5091,7 @@ int CPQControl::SetHDRTMData(int *reGain)
 }
 
 //HDR TMO
-int CPQControl::Cpq_SetHDRTMOParams(const hdr_tmo_sw_s *phdrtmo)
+int CPQControl::Cpq_SetHDRTMOParams(const struct hdr_tmo_sw *phdrtmo)
 {
     int ret = 0;
 
@@ -5176,7 +5106,7 @@ int CPQControl::Cpq_SetHDRTMOParams(const hdr_tmo_sw_s *phdrtmo)
 int CPQControl::SetHDRTMOMode(hdr_tmo_t mode, int is_save)
 {
     int ret = -1;
-    hdr_tmo_sw_s hdrtmo_param;
+    struct hdr_tmo_sw hdrtmo_param;
 
     LOGD("%s, source: %d, mode = %d\n", __FUNCTION__, mSourceInputForSaveParam, mode);
 
@@ -5374,15 +5304,15 @@ int CPQControl::Cpq_SetDeblockMode(vpp_deblock_mode_t deblock_mode, source_input
 {
     int ret = -1;
     am_regs_t regs;
-    am_pq_param_t di_regs;
+    struct am_pq_parm_s di_regs;
     memset(&regs, 0x0, sizeof(am_regs_t));
-    memset(&di_regs, 0x0,sizeof(am_pq_param_t));
+    memset(&di_regs, 0x0,sizeof(struct am_pq_parm_s));
 
     if (mbCpqCfg_deblock_enable) {
         if (mPQdb->PQ_GetDeblockParams((vpp_deblock_mode_t)deblock_mode, source_input_param, &regs) == 0) {
             di_regs.table_name = TABLE_NAME_DEBLOCK;
             di_regs.table_len = regs.length;
-            am_reg_t tmp_buf[regs.length];
+            struct am_reg_s tmp_buf[regs.length];
             for (unsigned int i=0;i<regs.length;i++) {
                   tmp_buf[i].addr = regs.am_reg[i].addr;
                   tmp_buf[i].mask = regs.am_reg[i].mask;
@@ -5454,15 +5384,15 @@ int CPQControl::Cpq_SetDemoSquitoMode(vpp_DemoSquito_mode_t DeMosquito_mode, sou
 {
     int ret = -1;
     am_regs_t regs;
-    am_pq_param_t di_regs;
+    struct am_pq_parm_s di_regs;
     memset(&regs, 0x0, sizeof(am_regs_t));
-    memset(&di_regs, 0x0,sizeof(am_pq_param_t));
+    memset(&di_regs, 0x0,sizeof(struct am_pq_parm_s));
 
     if (mbCpqCfg_demoSquito_enable) {
         if (mPQdb->PQ_GetDemoSquitoParams(DeMosquito_mode, source_input_param, &regs) == 0) {
             di_regs.table_name = TABLE_NAME_DEMOSQUITO;
             di_regs.table_len = regs.length;
-            am_reg_t tmp_buf[regs.length];
+            struct am_reg_s tmp_buf[regs.length];
             for (unsigned int i=0;i<regs.length;i++) {
                   tmp_buf[i].addr = regs.am_reg[i].addr;
                   tmp_buf[i].mask = regs.am_reg[i].mask;
@@ -5534,15 +5464,15 @@ int CPQControl::Cpq_SetMcDiMode(vpp_mcdi_mode_e McDi_mode, source_input_param_t 
 {
     int ret = -1;
     am_regs_t regs;
-    am_pq_param_t di_regs;
+    struct am_pq_parm_s di_regs;
     memset(&regs, 0x0, sizeof(am_regs_t));
-    memset(&di_regs, 0x0,sizeof(am_pq_param_t));
+    memset(&di_regs, 0x0,sizeof(struct am_pq_parm_s));
 
     if (mbCpqCfg_mcdi_enable) {
         if (mPQdb->PQ_GetMCDIParams(McDi_mode, source_input_param, &regs) == 0) {
             di_regs.table_name = TABLE_NAME_MCDI;
             di_regs.table_len = regs.length;
-            am_reg_t tmp_buf[regs.length];
+            struct am_reg_s tmp_buf[regs.length];
             for (unsigned int i=0;i<regs.length;i++) {
                   tmp_buf[i].addr = regs.am_reg[i].addr;
                   tmp_buf[i].mask = regs.am_reg[i].mask;
@@ -6826,8 +6756,8 @@ int CPQControl::GetEyeProtectionMode(tv_source_input_t source_input __unused)
 
 int CPQControl::SetFlagByCfg(void)
 {
-    pq_ctrl_t pqControlVal;
-    memset(&pqControlVal, 0x0, sizeof(pq_ctrl_t));
+    struct pq_ctrl_s pqControlVal;
+    memset(&pqControlVal, 0x0, sizeof(struct pq_ctrl_s));
     const char *config_value;
 
     //load hdmi auto flag
@@ -7143,9 +7073,9 @@ int CPQControl::SetFlagByCfg(void)
         mbCpqCfg_new_picture_mode_enable = false;
     }
 
-    vpp_pq_ctrl_t amvecmConfigVal;
-    //vpp_pq_ctrl_t amvecmConfigVal = {0, {(void *)"0"}};
-    memset(&amvecmConfigVal, 0, sizeof(vpp_pq_ctrl_t));
+    struct vpp_pq_ctrl_s amvecmConfigVal;
+    //struct vpp_pq_ctrl_s amvecmConfigVal = {0, {(void *)"0"}};
+    memset(&amvecmConfigVal, 0, sizeof(struct vpp_pq_ctrl_s));
     amvecmConfigVal.length = 14;//this is the count of pq_ctrl_s option
     amvecmConfigVal.ptr = &pqControlVal;
     int ret = VPPDeviceIOCtl(AMVECM_IOC_S_PQ_CTRL, &amvecmConfigVal);
@@ -7228,7 +7158,7 @@ int CPQControl::SetCurrentSourceInputInfo(source_input_param_t source_input_para
     pthread_mutex_lock(&PqControlMutex);
 
     //get hdr type
-    hdr_type_t newHdrType = HDR_TYPE_SDR;
+    enum hdr_type_e newHdrType = HDRTYPE_SDR;
     newHdrType = Cpq_GetSourceHDRType(source_input_param.source_input);
 
     LOGD("%s:new source info: source=%d,sigFmt=%d(0x%x),hdrType=%d\n", __FUNCTION__,
@@ -7275,10 +7205,10 @@ int CPQControl::SetCurrentSourceInputInfo(source_input_param_t source_input_para
 
         //load pq setting
         if (source_input_param.sig_fmt == TVIN_SIG_FMT_NULL) {//exit source
-            mCurrentHdrType = HDR_TYPE_NONE;
-            mPQdb->mHdrType = HDR_TYPE_NONE;
+            mCurrentHdrType = HDRTYPE_NONE;
+            mPQdb->mHdrType = HDRTYPE_NONE;
             if (mbCpqCfg_seperate_db_enable) {
-                mpOverScandb->mHdrType = HDR_TYPE_NONE;
+                mpOverScandb->mHdrType = HDRTYPE_NONE;
             }
             mCurrentTvinInfo.hdr_info    = 0;
             if ((mCurrentSourceInputInfo.source_input == SOURCE_MPEG)
@@ -7293,10 +7223,10 @@ int CPQControl::SetCurrentSourceInputInfo(source_input_param_t source_input_para
                 mCurrentSourceInputInfo.sig_fmt = TVIN_SIG_FMT_HDMI_1920X1080P_60HZ;
             }
         } else if (source_input_param.sig_fmt == TVIN_SIG_FMT_MAX) {//enter nosignal
-            mCurrentHdrType = HDR_TYPE_NONE;
-            mPQdb->mHdrType = HDR_TYPE_NONE;
+            mCurrentHdrType = HDRTYPE_NONE;
+            mPQdb->mHdrType = HDRTYPE_NONE;
             if (mbCpqCfg_seperate_db_enable) {
-                mpOverScandb->mHdrType = HDR_TYPE_NONE;
+                mpOverScandb->mHdrType = HDRTYPE_NONE;
             }
             mCurrentTvinInfo.hdr_info    = 0;
             if ((mCurrentSourceInputInfo.source_input    == SOURCE_TV)
@@ -7344,16 +7274,16 @@ int CPQControl::SetPqModeForDvGame(void)
     LOGD("%s: mPreAllmInfo.it_content %d\n", __FUNCTION__, mPreAllmInfo.it_content);
     LOGD("%s: mPreAllmInfo.cn_type %d\n", __FUNCTION__, mPreAllmInfo.cn_type);
 
-    LOGD("%s: mCurrentTvinInfo.vrrparm.vrr_status %d\n", __FUNCTION__, mCurrentTvinInfo.vrrparm.vrr_status);
-    LOGD("%s: mPreVrrParm.vrr_status %d\n", __FUNCTION__, mPreVrrParm.vrr_status);
+    LOGD("%s: mCurrentTvinInfo.vrrparm.cur_vrr_status %d\n", __FUNCTION__, mCurrentTvinInfo.vrrparm.cur_vrr_status);
+    LOGD("%s: mPreVrrParm.cur_vrr_status %d\n", __FUNCTION__, mPreVrrParm.cur_vrr_status);
     */
 
     if ((mCurrentSourceInputInfo.source_input >= SOURCE_HDMI1 && mCurrentSourceInputInfo.source_input <= SOURCE_HDMI4)
-        && (mCurrentHdrType == HDR_TYPE_DOVI)) {
+        && (mCurrentHdrType == HDRTYPE_DOVI)) {
         if ((mCurrentTvinInfo.allmInfo.allm_mode == true && mPreAllmInfo.allm_mode == false) //allm_mode from false to true
             || ((mCurrentTvinInfo.allmInfo.it_content == true && mCurrentTvinInfo.allmInfo.cn_type == GAME) &&
                 (mPreAllmInfo.it_content == false && mPreAllmInfo.cn_type != GAME)) //it_content & cn_type from fase to true
-            || (mCurrentTvinInfo.vrrparm.vrr_status != VDIN_VRR_OFF && mPreVrrParm.vrr_status == VDIN_VRR_OFF) //vrr from 0 to !0
+            || (mCurrentTvinInfo.vrrparm.cur_vrr_status != VDIN_VRR_OFF && mPreVrrParm.cur_vrr_status == VDIN_VRR_OFF) //vrr from 0 to !0
             ) { //dv + game
                 LOGD("%s: dv game\n", __FUNCTION__);
 
@@ -7362,11 +7292,11 @@ int CPQControl::SetPqModeForDvGame(void)
                 mPreAllmInfo.allm_mode = mCurrentTvinInfo.allmInfo.allm_mode;
                 mPreAllmInfo.it_content = mCurrentTvinInfo.allmInfo.it_content;
                 mPreAllmInfo.cn_type = mCurrentTvinInfo.allmInfo.cn_type;
-                mPreVrrParm.vrr_status = mCurrentTvinInfo.vrrparm.vrr_status;
+                mPreVrrParm.cur_vrr_status = mCurrentTvinInfo.vrrparm.cur_vrr_status;
         } else if ((mCurrentTvinInfo.allmInfo.allm_mode == false && mPreAllmInfo.allm_mode == true) //allm_mode from true to false
                    || ((mCurrentTvinInfo.allmInfo.it_content == false && mCurrentTvinInfo.allmInfo.cn_type != GAME) &&
                       (mPreAllmInfo.it_content == true && mPreAllmInfo.cn_type == GAME)) //it_content & cn_type from true to false
-                   || (mCurrentTvinInfo.vrrparm.vrr_status == VDIN_VRR_OFF && mPreVrrParm.vrr_status != VDIN_VRR_OFF) //vrr from !0 to 0
+                   || (mCurrentTvinInfo.vrrparm.cur_vrr_status == VDIN_VRR_OFF && mPreVrrParm.cur_vrr_status != VDIN_VRR_OFF) //vrr from !0 to 0
             ) {
                 LOGD("%s: rollback dv game\n", __FUNCTION__);
 
@@ -7377,7 +7307,7 @@ int CPQControl::SetPqModeForDvGame(void)
                 mPreAllmInfo.allm_mode = mCurrentTvinInfo.allmInfo.allm_mode;
                 mPreAllmInfo.it_content = mCurrentTvinInfo.allmInfo.it_content;
                 mPreAllmInfo.cn_type = mCurrentTvinInfo.allmInfo.cn_type;
-                mPreVrrParm.vrr_status = mCurrentTvinInfo.vrrparm.vrr_status;
+                mPreVrrParm.cur_vrr_status = mCurrentTvinInfo.vrrparm.cur_vrr_status;
         } else {
             LOGD("%s: nothing 1\n", __FUNCTION__);
         }
@@ -7445,8 +7375,8 @@ int CPQControl::FactorySetLVDSSSCLevel(int level)
         level = 4;
     LOGD("%s,SSC_level = %d", __FUNCTION__, level);
 
-    aml_lcd_ss_ctl_t ssm_param;
-    memset(&ssm_param, 0, sizeof(aml_lcd_ss_ctl_t));
+    struct aml_lcd_ss_ctl_s ssm_param;
+    memset(&ssm_param, 0, sizeof(struct aml_lcd_ss_ctl_s));
 
     if (GetLVDSSSCParams(&ssm_param) < 0) {
         LOGD ("%s,GetLVDSSSCParams fail", __FUNCTION__);
@@ -7466,8 +7396,8 @@ int CPQControl::FactoryGetLVDSSSCLevel(void)
 {
     int level = 0;
 
-    aml_lcd_ss_ctl_t ssm_param;
-    memset(&ssm_param, 0, sizeof(aml_lcd_ss_ctl_t));
+    struct aml_lcd_ss_ctl_s ssm_param;
+    memset(&ssm_param, 0, sizeof(struct aml_lcd_ss_ctl_s));
 
     if (GetLVDSSSCParams(&ssm_param) < 0) {
         LOGD ("%s,GetLVDSSSCParams fail", __FUNCTION__);
@@ -7492,8 +7422,8 @@ int CPQControl::FactorySetLVDSSSCFrep(int step)
         step = 6;
     LOGD("%s,SSC_Frep =  fail", __FUNCTION__, step);
 
-    aml_lcd_ss_ctl_t ssm_param;
-    memset(&ssm_param, 0, sizeof(aml_lcd_ss_ctl_t));
+    struct aml_lcd_ss_ctl_s ssm_param;
+    memset(&ssm_param, 0, sizeof(struct aml_lcd_ss_ctl_s));
 
     if (GetLVDSSSCParams(&ssm_param) < 0) {
         LOGE ("%s,GetLVDSSSCParams fail", __FUNCTION__);
@@ -7513,8 +7443,8 @@ int CPQControl::FactoryGetLVDSSSCFrep(void)
 {
     int setp = 0;
 
-    aml_lcd_ss_ctl_t ssm_param;
-    memset(&ssm_param, 0, sizeof(aml_lcd_ss_ctl_t));
+    struct aml_lcd_ss_ctl_s ssm_param;
+    memset(&ssm_param, 0, sizeof(struct aml_lcd_ss_ctl_s));
 
     if (GetLVDSSSCParams(&ssm_param) < 0) {
         LOGD ("%s,GetLVDSSSCParams fail", __FUNCTION__);
@@ -7536,8 +7466,8 @@ int CPQControl::FactorySetLVDSSSCMode(int mode)
 
     LOGD("%s,SSC_mode =  fail", __FUNCTION__, mode);
 
-    aml_lcd_ss_ctl_t ssm_param;
-    memset(&ssm_param, 0, sizeof(aml_lcd_ss_ctl_t));
+    struct aml_lcd_ss_ctl_s ssm_param;
+    memset(&ssm_param, 0, sizeof(struct aml_lcd_ss_ctl_s));
 
     if (GetLVDSSSCParams(&ssm_param) < 0) {
         LOGD ("%s,GetLVDSSSCParams fail", __FUNCTION__);
@@ -7557,8 +7487,8 @@ int CPQControl::FactoryGetLVDSSSCMode(void)
 {
     int mode = 0;
 
-    aml_lcd_ss_ctl_t ssm_param;
-    memset(&ssm_param, 0, sizeof(aml_lcd_ss_ctl_t));
+    struct aml_lcd_ss_ctl_s ssm_param;
+    memset(&ssm_param, 0, sizeof(struct aml_lcd_ss_ctl_s));
 
     if (GetLVDSSSCParams(&ssm_param) < 0) {
         LOGD ("%s,GetLVDSSSCParams fail", __FUNCTION__);
@@ -7569,26 +7499,26 @@ int CPQControl::FactoryGetLVDSSSCMode(void)
     return mode;
 }
 
-int CPQControl::GetLVDSSSCParams(aml_lcd_ss_ctl_t *param)
+int CPQControl::GetLVDSSSCParams(struct aml_lcd_ss_ctl_s *param)
 {
     int ret = -1;
     const char *PanelIdx =  "0";//config_get_str ( CFG_SECTION_TV, "get.panel.index", "0" ); can't parse ini file in systemcontrol
     int panel_idx = strtoul(PanelIdx, NULL, 10);
     int offset = panel_idx * MAX_LVDS_SSC_PARAM_SIZE;
 
-    ret = mSSMAction->SSMReadLVDSSSC(offset, sizeof(aml_lcd_ss_ctl_t), (int *)param);
+    ret = mSSMAction->SSMReadLVDSSSC(offset, sizeof(struct aml_lcd_ss_ctl_s), (int *)param);
 
     return ret;
 }
 
-int CPQControl::SaveLVDSSSCParams(aml_lcd_ss_ctl_t *param)
+int CPQControl::SaveLVDSSSCParams(struct aml_lcd_ss_ctl_s *param)
 {
     int ret = -1;
     const char *PanelIdx =  "0";//config_get_str ( CFG_SECTION_TV, "get.panel.index", "0" ); can't parse ini file in systemcontrol
     int panel_idx = strtoul(PanelIdx, NULL, 10);
     int offset = panel_idx * MAX_LVDS_SSC_PARAM_SIZE;
 
-    ret = mSSMAction->SSMSaveLVDSSSC(offset, sizeof(aml_lcd_ss_ctl_t), (int *)param);
+    ret = mSSMAction->SSMSaveLVDSSSC(offset, sizeof(struct aml_lcd_ss_ctl_s), (int *)param);
 
     return ret;
 }
@@ -7662,7 +7592,7 @@ int CPQControl::SetHDRMode(int mode)
 
 int CPQControl::GetHDRMode()
 {
-    ve_csc_type_t mode = VPP_MATRIX_NULL;
+    enum vpp_matrix_csc_e mode = VPP_MATRIX_NULL;
     if ((mCurrentSourceInputInfo.source_input == SOURCE_MPEG) ||
        ((mCurrentSourceInputInfo.source_input >= SOURCE_HDMI1) && mCurrentSourceInputInfo.source_input <= SOURCE_HDMI4)) {
         int ret = VPPDeviceIOCtl(AMVECM_IOC_G_CSCTYPE, &mode);
@@ -7679,37 +7609,37 @@ int CPQControl::GetHDRMode()
     return mode;
 }
 
-hdr_type_t CPQControl::Cpq_GetSourceHDRType(tv_source_input_t source_input)
+enum hdr_type_e CPQControl::Cpq_GetSourceHDRType(tv_source_input_t source_input)
 {
-    hdr_type_t newHdrType = HDR_TYPE_SDR;
+    enum hdr_type_e newHdrType = HDRTYPE_SDR;
     if ((source_input == SOURCE_MPEG)
         ||(source_input == SOURCE_DTV)) {
         if (!mbVideoIsPlaying) {
-            newHdrType = HDR_TYPE_SDR;
+            newHdrType = HDRTYPE_SDR;
         } else {
             char buf[32] = {0};
             int ret = pqReadSys(SYS_VIDEO_HDR_FMT, buf, sizeof(buf));
             if (ret < 0) {
-                newHdrType = HDR_TYPE_SDR;
+                newHdrType = HDRTYPE_SDR;
                 LOGE("%s error: %s\n", __FUNCTION__, strerror(errno));
             } else {
                 if (0 == strcmp(buf, "src_fmt = SDR")) {
-                    newHdrType = HDR_TYPE_SDR;
+                    newHdrType = HDRTYPE_SDR;
                 } else if (0 == strcmp(buf, "src_fmt = HDR10")) {
-                    newHdrType = HDR_TYPE_HDR10;
+                    newHdrType = HDRTYPE_HDR10;
                 } else if (0 == strcmp(buf, "src_fmt = HDR10+")) {
-                    newHdrType = HDR_TYPE_HDR10PLUS;
+                    newHdrType = HDRTYPE_HDR10PLUS;
                 } else if (0 == strcmp(buf, "src_fmt = HDR10 prime")) {
-                    newHdrType = HDR_TYPE_PRIMESL;
+                    newHdrType = HDRTYPE_PRIMESL;
                 } else if (0 == strcmp(buf, "src_fmt = HLG")) {
-                    newHdrType = HDR_TYPE_HLG;
+                    newHdrType = HDRTYPE_HLG;
                 } else if (0 == strcmp(buf, "src_fmt = Dolby Vison")) {
-                    newHdrType = HDR_TYPE_DOVI;
+                    newHdrType = HDRTYPE_DOVI;
                 } else if (0 == strcmp(buf, "src_fmt = MVC")) {
-                    newHdrType = HDR_TYPE_MVC;
+                    newHdrType = HDRTYPE_MVC;
                 } else {
                     LOGD("%s: invalid hdr type!\n", __FUNCTION__);
-                    newHdrType = HDR_TYPE_SDR;
+                    newHdrType = HDRTYPE_SDR;
                 }
             }
         }
@@ -7725,19 +7655,19 @@ hdr_type_t CPQControl::Cpq_GetSourceHDRType(tv_source_input_t source_input)
                     __FUNCTION__, signalRange, signalColorPrimaries, signalTransferCharacteristic, dvFlag);
             if (((signalTransferCharacteristic == 0xe) || (signalTransferCharacteristic == 0x12))
                 && (signalColorPrimaries == 0x9)) {
-                newHdrType = HDR_TYPE_HLG;
+                newHdrType = HDRTYPE_HLG;
             } else if ((signalTransferCharacteristic == 0x30) && (signalColorPrimaries == 0x9)) {
-                newHdrType = HDR_TYPE_HDR10PLUS;
+                newHdrType = HDRTYPE_HDR10PLUS;
             } else if ((signalTransferCharacteristic == 0x10) || (signalColorPrimaries == 0x9)) {
-                newHdrType = HDR_TYPE_HDR10;
+                newHdrType = HDRTYPE_HDR10;
             } else if (dvFlag == 0x1) {
-                newHdrType = HDR_TYPE_DOVI;
+                newHdrType = HDRTYPE_DOVI;
             } else {
-                newHdrType = HDR_TYPE_SDR;
+                newHdrType = HDRTYPE_SDR;
             }
     } else {
         LOGD("%s: This source no hdr status\n", __FUNCTION__);
-        newHdrType = HDR_TYPE_SDR;
+        newHdrType = HDRTYPE_SDR;
     }
 
     return newHdrType;
@@ -7843,8 +7773,8 @@ int CPQControl::AiParamLoad(void)
     int ret = -1;
 
     if (mbCpqCfg_ai_enable) {
-        ai_pic_table_t aiRegs;
-        memset(&aiRegs, 0, sizeof(ai_pic_table_t));
+        struct aipq_load_s aiRegs;
+        memset(&aiRegs, 0, sizeof(struct aipq_load_s));
         ret = mPQdb->PQ_GetAIParams(mCurrentSourceInputInfo, &aiRegs);
         if (ret >= 0) {
             LOGD("%s: width: %d, height: %d, array: %s.\n", __FUNCTION__, aiRegs.width, aiRegs.height, (char *)aiRegs.table_ptr);
@@ -8131,9 +8061,6 @@ void CPQControl::resetAllUserSettingParam()
         mSSMAction->SSMSaveLocalDimming(i, config_val);
     }
 
-    config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_COLORDEMOMODE_DEF, VPP_COLOR_DEMO_MODE_ALLON);
-    mSSMAction->SSMSaveColorDemoMode(config_val);
-
     config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_COLORBASEMODE_DEF, VPP_COLOR_BASE_MODE_OPTIMIZE);
     mSSMAction->SSMSaveColorBaseMode (config_val);
 
@@ -8394,29 +8321,29 @@ bool CPQControl::CheckPQModeTableInDb(void)
 bool CPQControl::isPqDatabaseMachChip()
 {
     bool matchStatus = false;
-    meson_cpu_ver_e chipVersion = MESON_CPU_VERSION_NULL;
+    enum meson_cpu_ver_e chipVersion = VER_NULL;
 
     database_attribute_t dbAttribute;
     mPQdb->PQ_GetDataBaseAttribute(&dbAttribute);
     if (dbAttribute.ChipVersion.length() == 0) {
         LOGD("%s: ChipVersion is null!\n", __FUNCTION__);
-        chipVersion = MESON_CPU_VERSION_NULL;
+        chipVersion = VER_NULL;
     } else {
         int flagPosition = dbAttribute.ChipVersion.find("_");
         std::string versionStr = dbAttribute.ChipVersion.substr(flagPosition+1, 1);
         LOGD("%s: versionStr is %s!\n", __FUNCTION__, versionStr.c_str());
         if (versionStr == "A") {
-            chipVersion = MESON_CPU_VERSION_A;
+            chipVersion = VER_A;
         } else if (versionStr ==  "B") {
-            chipVersion = MESON_CPU_VERSION_B;
+            chipVersion = VER_B;
         } else if (versionStr == "C") {
-            chipVersion = MESON_CPU_VERSION_C;
+            chipVersion = VER_C;
         } else {
-            chipVersion = MESON_CPU_VERSION_NULL;
+            chipVersion = VER_NULL;
         }
     }
 
-    if (chipVersion == MESON_CPU_VERSION_NULL) {
+    if (chipVersion == VER_NULL) {
         LOGD("%s: database don't have chipversion!\n", __FUNCTION__);
         matchStatus = true;
     } else {
@@ -8441,7 +8368,7 @@ int CPQControl::Cpq_SetVadjEnableStatus(int isvadj1Enable, int isvadj2Enable)
         ret = 0;
         LOGD("%s: all vadj module disabled.\n", __FUNCTION__);
     } else {
-        am_pic_mode_t params;
+        struct am_vdj_mode_s params;
         memset(&params, 0, sizeof(params));
         params.flag |= (0x1<<6);
         params.vadj1_en = isvadj1Enable;

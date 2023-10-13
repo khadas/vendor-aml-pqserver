@@ -21,7 +21,7 @@ typedef struct dynamic_backlight_Param_s {
     int CurBacklightValue;
     int UiBackLightValue;
     Dynamic_backlight_status_t CurDynamicBacklightMode;
-    ve_hist_s hist;
+    struct ve_hist_s hist;
     int VideoStatus;
 } dynamic_backlight_Param_t;
 

@@ -34,7 +34,7 @@ private:
     void PQ_GetOverscanTableName(vpp_display_mode_t dmode, char *table_name, int size);
 
 public:
-    hdr_type_t mHdrType = HDR_TYPE_SDR;
+    enum hdr_type_e mHdrType = HDRTYPE_SDR;
     unsigned int mOverScanDbVersion;
 };
 #endif

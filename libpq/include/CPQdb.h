@@ -13,10 +13,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <string>
 #include "CSqlite.h"
 #include "PQType.h"
 #include "CPQLog.h"
-#include <string>
 
 #define PQ_DB_CODE_VERSION        20201211
 
@@ -94,10 +94,10 @@ public:
     int PQ_ResetAllNoLineParams(void);
     int PQ_GetNoiseReductionParams(vpp_noise_reduction_mode_t nr_mode, source_input_param_t source_input_param, int reg_addr);
     int PQ_SetNoiseReductionParams(vpp_noise_reduction_mode_t nr_mode, source_input_param_t source_input_param, int reg_addr, int value);
-    int PQ_GetDNLPParams(source_input_param_t source_input_param, Dynamic_contrast_mode_t mode, ve_dnlp_curve_param_t *newParams);
+    int PQ_GetDNLPParams(source_input_param_t source_input_param, Dynamic_contrast_mode_t mode, struct ve_dnlp_curve_param_s *newParams);
     int PQ_SetDNLPGains(source_input_param_t source_input_param, Dynamic_contrast_mode_t level, int final_gain);
     int PQ_GetDNLPGains(source_input_param_t source_input_param, Dynamic_contrast_mode_t level);
-    int PQ_GetLocalContrastNodeParams(source_input_param_t source_input_param, local_contrast_mode_t mode, ve_lc_curve_parm_t *Params);
+    int PQ_GetLocalContrastNodeParams(source_input_param_t source_input_param, local_contrast_mode_t mode, struct ve_lc_curve_parm_s *Params);
     int PQ_GetLocalContrastRegParams(source_input_param_t source_input_param, local_contrast_mode_t mode, am_regs_t *regs);
     int PQ_ResetAllOverscanParams(void);
     int PQ_GetPQModeParams(tv_source_input_t source_input, vpp_picture_mode_t pq_mode, vpp_pq_para_t *params);
@@ -111,9 +111,9 @@ public:
     int PQ_GetGammaParams(source_input_param_t source_input_param, vpp_gamma_curve_t gamma_curve, const char *f_name, tcon_gamma_table_t *gamma_value);
     int PQ_GetPLLParams(source_input_param_t source_input_param, am_regs_t *regs);
     int PQ_GetCVD2Params(source_input_param_t source_input_param, am_regs_t *regs);
-    int PQ_GetLCDHDRInfoParams(source_input_param_t source_input_param, lcd_optical_info_t *newParams);
-    int PQ_GetAIParams(source_input_param_t source_input_param, ai_pic_table_t *regs);
-    int PQ_GetHDRTMOParams(source_input_param_t source_input_param, hdr_tmo_t mode, hdr_tmo_sw_s *newParams);
+    int PQ_GetLCDHDRInfoParams(source_input_param_t source_input_param, struct lcd_optical_info_s *newParams);
+    int PQ_GetAIParams(source_input_param_t source_input_param, struct aipq_load_s *regs);
+    int PQ_GetHDRTMOParams(source_input_param_t source_input_param, hdr_tmo_t mode, struct hdr_tmo_sw *newParams);
     int PQ_GetAADParams(source_input_param_t source_input_param, aad_param_t *newParams);
     int PQ_GetCABCParams(source_input_param_t source_input_param, cabc_param_t *newParams);
     int openPqDB(const char *db_path);
@@ -161,7 +161,7 @@ private:
     int sha1_nodes;
 public:
     bool mHdrStatus = false;
-    hdr_type_t mHdrType = HDR_TYPE_SDR;
+    enum hdr_type_e mHdrType = HDRTYPE_SDR;
     output_type_t mOutPutType = OUTPUT_TYPE_LVDS;
     colortemperature_type_t mColorTemperatureMode = LVDS_STD;
     unsigned int mDbVersion;

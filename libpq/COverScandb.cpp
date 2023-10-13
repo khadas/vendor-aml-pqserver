@@ -160,8 +160,8 @@ int COverScandb::PQ_GetOverscanParams(source_input_param_t source_input_param, v
     int rval = -1;
     char table_name[30];
     tv_source_input_t source_input = source_input_param.source_input;
-    tvin_sig_fmt_t fmt = source_input_param.sig_fmt;
-    tvin_trans_fmt_t trans_fmt = source_input_param.trans_fmt;
+    enum tvin_sig_fmt_e fmt = source_input_param.sig_fmt;
+    enum tvin_trans_fmt trans_fmt = source_input_param.trans_fmt;
 
     PQ_GetOverscanTableName(dmode, table_name, sizeof(table_name));
     LOGD ("%s table_name %s\n", __FUNCTION__, table_name);
@@ -201,8 +201,8 @@ int COverScandb::PQ_SetOverscanParams(source_input_param_t source_input_param , 
     char table_name[30];
     int rval = -1;
     tv_source_input_t source_input = source_input_param.source_input;
-    tvin_sig_fmt_t fmt = source_input_param.sig_fmt;
-    tvin_trans_fmt_t trans_fmt = source_input_param.trans_fmt;
+    enum tvin_sig_fmt_e fmt = source_input_param.sig_fmt;
+    enum tvin_trans_fmt trans_fmt = source_input_param.trans_fmt;
 
     PQ_GetOverscanTableName(dmode, table_name, sizeof(table_name));
     LOGD ("%s table_name %s\n", __FUNCTION__, table_name);
@@ -271,10 +271,10 @@ std::string COverScandb::GetTableName(const char *GeneralTableName, source_input
     if (mOverScanDbVersion < OVERSCAN_DB_CODE_VERSION_1) {
         //for hdr case
         if (strcmp(GeneralTableName, OVERSCAN_DB_GENERALPICTUREMODE_TABLE_NAME) == 0) {
-            if ((mHdrType == HDR_TYPE_HDR10) ||
-                (mHdrType == HDR_TYPE_HDR10PLUS) ||
-                (mHdrType == HDR_TYPE_HLG) ||
-                (mHdrType == HDR_TYPE_DOVI)) {
+            if ((mHdrType == HDRTYPE_HDR10) ||
+                (mHdrType == HDRTYPE_HDR10PLUS) ||
+                (mHdrType == HDRTYPE_HLG) ||
+                (mHdrType == HDRTYPE_DOVI)) {
                 source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HDR;
             } else {
                 LOGD("%s: SDR source\n", __FUNCTION__);
@@ -282,17 +282,19 @@ std::string COverScandb::GetTableName(const char *GeneralTableName, source_input
         }
     } else if (mOverScanDbVersion >= OVERSCAN_DB_CODE_VERSION_1) {
         //for hdr10/hdr10plus/hlg/dolby vision
-        if (mHdrType == HDR_TYPE_HDR10) {
+    #if 0 //cdy
+        if (mHdrType == HDRTYPE_HDR10) {
             source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HDR10;
-        } else if (mHdrType == HDR_TYPE_HDR10PLUS) {
+        } else if (mHdrType == HDRTYPE_HDR10PLUS) {
             source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HDR10PLUS;
-        } else if (mHdrType == HDR_TYPE_HLG) {
+        } else if (mHdrType == HDRTYPE_HLG) {
             source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HLG;
-        } else if (mHdrType == HDR_TYPE_DOVI) {
+        } else if (mHdrType == HDRTYPE_DOVI) {
             source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_DOLBY;
         } else {
             LOGD("%s: SDR source\n", __FUNCTION__);
         }
+    #endif
     }
 
     getSqlParams(__FUNCTION__, sqlmaster, "select TableName from %s where "

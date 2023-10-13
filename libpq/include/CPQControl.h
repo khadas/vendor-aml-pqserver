@@ -15,7 +15,6 @@
 #include "CDevicePollCheckThread.h"
 #include "CPQdb.h"
 #include "PQType.h"
-#include "CPQColorData.h"
 #include "CPQLog.h"
 #include "CDynamicBackLight.h"
 #include "CConfigFile.h"
@@ -68,8 +67,6 @@
 #define AMDOLBY_VISION_HDR10_POLICY      "/sys/module/aml_media/parameters/dolby_vision_hdr10_policy"
 #define AML_AUTO_NR_PARAMS               "/sys/class/deinterlace/di0/autonr_param"
 
-#define TVIN_IOC_MAGIC 'T'
-#define TVIN_IOC_LOAD_REG           _IOW(TVIN_IOC_MAGIC, 0x20, struct am_regs_s)
 
 // screem mode index value
 #define  SCREEN_MODE_NORMAL           0
@@ -126,11 +123,8 @@
 #define SHARPNESS_HD_PKGAIN_VSLUMA       (0x32fe)
 
 //memc
-#define PROP_CPQ_MEMC               "persist.vendor.sys.memc"
 #define CPQ_MEMC_SYSFS              "/dev/frc"
 #define MEMDEV_CONTRL               _IOW('F', 0x06, unsigned int)
-#define FRC_IOC_SET_MEMC_LEVEL      _IOW('F', 0x07, unsigned int)
-#define FRC_IOC_SET_MEMC_DEMO       _IOW('F', 0x08, unsigned int)
 
 typedef enum db_name_e {
     DB_NAME_PQ = 0,
@@ -174,8 +168,8 @@ public:
     int LoadPQTableSettings(void);
     int LoadCpqLdimRegs(void);
     int Cpq_LoadRegs(am_regs_t regs);
-    int Cpq_LoadDisplayModeRegs(ve_pq_load_t regs);
-    int DI_LoadRegs(am_pq_param_t di_regs );
+    int Cpq_LoadDisplayModeRegs(struct ve_pq_load_s regs);
+    int DI_LoadRegs(struct am_pq_parm_s di_regs );
     int Cpq_LoadBasicRegs(source_input_param_t source_input_param, vpp_picture_mode_t pqMode);
     int Cpq_SetDIModuleParam(source_input_param_t source_input_param);
     int ResetLastPQSettingsSourceType(void);
@@ -298,7 +292,7 @@ public:
     int Cpq_SetNonLinearFactor(int value);
     //LCD HDR INFO
     int SetLCDhdrinfo(void);
-    int Cpq_SetHdrInfo(const lcd_optical_info_t *plcd_hdrinfo);
+    int Cpq_SetHdrInfo(const struct lcd_optical_info_s *plcd_hdrinfo);
 
     //Backlight
     int SetBacklight(int value, int is_save);
@@ -342,7 +336,6 @@ public:
     int SaveMcDiMode(vpp_mcdi_mode_e mode);
     int Cpq_SetMcDiMode(vpp_mcdi_mode_e McDi_mode, source_input_param_t source_input_param);
     //color base
-    int SetColorDemoMode(vpp_color_demomode_t demomode);
     int SetColorBaseMode(vpp_color_basemode_t basemode, int isSave);
     vpp_color_basemode_t GetColorBaseMode(void);
     int SaveColorBaseModeToSSM(int value, vpp_picture_mode_t pq_mode, tv_source_input_t srcInput);
@@ -352,17 +345,17 @@ public:
 
     //BlackExtension
     int SetBlackExtensionParam(source_input_param_t source_input_param);
-    int Cpq_SetCABC(const db_cabc_param_t *pCABC);
+    int Cpq_SetCABC(const struct db_cabc_param_s *pCABC);
     int SetCabc(void);
-    int Cpq_SetAAD(const db_aad_param_t *pAAD);
+    int Cpq_SetAAD(const struct db_aad_param_s *pAAD);
     int SetAad(void);
     //dynamic contrast
     int SetDnlpMode(Dynamic_contrast_mode_t mode, int is_save);
     int GetDnlpMode();
     int SaveDnlpMode(Dynamic_contrast_mode_t mode);
     int Cpq_SetDnlpMode(Dynamic_contrast_mode_t level, source_input_param_t source_input_param);
-    int Cpq_SetVENewDNLP(const ve_dnlp_curve_param_t *pDNLP);
-    int Cpq_SetDNLPStatus(ve_dnlp_state_t status);
+    int Cpq_SetVENewDNLP(const struct ve_dnlp_curve_param_s *pDNLP);
+    int Cpq_SetDNLPStatus(enum dnlp_state_e status);
 
     //Factory
     int FactoryResetPQMode(void);
@@ -425,14 +418,14 @@ public:
     int Cpq_GetSSMActualSize(int id);
     int SSMRecovery(void);
     int Cpq_GetSSMStatus();
-    hdr_type_t Cpq_GetSourceHDRType(tv_source_input_t source_input);
+    enum hdr_type_e Cpq_GetSourceHDRType(tv_source_input_t source_input);
     int SetFlagByCfg(void);
     int SetPLLValues(source_input_param_t source_input_param);
     int SetCVD2Values(void);
     int SetCurrentSourceInputInfo(source_input_param_t source_input_param);
     int SetCurrentSource(tv_source_input_t source_input);
     source_input_param_t GetCurrentSourceInputInfo();
-    int GetHistParam(ve_hist_t *hist);
+    int GetHistParam(struct ve_hist_s *hist);
     bool isFileExist(const char *file_name);
 
     int GetRGBPattern();
@@ -445,8 +438,8 @@ public:
     int FactoryGetLVDSSSCFrep(void);
     int FactorySetLVDSSSCMode(int mode);
     int FactoryGetLVDSSSCMode(void);
-    int GetLVDSSSCParams(aml_lcd_ss_ctl_t *param);
-    int SaveLVDSSSCParams(aml_lcd_ss_ctl_t *param);
+    int GetLVDSSSCParams(struct aml_lcd_ss_ctl_s *param);
+    int SaveLVDSSSCParams(struct aml_lcd_ss_ctl_s *param);
 
     int SetGrayPattern(int value);
     int GetGrayPattern();
@@ -478,7 +471,7 @@ public:
     //HDR tone mapping
     int SetHDRTMData(int *reGain);
     //HDR TMO
-    int Cpq_SetHDRTMOParams(const hdr_tmo_sw_s *phdrtmo);
+    int Cpq_SetHDRTMOParams(const struct hdr_tmo_sw *phdrtmo);
     int SetHDRTMOMode(hdr_tmo_t mode, int is_save);
     int GetHDRTMOMode();
     int SaveHDRTMOMode(hdr_tmo_t mode);
@@ -532,8 +525,8 @@ private:
     void stopVdin(void);
     void onSigStatusChange(void);
     void onVrrStatusChange(void);
-    int SetCurrenSourceInfo(tvin_parm_t sig_info);
-    tvin_sig_fmt_t getVideoResolutionToFmt();
+    int SetCurrenSourceInfo(struct tvin_parm_s sig_info);
+    enum tvin_sig_fmt_e getVideoResolutionToFmt();
     int GetWindowStatus(void);
     int Cpq_SetXVYCCMode(vpp_xvycc_mode_t xvycc_mode, source_input_param_t source_input_param);
     int pqWriteSys(const char *path, const char *val);
@@ -542,7 +535,7 @@ private:
     unsigned int GetSharpnessRegVal(int addr);
     int Cpq_GetInputVideoFrameHeight(tv_source_input_t source_input);
     output_type_t CheckOutPutMode(tv_source_input_t source_input);
-    pq_sig_fmt_t CheckPQTimming(hdr_type_t hdr_type);
+    pq_sig_fmt_t CheckPQTimming(enum hdr_type_e hdr_type);
     bool isPqDatabaseMachChip();
     bool CheckPQModeTableInDb(void);
     int Cpq_SetVadjEnableStatus(int isvadj1Enable, int isvadj2Enable);
@@ -616,12 +609,12 @@ private:
     source_input_param_t mCurrentSourceInputInfo;
     tv_source_input_t mSourceInputForSaveParam;
     pq_src_param_t mCurrentPqSource;
-    hdr_type_t mCurrentHdrType = HDR_TYPE_NONE;
-    tvin_parm_t mCurrentSignalInfo;
+    enum hdr_type_e mCurrentHdrType = HDRTYPE_NONE;
+    struct tvin_parm_s mCurrentSignalInfo;
     tvin_inputparam_t mCurrentTvinInfo;
     game_pc_mode_t mGamemode = MODE_OFF;
-    tvin_latency_t mPreAllmInfo;
-    tvin_vrr_freesync_param_t mPreVrrParm;
+    struct tvin_latency_s mPreAllmInfo;
+    struct vdin_vrr_freesync_param_s mPreVrrParm;
     bool mbDtvKitEnable;
     bool mbDatabaseMatchChipStatus;
     bool mbVideoIsPlaying = false;//video don't playing

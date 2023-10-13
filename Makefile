@@ -32,7 +32,6 @@ pq_SRCS = \
   $(LOCAL_PATH)/libpq/SSMHandler.cpp  \
   $(LOCAL_PATH)/libpq/SSMHeader.cpp  \
   $(LOCAL_PATH)/libpq/CDevicePollCheckThread.cpp  \
-  $(LOCAL_PATH)/libpq/CPQColorData.cpp  \
   $(LOCAL_PATH)/libpq/CPQLog.cpp  \
   $(LOCAL_PATH)/libpq/CPQFile.cpp  \
   $(LOCAL_PATH)/libpq/CEpoll.cpp \
