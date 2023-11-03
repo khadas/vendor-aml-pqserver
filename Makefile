@@ -40,6 +40,7 @@ pq_SRCS = \
   $(LOCAL_PATH)/libpq/UEventObserver.cpp \
   $(LOCAL_PATH)/libpq/CVdin.cpp \
   $(LOCAL_PATH)/libpq/CAmdolbyVision.cpp \
+  $(LOCAL_PATH)/libpq/GammaOperation.cpp \
   $(NULL)
 
 pq_HEADERS = \

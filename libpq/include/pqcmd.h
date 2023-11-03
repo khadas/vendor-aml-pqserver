@@ -84,6 +84,10 @@ typedef enum pqcmd_e {
     PQ_SET_COLOR_CUSTOMIZE_3DLUT  = 270,
     PQ_GET_COLOR_CUSTOMIZE_3DLUT  = 271,
     PQ_RESET_COLOR_CUSTOMIZE      = 272,
+    PQ_SET_WB_GAMMA_DATA          = 273,
+    PQ_GET_WB_GAMMA_DATA          = 274,
+    PQ_SET_SUPERRESOLUTION        = 275,
+    PQ_GET_SUPERRESOLUTION        = 276,
 
     PQ_MODULE_CMD_MAX             = 299,
     //PQ factory(300~399)
@@ -130,6 +134,8 @@ typedef enum pqcmd_e {
     PQ_FACTORY_SET_Sharpness_Params           = 340,
     PQ_FACTORY_SET_PQ_ENABLE                  = 341,
     PQ_FACTORY_GET_PQ_ENABLE                  = 342,
+    PQ_FACTORY_SET_WB_GAMMA_DATA              = 343,
+    PQ_FACTORY_GET_WB_GAMMA_DATA              = 344,
 
     PQ_FACTORY_CMD_MAX                        = 399,
 }pqcmd_t;

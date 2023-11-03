@@ -68,7 +68,7 @@ void CDynamicBackLight::gd_fw_alg_frm(int value, int *tf_bl_value, int *LUT)
         } else if (value > 236) {
             value = 236;
         }
-        average = (value - 16)*256/(236-16);
+        average = (value - 16) * 256 / (236 - 16);
     } else {
         if (value < 0) {//color renge full
             value = 0;
@@ -80,27 +80,27 @@ void CDynamicBackLight::gd_fw_alg_frm(int value, int *tf_bl_value, int *LUT)
     }
 
     if (GD_LUT_MODE == 0) {//old or xiaomi project
-        nT0 = average/16;
-        nT1 = average%16;
+        nT0 = average / 16;
+        nT1 = average % 16;
         nL0 = LUT[nT0];
-        nR0 = LUT[nT0+1];
-        nDt = nL0*(16-nT1)+nR0*nT1+8;
-        bl_value = nDt/16;
+        nR0 = LUT[nT0 + 1];
+        nDt = nL0 * (16 - nT1) + nR0 * nT1 + 8;
+        bl_value = nDt / 16;
     } else {//new mode, only first ten elements used
-        for (i=0;i<9;i++) {
-            if (average <= apl_lut[i+1] && average >= apl_lut[i]) {
+        for (i = 0; i < 9; i++) {
+            if (average <= apl_lut[i + 1] && average >= apl_lut[i]) {
                 nT0 = i;
-                step= apl_lut[i+1] - apl_lut[i];
+                step= apl_lut[i + 1] - apl_lut[i];
                 break;
             }
         }
 
         nT1 = average - apl_lut[nT0];
         nL0 = LUT[nT0];
-        nR0 = LUT[nT0+1];
-        nDt = nL0*(step-nT1)+nR0*nT1+step/2;
+        nR0 = LUT[nT0 + 1];
+        nDt = nL0 * (step - nT1) + nR0 * nT1 + step / 2;
         if (step != 0) {
-            bl_value = nDt/step;//make sure that step != 0
+            bl_value = nDt / step;//make sure that step != 0
         }
     }
 
@@ -110,7 +110,7 @@ void CDynamicBackLight::gd_fw_alg_frm(int value, int *tf_bl_value, int *LUT)
         *tf_bl_value = ((RBASE - bld_lvl) * mPreBacklightValue + bld_lvl * bl_value + (RBASE >> 1)) >> mGD_mvreflsh;     //slowchange
     } else*/{
         step = bl_value - mPreBacklightValue;
-        if (step > GD_STEP_Th  )// dark --> bright, limit increase step
+        if (step > GD_STEP_Th)// dark --> bright, limit increase step
             step = GD_STEP_Th;
         else if (step < (-GD_STEP_Th)) // bright --> dark, limit decrease step
             step = -GD_STEP_Th;
@@ -162,11 +162,11 @@ void *CDynamicBackLight::threadLoop(void)
         memset(LUT_low, 0, sizeof(LUT_low));
         mpObserver->GetDynamicBacklighConfig(&GD_ThTF, &GD_LUT_MODE, LUT_high, LUT_low);
 
-        if (GD_ThTF < 0 || GD_ThTF >(1<<mGD_mvreflsh)) {
+        if (GD_ThTF < 0 || GD_ThTF > (1 << mGD_mvreflsh)) {
             GD_ThTF = 0;
         }
 
-        if (GD_LUT_MODE < 0 || GD_LUT_MODE >255) {
+        if (GD_LUT_MODE < 0 || GD_LUT_MODE > 255) {
             GD_LUT_MODE = 0;
         }
 

@@ -124,6 +124,15 @@ public:
     vpp_single_color_param_3dlut_t GetColorCustomizeBy3DLut(int color);
     int ResetColorCustomize(int mode);
 
+    /* to ssmdata*/
+    /*channel: R channel(0), G channel(1), B channel(2)*/
+    /*point:  gray (%0 ~ 100% ) %5 per step. 0 ~ 21*/
+    /*offset:  -1023 ~ 1023*/
+    int SetWhitebalanceGamma(int channel, int point, int offset);
+    int GetWhitebalanceGamma(int channel, int point);
+    int SetSuperResolution(int mode, int isSave);
+    int GetSuperResolution(void);
+
     int FactoryResetPQMode(void);
     int FactoryResetColorTemp(void);
     int FactoryWhiteBalanceSetColorTemperature(int sourceInput, int sigFmt, int transFmt, int colorTemperatureValue, int isSave = 0);
@@ -189,6 +198,14 @@ public:
     int FactoryGetDecodeLumaParams(int sourceInput, int sigFmt, int transFmt, int paramType);
     int FactorySetHdmiColorRangeMode(int pq_type, int isEnable);
     int FactoryGetHdmiColorRangeMode(int pq_type);
+
+    /*to cri data*/
+    /*level: STANDARD(0), WARM(1), COLD(2), USER(3), WARMER(4), COLDER(5)*/
+    /*channel: R channel(0), G channel(1), B channel(2)*/
+    /*point:  gray (%0 ~ 100% ) %5 per step. 0 ~ 21*/
+    /*offset:  -1023 ~ 1023*/
+    int FactorySetWhitebalanceGamma(int level, int channel, int point, int offset);
+    int FactoryGetWhitebalanceGamma(int level, int channel, int point);
 
 private:
     void SendMethodCall(char *CmdString);

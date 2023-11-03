@@ -28,14 +28,14 @@
 #define CFG_TVHAL_ENABLE                        "pq.tvhal.en"
 #define CFG_BLACK_BLUE_CHROMA_DB_ENABLE         "pq.BlackBlueChromaDb.en"
 
-//di moudle config
+//di module config
 #define CFG_DI_ENABLE                           "pq.di.en"
 #define CFG_MCDI_ENABLE                         "pq.mcdi.en"
 #define CFG_DEBLOCK_ENABLE                      "pq.deblock.en"
 #define CFG_NOISEREDUCTION_ENABLE               "pq.NoiseReduction.en"
 #define CFG_DEMOSQUITO_ENABLE                   "pq.DemoSquito.en"
 #define CFG_SMOOTHPLUS_ENABLE                   "pq.SmoothPlus.en"
-//amvecm moudle config
+//amvecm module config
 #define CFG_SHARPNESS0_ENABLE                   "pq.sharpness0.en"
 #define CFG_SHARPNESS1_ENABLE                   "pq.sharpness1.en"
 #define CFG_DNLP_ENABLE                         "pq.dnlp.en"
@@ -50,7 +50,7 @@
 #define CFG_BLACKEXTENSION_ENABLE               "pq.BlackExtension.en"
 #define CFG_CHROMA_COR_ENABLE                   "pq.chroma.cor.en"
 #define CFG_XVYCC_ENABLE                        "pq.xvycc.en"
-//overscan moudle config
+//overscan module config
 #define CFG_DISPLAY_OVERSCAN_ENABLE             "pq.DisplayOverscan.en"
 //av decode config
 #define CFG_CVD2_ENABLE                         "pq.cvd2.en"

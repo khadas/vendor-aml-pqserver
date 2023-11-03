@@ -14,8 +14,19 @@
 #include "ldim.h"
 
 #define GAMMA_NUMBER    257
+
 typedef struct tcon_gamma_table_s tcon_gamma_table_t;
 typedef struct tcon_rgb_ogo_s     tcon_rgb_ogo_t;
+
+typedef struct _GAMMA_TABLE {
+    struct tcon_gamma_table_s R;
+    struct tcon_gamma_table_s G;
+    struct tcon_gamma_table_s B;
+} GAMMA_TABLE;
+
+typedef struct gamma_power_table_s {
+    unsigned int data[GAMMA_NUMBER];
+} gamma_power_table_t;
 
 #define AMVECM_IOC_MAGIC               'C'
 #define LDIM_IOC_PARA                  _IOW(AMVECM_IOC_MAGIC, 0x50, struct vpu_ldim_param_s)

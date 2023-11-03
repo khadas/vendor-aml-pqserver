@@ -20,14 +20,27 @@
 #define SSM_CR_RGBOGO_CHKSUM_LEN                    (2)
 #define DEFAULT_BACKLIGHT_BRIGHTNESS                (10)
 
-#define CRI_DATE_GAMMA_OFFSET                       (512)
-#define CRI_DATE_GAMMA_RGB_SIZE                     (257)
+#define CRI_DATA_WB_GAMMA_OFFSET                    (SSM_CR_RGBOGO_LEN + SSM_CR_RGBOGO_CHKSUM_LEN)
+#define CRI_DATE_WB_GAMMA_LEN                       (254) //sizeof(WB_GAMMA_TABLE) + 2
+#define CRI_DATE_WB_GAMMA_INDEX_MAX                 (8)
+
+#define CRI_DATA_GAMMA_OFFSET                       (CRI_DATA_WB_GAMMA_OFFSET + (CRI_DATE_WB_GAMMA_LEN * CRI_DATE_WB_GAMMA_INDEX_MAX))
+#define CRI_DATE_GAMMA_LEN                          (1544) //sizeof(GAMMA_TABLE) + 2
+#define CRI_DATE_GAMMA_INDEX_MAX                    (8)
+
+//#define CRI_DATE_GAMMA_OFFSET                       (512)
+//#define CRI_DATE_GAMMA_RGB_SIZE                     (257)
 #define CRI_DATE_GAMMA_R_index                      (1)
 #define CRI_DATE_GAMMA_G_index                      (2)
 #define CRI_DATE_GAMMA_B_index                      (3)
 #define CRI_DATE_GAMMA_COOL                         (1)
 #define CRI_DATE_GAMMA_STANDARD                     (2)
 #define CRI_DATE_GAMMA_WARM                         (3)
+
+typedef struct _PictureModeInfo {
+    int PictureMode;
+    int Flag;
+} PictureModeInfo;
 
 class SSMAction {
 public:
@@ -181,10 +194,23 @@ public:
     int SSMReadChromaCoring(int offset, int *rw_val);
     int SSMSaveLocalDimming(int offset, int rw_val);
     int SSMReadLocalDimming(int offset, int *rw_val);
-    int SSMSavePictureModeParamsFlag(int offset, int rw_val);
-    int SSMReadPictureModeParamsFlag(int offset, int *rw_val);
-    int SSMSavePictureModeParams(int offset, int size, int *rw_val);
-    int SSMReadPictureModeParams(int offset, int size, int *rw_val);
+
+    bool SetPictureMode(int PictureMode, int src, int timming);
+    bool GetPictureMode(int *PictureMode, int src, int timming);
+
+    bool SetPictureModeData(vpp_pictur_mode_para_t *pData, int src, int timming, int pqmode);
+    bool GetPictureModeData(vpp_pictur_mode_para_t *pData, int src, int timming, int pqmode);
+
+    bool SetColorTemperatureData(tcon_rgb_ogo_t *pData, int src, int timming, int level);
+    bool GetColorTemperatureData(tcon_rgb_ogo_t *pData, int src, int timming, int level);
+
+    bool SetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int src, int timming, int level);
+    bool GetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int src, int timming, int level);
+
+    bool CriDataGetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level);
+    bool CriDataSetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level);
+
+
     int SSMSaveColorCustomizeParams(int offset, int size, int *rw_val);
     int SSMReadColorCustomizeParams(int offset, int size, int *rw_val);
     int SSMSaveColorCustomizeParamsBy3DLut(int offset, int size, int *rw_val);

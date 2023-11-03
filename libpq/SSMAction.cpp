@@ -740,7 +740,7 @@ int SSMAction::ReadDataFromFile(const char *file_name, int offset, int nsize, un
         LOGE("lseek file \"%s\" error(%s).\n", file_name, strerror(errno));
         ret = -1;
     } else if ( (bytesRead = read(device_fd, data_buf, nsize)) <= 0 ) {
-        LOGE("read file \"%s\" bytesRead[%d] error(%s).\n", file_name, bytesRead, strerror(errno));
+        //LOGE("read file \"%s\" bytesRead[%d] error(%s).\n", file_name, bytesRead, strerror(errno));
         ret = -1;
     }
 
@@ -1324,25 +1324,221 @@ int SSMAction::SSMReadLocalDimming(int offset, int *rw_val) {
     return ret;
 }
 
-int SSMAction::SSMSavePictureModeParamsFlag(int offset, int rw_val) {
-    return SSMWriteNTypes(VPP_DATA_POS_PICTURE_MODE_PARAM_CRC_START, 1, &rw_val, offset);
+bool SSMAction::SetPictureMode(int PictureMode, int src, int timming)
+{
+    PictureModeInfo Data;
+    Data.PictureMode = PictureMode;
+    Data.Flag = 1;
+
+    int offset = (src * MAX_PQ_TIMMING_INDEX + timming) * sizeof(PictureModeInfo);
+
+    if (SSMWriteNTypes(VPP_DATA_POS_PQ_MODE_START, sizeof(PictureModeInfo), (int *)&Data, offset) < 0) {
+        return false;
+    }
+
+    return true;
 }
 
-int SSMAction::SSMReadPictureModeParamsFlag(int offset, int *rw_val) {
-    int tmp_val = 0;
-    int ret = 0;
-    ret = SSMReadNTypes(VPP_DATA_POS_PICTURE_MODE_PARAM_CRC_START, 1, &tmp_val, offset);
-    *rw_val = tmp_val;
+bool SSMAction::GetPictureMode(int *PictureMode, int src, int timming)
+{
+    PictureModeInfo Data;
+    int offset = (src * MAX_PQ_TIMMING_INDEX + timming) * sizeof(PictureModeInfo);
 
-    return ret;
+    if (SSMReadNTypes(VPP_DATA_POS_PQ_MODE_START, sizeof(PictureModeInfo), (int *)&Data, offset) < 0) {
+        return false;
+    }
+
+    if (Data.Flag != 1) {
+        return false;
+    }
+
+    *PictureMode = Data.PictureMode;
+
+    return true;
 }
 
-int SSMAction::SSMSavePictureModeParams(int offset, int size, int *rw_val) {
-    return SSMWriteNTypes(VPP_DATA_POS_PICTURE_MODE_PARAM_START, size, rw_val, offset);
+bool SSMAction::SetPictureModeData(vpp_pictur_mode_para_t *pData, int src, int timming, int pqmode)
+{
+    if (MAX_PICTUREMODE_PARAM_SIZE < (sizeof(vpp_pictur_mode_para_t) + sizeof(int))) {
+        return false;
+    }
+
+    int offset = (src * MAX_PQ_TIMMING_INDEX * MAX_PICTUREMODE_INDEX + timming * MAX_PICTUREMODE_INDEX + pqmode) * MAX_PICTUREMODE_PARAM_SIZE;
+    int flag_offset = offset + sizeof(vpp_pictur_mode_para_t);
+
+    if (SSMWriteNTypes(VPP_DATA_POS_PICTURE_MODE_PARAM_START, sizeof(vpp_pictur_mode_para_t), (int *)pData, offset) < 0) {
+        return false;
+    }
+
+    int Flag = 1;
+    if (SSMWriteNTypes(VPP_DATA_POS_PICTURE_MODE_PARAM_START, sizeof(int), (int *)&Flag, flag_offset) < 0) {
+        return false;
+    }
+
+    return true;
 }
 
-int SSMAction::SSMReadPictureModeParams(int offset, int size, int *rw_val) {
-    return SSMReadNTypes(VPP_DATA_POS_PICTURE_MODE_PARAM_START, size, rw_val, offset);
+bool SSMAction::GetPictureModeData(vpp_pictur_mode_para_t *pData, int src, int timming, int pqmode)
+{
+    if (MAX_PICTUREMODE_PARAM_SIZE < (sizeof(vpp_pictur_mode_para_t) + sizeof(int))) {
+        return false;
+    }
+
+    int offset = (src * MAX_PQ_TIMMING_INDEX * MAX_PICTUREMODE_INDEX + timming * MAX_PICTUREMODE_INDEX + pqmode) * MAX_PICTUREMODE_PARAM_SIZE;
+    int flag_offset = offset + sizeof(vpp_pictur_mode_para_t);
+
+    int Flag = 0;
+    if (SSMReadNTypes(VPP_DATA_POS_PICTURE_MODE_PARAM_START, sizeof(int), (int *)&Flag, flag_offset) < 0) {
+        return false;
+    }
+
+    if (Flag != 1) {
+        return false;
+    }
+
+    if (SSMReadNTypes(VPP_DATA_POS_PICTURE_MODE_PARAM_START, sizeof(vpp_pictur_mode_para_t), (int *)pData, offset) < 0) {
+        return false;
+    }
+
+    return true;
+}
+
+bool SSMAction::SetColorTemperatureData(tcon_rgb_ogo_t *pData, int src, int timming, int level)
+{
+    if (MAX_COLORTEMP_PARAM_SIZE < (sizeof(tcon_rgb_ogo_t) + sizeof(int))) {
+        return false;
+    }
+
+    int offset = (src * MAX_PQ_TIMMING_INDEX * MAX_COLORTEMP_INDEX + timming * MAX_COLORTEMP_INDEX + level) * MAX_COLORTEMP_PARAM_SIZE;
+    int flag_offset = offset + sizeof(tcon_rgb_ogo_t);
+
+    if (SSMWriteNTypes(VPP_DATA_POS_COLOR_TEMP_PARAM_START, sizeof(tcon_rgb_ogo_t), (int *)pData, offset) < 0) {
+        return false;
+    }
+
+    int Flag = 1;
+    if (SSMWriteNTypes(VPP_DATA_POS_COLOR_TEMP_PARAM_START, sizeof(int), (int *)&Flag, flag_offset) < 0) {
+        return false;
+    }
+
+    return true;
+}
+
+bool SSMAction::GetColorTemperatureData(tcon_rgb_ogo_t *pData, int src, int timming, int level)
+{
+    if (MAX_COLORTEMP_PARAM_SIZE < (sizeof(tcon_rgb_ogo_t) + sizeof(int))) {
+        return false;
+    }
+
+    int offset = (src * MAX_PQ_TIMMING_INDEX * MAX_COLORTEMP_INDEX + timming * MAX_COLORTEMP_INDEX + level) * MAX_COLORTEMP_PARAM_SIZE;
+    int flag_offset = offset + sizeof(tcon_rgb_ogo_t);
+
+    int Flag = 0;
+    if (SSMReadNTypes(VPP_DATA_POS_COLOR_TEMP_PARAM_START, sizeof(int), (int *)&Flag, flag_offset) < 0) {
+        return false;
+    }
+
+    if (Flag != 1) {
+        return false;
+    }
+
+    if (SSMReadNTypes(VPP_DATA_POS_COLOR_TEMP_PARAM_START, sizeof(tcon_rgb_ogo_t), (int *)pData, offset) < 0) {
+        return false;
+    }
+
+    return true;
+}
+
+bool SSMAction::SetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int src, int timming, int level)
+{
+    if (MAX_WB_GAMMA_PARAM_SIZE < (sizeof(WB_GAMMA_TABLE) + sizeof(int))) {
+        return false;
+    }
+
+    int offset = (src * MAX_PQ_TIMMING_INDEX * MAX_COLORTEMP_INDEX + timming * MAX_COLORTEMP_INDEX + level) * MAX_WB_GAMMA_PARAM_SIZE;
+    int flag_offset = offset + sizeof(WB_GAMMA_TABLE);
+
+    if (SSMWriteNTypes(VPP_DATA_POS_WB_GAMMA_PARAM_START, sizeof(WB_GAMMA_TABLE), (int *)pData, offset) < 0) {
+        return false;
+    }
+
+    int Flag = 1;
+    if (SSMWriteNTypes(VPP_DATA_POS_WB_GAMMA_PARAM_START, sizeof(int), (int *)&Flag, flag_offset) < 0) {
+        return false;
+    }
+
+    return true;
+}
+
+bool SSMAction::GetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int src, int timming, int level)
+{
+    if (MAX_WB_GAMMA_PARAM_SIZE < (sizeof(WB_GAMMA_TABLE) + sizeof(int))) {
+        return false;
+    }
+
+    int offset = (src * MAX_PQ_TIMMING_INDEX * MAX_COLORTEMP_INDEX + timming * MAX_COLORTEMP_INDEX + level) * MAX_WB_GAMMA_PARAM_SIZE;
+    int flag_offset = offset + sizeof(WB_GAMMA_TABLE);
+
+    int Flag = 0;
+    if (SSMReadNTypes(VPP_DATA_POS_WB_GAMMA_PARAM_START, sizeof(int), (int *)&Flag, flag_offset) < 0) {
+        return false;
+    }
+
+    if (Flag != 1) {
+        return false;
+    }
+
+    if (SSMReadNTypes(VPP_DATA_POS_WB_GAMMA_PARAM_START, sizeof(WB_GAMMA_TABLE), (int *)pData, offset) < 0) {
+        return false;
+    }
+
+    return true;
+}
+
+bool SSMAction::CriDataGetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level)
+{
+    USUC usuc;
+    USUC ret;
+
+    usuc.c[0] = 0x55;
+    usuc.c[1] = 0xAA;
+
+    int tmp_off =  (CRI_DATA_WB_GAMMA_OFFSET + (CRI_DATE_WB_GAMMA_LEN * level));
+    int Label_offset = tmp_off + CRI_DATE_WB_GAMMA_LEN - 2;
+
+    if (ReadDataFromFile(mWhiteBalanceFilePath, Label_offset, 2, ret.c) < 0) {
+        return false;
+    }
+
+    if ((usuc.c[0] != ret.c[0]) || (usuc.c[1] != ret.c[1])) {
+        return false;
+    }
+
+    if (ReadDataFromFile(mWhiteBalanceFilePath, tmp_off, sizeof(WB_GAMMA_TABLE), (unsigned char *)pData) < 0) {
+        return false;
+    }
+
+    return true;
+}
+
+bool SSMAction::CriDataSetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level)
+{
+    USUC ret;
+    ret.c[0] = 0x55;
+    ret.c[1] = 0xAA;
+
+    int tmp_off =  (CRI_DATA_WB_GAMMA_OFFSET + (CRI_DATE_WB_GAMMA_LEN * level));
+    int Label_offset = tmp_off + CRI_DATE_WB_GAMMA_LEN - 2;
+
+    if (SaveDataToFile(mWhiteBalanceFilePath, tmp_off, sizeof(WB_GAMMA_TABLE), (unsigned char *)pData) < 0) {
+        return false;
+    }
+
+    if (SaveDataToFile(mWhiteBalanceFilePath, Label_offset, 2, ret.c) < 0) {
+        return false;
+    }
+
+    return true;
 }
 
 int SSMAction::SSMSaveColorCustomizeParams(int offset, int size, int *rw_val) {

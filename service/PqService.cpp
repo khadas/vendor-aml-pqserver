@@ -75,12 +75,12 @@ int PqService::SplitCommand(const char *commandData)
     {
         mPqCommand[cmd_size].assign(token);
 
-        LOGD("%s mPqCommand[%d]:%s\n", token, cmd_size, mPqCommand[cmd_size].c_str());
+        //LOGD("%s mPqCommand[%d]:%s\n", token, cmd_size, mPqCommand[cmd_size].c_str());
         cmd_size++;
         token = strtok(NULL, delimitation);
     }
 
-    LOGD("%s: cmd_size = %d\n", __FUNCTION__, cmd_size);
+    //LOGD("%s: cmd_size = %d\n", __FUNCTION__, cmd_size);
 
     return cmd_size;
 }
@@ -111,7 +111,11 @@ int PqService::SetCmd(pq_moudle_param_t param)
             ret = mpPQcontrol->SetPQMode(paramData[0], paramData[1]);
             break;
         case PQ_SET_COLOR_TEMPERATURE_MODE:
-            ret = mpPQcontrol->SetColorTemperature(paramData[0], paramData[1], (rgb_ogo_type_t)paramData[2], paramData[3]);
+            if (paramData[0] == VPP_COLOR_TEMPERATURE_MODE_USER) {
+                ret = mpPQcontrol->SetColorTempParams(paramData[0], (rgb_ogo_type_t)paramData[2], paramData[3]);
+            } else {
+                ret = mpPQcontrol->SetColorTemperature(paramData[0], paramData[1]);
+            }
             break;
         case PQ_SET_BRIGHTNESS:
             ret = mpPQcontrol->SetBrightness(paramData[0], paramData[1]);
@@ -213,6 +217,12 @@ int PqService::SetCmd(pq_moudle_param_t param)
             break;
         case PQ_RESET_COLOR_CUSTOMIZE:
             ret = mpPQcontrol->ResetColorCustomize((vpp_cms_method_t)paramData[0]);
+            break;
+        case PQ_SET_WB_GAMMA_DATA:
+            ret = mpPQcontrol->SetWhitebalanceGamma(paramData[0], paramData[1], paramData[2]);
+            break;
+        case PQ_SET_SUPERRESOLUTION:
+            ret = mpPQcontrol->SetSuperResolution(paramData[0], paramData[1]);
             break;
 
         //Factory cmd
@@ -322,7 +332,7 @@ int PqService::SetCmd(pq_moudle_param_t param)
             tcon_rgbogo.r_post_offset = paramData[8];
             tcon_rgbogo.g_post_offset = paramData[9];
             tcon_rgbogo.b_post_offset = paramData[10];
-            ret = mpPQcontrol->SetColorTemperatureParams((vpp_color_temperature_mode_t)paramData[0], tcon_rgbogo);
+            ret = mpPQcontrol->FactorySetRGBGainOffset((vpp_color_temperature_mode_t)paramData[0], tcon_rgbogo);
             break;
         case PQ_FACTORY_SET_DEC_LUMA_PARAMS:
             source_input_param.source_input = (tv_source_input_t)paramData[0];
@@ -342,6 +352,10 @@ int PqService::SetCmd(pq_moudle_param_t param)
             ret = mpPQcontrol->SetHdmiColorRangeMode(paramData[0],    paramData[1]);
              break;
             }
+
+        case PQ_FACTORY_SET_WB_GAMMA_DATA:
+            ret = mpPQcontrol->FactorySetWhitebalanceGamma(paramData[0], paramData[1], paramData[2], paramData[3]);
+            break;
         default:
             break;
         }
@@ -363,6 +377,7 @@ char* PqService::GetCmd(pq_moudle_param_t param)
         || ((moduleId >= PQ_FACTORY_CMD_START) || (moduleId <= PQ_FACTORY_CMD_MAX))) {
         int paramData[32] = {0};
         int i = 0;
+        int mode = 0;
         source_input_param_t source_input_param;
         tvin_cutwin_t overscanParam;
         tvpq_rgb_ogo_t rgbogo;
@@ -487,7 +502,8 @@ char* PqService::GetCmd(pq_moudle_param_t param)
             ret = mpPQcontrol->GetMpegNr();
             break;
         case PQ_GET_COLORTEMP_USER_PARAM:
-            rgbogo = mpPQcontrol->GetColorTemperatureUserParam();
+            mode = mpPQcontrol->GetColorTemperature();
+            rgbogo = mpPQcontrol->GetColorTempParams(mode);
             sprintf(mRetBuf, "%d.%d.%d.%d.%d.%d.%d.%d.%d.%d", rgbogo.en, rgbogo.r_pre_offset, rgbogo.g_pre_offset, rgbogo.b_pre_offset,
                     rgbogo.r_gain, rgbogo.g_gain, rgbogo.b_gain, rgbogo.r_post_offset, rgbogo.g_post_offset, rgbogo.b_post_offset);
             break;
@@ -498,6 +514,12 @@ char* PqService::GetCmd(pq_moudle_param_t param)
         case PQ_GET_COLOR_CUSTOMIZE_3DLUT:
             cms_3dlut = mpPQcontrol->GetColorCustomizeBy3DLut((vpp_cms_6color_t)paramData[0]);
             sprintf(mRetBuf, "%d.%d.%d", cms_3dlut.red, cms_3dlut.green, cms_3dlut.blue);
+            break;
+        case PQ_GET_WB_GAMMA_DATA:
+            ret = mpPQcontrol->GetWhitebalanceGamma(paramData[0], paramData[1]);
+            break;
+        case PQ_GET_SUPERRESOLUTION:
+            ret = mpPQcontrol->GetSuperResolution();
             break;
 
         //Factory cmd
@@ -592,7 +614,7 @@ char* PqService::GetCmd(pq_moudle_param_t param)
             tcon_rgbogo.r_post_offset = paramData[8];
             tcon_rgbogo.g_post_offset = paramData[9];
             tcon_rgbogo.b_post_offset = paramData[10];
-            ret = mpPQcontrol->GetColorTemperatureParams((vpp_color_temperature_mode_t)paramData[0], &tcon_rgbogo);
+            ret = mpPQcontrol->FactoryGetRGBGainOffset((vpp_color_temperature_mode_t)paramData[0], &tcon_rgbogo);
 
             sprintf(mRetBuf, "%d.%d.%d.%d.%d.%d.%d.%d.%d.%d", ret, tcon_rgbogo.r_pre_offset, tcon_rgbogo.g_pre_offset, tcon_rgbogo.b_pre_offset,
                 tcon_rgbogo.r_gain, tcon_rgbogo.g_gain, tcon_rgbogo.b_gain, tcon_rgbogo.r_post_offset, tcon_rgbogo.g_post_offset, tcon_rgbogo.b_post_offset);
@@ -612,9 +634,14 @@ char* PqService::GetCmd(pq_moudle_param_t param)
             break;
 
         case PQ_FACTORY_GET_PQ_ENABLE: {
-                 ret = mpPQcontrol->GetHdmiColorRangeMode(paramData[0]);
+            ret = mpPQcontrol->GetHdmiColorRangeMode(paramData[0]);
             break;
             }
+
+        case PQ_FACTORY_GET_WB_GAMMA_DATA:
+            ret = mpPQcontrol->FactoryGetWhitebalanceGamma(paramData[0], paramData[1], paramData[2]);
+            break;
+
         default:
             break;
         }
@@ -657,8 +684,7 @@ void PqService::ParserPqCommand(const char *commandData)
         pqParam.paramBuf[i] = atoi(mPqCommand[i + 3].c_str());
     }
 
-    if ((strcmp(mPqCommand[0].c_str(), "pq") == 0)
-        || (strcmp(mPqCommand[0].c_str(), "pqFactory") == 0)) {
+    if ((strcmp(mPqCommand[0].c_str(), "pq") == 0) || (strcmp(mPqCommand[0].c_str(), "pqFactory") == 0)) {
         if (strcmp(mPqCommand[1].c_str(), "set") == 0) {
             ret = SetCmd(pqParam);
             sprintf(mRetBuf, "%d", ret);
@@ -677,13 +703,13 @@ void PqService::ParserPqCommand(const char *commandData)
         LOGD("%s: invalie cmdType\n", __FUNCTION__);
     }
 
-    LOGD("%s: mRetBuf %s\n", __FUNCTION__, mRetBuf);
+    //LOGD("%s: mRetBuf %s\n", __FUNCTION__, mRetBuf);
 }
 
 status_t PqService::onTransact(uint32_t code,
                                 const Parcel& data, Parcel* reply,
                                 uint32_t flags) {
-    LOGD("%s: code is %u\n", __FUNCTION__, code);
+    //LOGD("%s: code is %u\n", __FUNCTION__, code);
 
     switch (code) {
         case CMD_PQ_ACTION: {

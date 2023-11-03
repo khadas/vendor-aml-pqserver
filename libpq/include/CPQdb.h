@@ -51,8 +51,8 @@ public:
     CPQdb();
     ~CPQdb();
     int PQ_GetBlackExtensionParams(source_input_param_t source_input_param, am_regs_t *regs);
-    int PQ_GetSharpness0FixedParams(source_input_param_t source_input_param, am_regs_t *regs);
-    int PQ_GetSharpness1FixedParams(source_input_param_t source_input_param, am_regs_t *regs);
+    int PQ_GetSharpness0FixedParams(int mode, source_input_param_t source_input_param, am_regs_t *regs);
+    int PQ_GetSharpness1FixedParams(int mode, source_input_param_t source_input_param, am_regs_t *regs);
     int PQ_SetSharpness0VariableParams(source_input_param_t source_input_param);
     int PQ_SetSharpness1VariableParams(source_input_param_t source_input_param);
     int LoadVppBasicParam(tvpq_data_type_t data_type, source_input_param_t source_input_param);
@@ -67,6 +67,7 @@ public:
     int getDIRegValuesByValue(const char *name, const char *f_name, const char *f2_name, const int val, const int val2, am_regs_t *regs);
     int PQ_GetColorTemperatureParams(vpp_color_temperature_mode_t Tempmode, source_input_param_t source_input_param, tcon_rgb_ogo_t *params);
     int PQ_SetColorTemperatureParams(vpp_color_temperature_mode_t Tempmode, source_input_param_t source_input_param, tcon_rgb_ogo_t params);
+    int PQ_GetColorTemperatureData(vpp_color_temperature_mode_t Tempmode, pq_source_input_t src, pq_sig_fmt_t timming, tcon_rgb_ogo_t *params);
     int PQ_ResetAllColorTemperatureParams(void);
     int PQ_SetNoLineAllBrightnessParams(tv_source_input_t source_input, int osd0, int osd25, int osd50, int osd75, int osd100);
     int PQ_GetNoLineAllBrightnessParams(tv_source_input_t source_input, int *osd0, int *osd25, int *osd50, int *osd75, int *osd100);
@@ -103,11 +104,13 @@ public:
     int PQ_GetPQModeParams(tv_source_input_t source_input, vpp_picture_mode_t pq_mode, vpp_pq_para_t *params);
     int PQ_SetPQModeParams(tv_source_input_t source_input, vpp_picture_mode_t pq_mode, vpp_pq_para_t *params);
     int PQ_ResetAllPQModeParams(void);
-    int PQ_GetPictureModeParams(pq_src_param_t source_input, vpp_picture_mode_t pq_mode, vpp_pictur_mode_para_t *params);
+    int PQ_GetPictureModeParams(pq_source_input_t src, pq_sig_fmt_t timming, vpp_picture_mode_t pq_mode, vpp_pictur_mode_para_t *params);
     int PQ_GetGammaTableR(int panel_id, source_input_param_t source_input_param, tcon_gamma_table_t *gamma_r);
     int PQ_GetGammaTableG(int panel_id, source_input_param_t source_input_param, tcon_gamma_table_t *gamma_g);
     int PQ_GetGammaTableB(int panel_id, source_input_param_t source_input_param, tcon_gamma_table_t *gamma_b);
     int PQ_GetGammaSpecialTable(vpp_gamma_curve_t gamma_curve, const char *f_name, tcon_gamma_table_t *gamma_r);
+    int PQ_GetGammaWhiteBalanceSpecialTable(vpp_color_temperature_mode_t mode, const char *f_name, tcon_gamma_table_t *gamma_value);
+    int PQ_GetGammaModeSpecialTable(int mode, const char *f_name, gamma_power_table_t *gamma_value);
     int PQ_GetGammaParams(source_input_param_t source_input_param, vpp_gamma_curve_t gamma_curve, const char *f_name, tcon_gamma_table_t *gamma_value);
     int PQ_GetPLLParams(source_input_param_t source_input_param, am_regs_t *regs);
     int PQ_GetCVD2Param(source_input_param_t source_input_param, int reg_addr, int param_type, int reg_mask);
@@ -171,5 +174,6 @@ public:
     output_type_t mOutPutType = OUTPUT_TYPE_LVDS;
     colortemperature_type_t mColorTemperatureMode = LVDS_STD;
     unsigned int mDbVersion;
+    int Gamma_nodes = 256;
 };
 #endif

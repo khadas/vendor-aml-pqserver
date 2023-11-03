@@ -1465,6 +1465,68 @@ int PqClient::ResetColorCustomize(int mode)
     return ret;
 }
 
+int PqClient::SetWhitebalanceGamma(int channel, int point, int offset)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d.%d", PQ_SET_WB_GAMMA_DATA, channel, point, offset);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::GetWhitebalanceGamma(int channel, int point)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+
+    sprintf(buf, "pq.get.%d.%d.%d", PQ_GET_WB_GAMMA_DATA, channel, point);
+    SendMethodCall(buf);
+
+    int ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
+int PqClient::SetSuperResolution(int mode, int isSave)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d", PQ_SET_SUPERRESOLUTION, mode, isSave);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::GetSuperResolution(void)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+
+    sprintf(buf, "pq.get.%d", PQ_GET_WB_GAMMA_DATA);
+    SendMethodCall(buf);
+
+    int ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
 //PQ Factory cmd
 int PqClient::FactoryResetPQMode(void)
 {
@@ -2145,6 +2207,37 @@ int PqClient::FactoryGetLVDSSSCMode(void)
     }
 
     return reply.readInt32();
+}
+
+int PqClient::FactorySetWhitebalanceGamma(int level, int channel, int point, int offset)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d.%d.%d", PQ_FACTORY_SET_WB_GAMMA_DATA, level, channel, point, offset);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::FactoryGetWhitebalanceGamma(int level, int channel, int point)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+
+    sprintf(buf, "pq.get.%d.%d.%d.%d", PQ_FACTORY_GET_WB_GAMMA_DATA, level, channel, point);
+    SendMethodCall(buf);
+
+    int ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
 }
 
 status_t PqClient::onTransact(uint32_t code,

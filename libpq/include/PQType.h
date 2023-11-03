@@ -24,7 +24,20 @@
 
 #define TVIN_SIG_FMT_HDMI_HDR             TVIN_SIG_FMT_HDMI_1600X900_60HZ
 
-#define MAX_PICTUREMODE_PARAM_SIZE        100
+#define MAX_PQ_SRC_INDEX                  (18) //(PQ_SRC_MAX)
+#define MAX_PQ_TIMMING_INDEX              (6)  //(PQ_FMT_MAX)
+
+#define MAX_PICTUREMODE_INDEX             (14) //(VPP_PICTURE_MODE_MAX)
+#define MAX_COLORTEMP_INDEX               (6)  //(VPP_COLOR_TEMPERATURE_MODE_MAX)
+
+#define MAX_WB_GAMMA_POINT                (21)
+
+#define MAX_PICTUREMODE_SIZE              ((1  + 1) * 4) // > sizeof(vpp_picture_mode_t) + sizeof(int)
+#define MAX_PICTUREMODE_PARAM_SIZE        ((30 + 1) * 4) // > sizeof(vpp_pictur_mode_para_t) + sizeof(int)
+#define MAX_COLORTEMP_PARAM_SIZE          ((10 + 1) * 4) // > sizeof(tcon_rgb_ogo_s) + sizeof(int)
+#define MAX_WB_GAMMA_PARAM_SIZE           ((63 + 1) * 4) // > (sizeof(WB_GAMMA_TABLE) + sizeof(int))
+
+
 #define MAX_LVDS_SSC_PARAM_SIZE           20
 
 #define MAX_COLORCUSTOMIZE_CM_PARAM_SIZE     120
@@ -36,7 +49,6 @@
 #define CMS_HUE_MAX   127
 #define CMS_LUMA_MIN -15
 #define CMS_LUMA_MAX  15
-
 
 typedef enum output_type_e {
     OUTPUT_TYPE_LVDS = -1,
@@ -163,6 +175,8 @@ typedef enum vpp_color_temperature_mode_e {
     VPP_COLOR_TEMPERATURE_MODE_WARM,
     VPP_COLOR_TEMPERATURE_MODE_COLD,
     VPP_COLOR_TEMPERATURE_MODE_USER,
+    VPP_COLOR_TEMPERATURE_MODE_WARMER,
+    VPP_COLOR_TEMPERATURE_MODE_COLDER,
     VPP_COLOR_TEMPERATURE_MODE_MAX,
 } vpp_color_temperature_mode_t;
 
@@ -198,6 +212,8 @@ typedef struct vpp_pictur_mode_para_s {
     int BlueStretch;
     int MpegNr;
     int ChromaCoring;
+    int SuperResolution;
+    int GammaMidLuminance;
     int DolbyMode;
     int DolbyDarkDetail;
 } vpp_pictur_mode_para_t;
@@ -215,6 +231,7 @@ typedef enum vpp_gamma_curve_e {
     VPP_GAMMA_CURVE_9,
     VPP_GAMMA_CURVE_10,
     VPP_GAMMA_CURVE_11,
+    VPP_GAMMA_CURVE_BT1886,
     VPP_GAMMA_CURVE_MAX,
 } vpp_gamma_curve_t;
 
@@ -283,10 +300,40 @@ typedef enum vpp_picture_mode_e {
     VPP_PICTURE_MODE_SONY,
     VPP_PICTURE_MODE_SAMSUNG,
     VPP_PICTURE_MODE_SHARP,
-    VPP_PICTURE_MODE_DV_BRIGHT,
-    VPP_PICTURE_MODE_DV_DARK,
+    VPP_PICTURE_MODE_DOLVI_BRIGHT,
+    VPP_PICTURE_MODE_DOLVI_DARK,
     VPP_PICTURE_MODE_MAX,
 } vpp_picture_mode_t;
+
+typedef struct _PICTURE_MODE_DEFAULT {
+    int Picture;
+    int Picture_DOLVI;
+    int Picture_HDR;
+    int Picture_HLG;
+    int Picture_HDRP;
+}PICTURE_MODE_DEFAULT;
+
+typedef enum pq_source_input_e {
+    PQ_SRC_DEFAULT = 0,
+    PQ_SRC_TV,
+    PQ_SRC_AV1,
+    PQ_SRC_AV2,
+    PQ_SRC_YPBPR1,
+    PQ_SRC_YPBPR2,
+    PQ_SRC_HDMI1,
+    PQ_SRC_HDMI2,
+    PQ_SRC_HDMI3,
+    PQ_SRC_HDMI4,
+    PQ_SRC_VGA,
+    PQ_SRC_MPEG,
+    PQ_SRC_DTV,
+    PQ_SRC_SVIDEO,
+    PQ_SRC_IPTV,
+    PQ_SRC_DUMMY,
+    PQ_SRC_SPDIF,
+    PQ_SRC_ADTV,
+    PQ_SRC_MAX,
+} pq_source_input_t;
 
 typedef enum pq_sig_fmt_e {
     PQ_FMT_DEFAULT = 0,
@@ -294,12 +341,12 @@ typedef enum pq_sig_fmt_e {
     PQ_FMT_HDR,
     PQ_FMT_HDRP,
     PQ_FMT_HLG,
-    PQ_FMT_DOBLY,
+    PQ_FMT_DOLVI,
     PQ_FMT_MAX,
 } pq_sig_fmt_t;
 
 typedef struct pq_src_param_s {
-    tv_source_input_t pq_source_input;
+    pq_source_input_t pq_source_input;
     pq_sig_fmt_t pq_sig_fmt;
 } pq_src_param_t;
 
@@ -609,5 +656,25 @@ typedef enum vpp_cms_method_e {
     VPP_CMS_METHOD_3DLUT,
     VPP_CMS_METHOD_MAX,
 } vpp_cms_method_t;
+
+typedef struct _WB_GAMMA_TABLE {
+    int R_OFFSET[MAX_WB_GAMMA_POINT];
+    int G_OFFSET[MAX_WB_GAMMA_POINT];
+    int B_OFFSET[MAX_WB_GAMMA_POINT];
+} WB_GAMMA_TABLE;
+
+typedef enum _CHANNEL_TYPE {
+    RED_CH = 0,
+    GREEN_CH,
+    BLUE_CH,
+    MAX_CH,
+} CHANNEL_TYPE;
+
+typedef enum vpp_SuperResolution_Level_e {
+    VPP_SUPER_RESOLUTION_OFF,
+    VPP_SUPER_RESOLUTION_MID,
+    VPP_SUPER_RESOLUTION_HIGHT,
+    VPP_SUPER_RESOLUTION_MAX,
+} vpp_SuperResolution_Level_t;
 
 #endif

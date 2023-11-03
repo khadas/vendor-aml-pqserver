@@ -322,6 +322,20 @@ public:
         case PQ_RESET_COLOR_CUSTOMIZE:
             ret = mpPqClient->ResetColorCustomize(setValue[0]);
             break;
+        case PQ_SET_WB_GAMMA_DATA:
+            ret = mpPqClient->SetWhitebalanceGamma(setValue[0], setValue[1], setValue[2]);
+            break;
+        case PQ_GET_WB_GAMMA_DATA:
+            ret = mpPqClient->GetWhitebalanceGamma(setValue[0], setValue[1]);
+            printf("%s: offset is %d\n", __FUNCTION__, ret);
+            break;
+        case PQ_SET_SUPERRESOLUTION:
+            ret = mpPqClient->SetSuperResolution(setValue[0], setValue[1]);
+            break;
+        case PQ_GET_SUPERRESOLUTION:
+            ret = mpPqClient->GetSuperResolution();
+            printf("%s: current Super Resolution is %d\n", __FUNCTION__, ret);
+            break;
 
         //factory API
         case PQ_FACTORY_RESET_PICTURE_MODE:
@@ -398,7 +412,7 @@ public:
             break;
 
         case PQ_FACTORY_SET_WB_GREEN_GAIN:
-            ret = mpPqClient->FactorySetWhiteBalanceRedGain(setValue[0], setValue[1], setValue[2], setValue[3], setValue[4]);
+            ret = mpPqClient->FactorySetWhiteBalanceGreenGain(setValue[0], setValue[1], setValue[2], setValue[3], setValue[4]);
             break;
 
         case PQ_FACTORY_GET_WB_GREEN_GAIN:
@@ -441,7 +455,39 @@ public:
             ret = mpPqClient->FactoryGetWhiteBalanceBluePostOffset(setValue[0], setValue[1], setValue[2], setValue[3]);
             printf("%s: blue offset is %d.\n", __FUNCTION__, ret);
             break;
+        case PQ_FACTORY_SET_COLOR_PARAMS:
+            tvpq_rgb_ogo_t params;
+            memset(&params, 0, sizeof(tvpq_rgb_ogo_t));
+            params.en = setValue[1];
+            params.r_gain = setValue[2];
+            params.g_gain = setValue[3];
+            params.b_gain = setValue[4];
+            params.r_post_offset = setValue[5];
+            params.g_post_offset = setValue[6];
+            params.b_post_offset = setValue[7];
+            ret = mpPqClient->FactorySetColorParams(setValue[0], params);
+            break;
 
+        case PQ_FACTORY_GET_COLOR_PARAMS:
+            tvpq_rgb_ogo_t data;
+            memset(&data, 0, sizeof(tvpq_rgb_ogo_t));
+            ret = mpPqClient->FactoryGetColorParams(setValue[0], &data);
+            printf("%s: en %d\n", __FUNCTION__, data.en);
+            printf("%s: rgain %d\n", __FUNCTION__, data.r_gain);
+            printf("%s: ggai %d\n", __FUNCTION__, data.g_gain);
+            printf("%s: bgain %d\n", __FUNCTION__, data.b_gain);
+            printf("%s: roffset %d\n", __FUNCTION__, data.b_post_offset);
+            printf("%s: goffset %d\n", __FUNCTION__, data.g_post_offset);
+            printf("%s: boffset %d\n", __FUNCTION__, data.b_post_offset);
+            break;
+
+        case PQ_FACTORY_SET_WB_GAMMA_DATA:
+            ret = mpPqClient->FactorySetWhitebalanceGamma(setValue[0], setValue[1], setValue[2], setValue[3]);
+            break;
+        case PQ_FACTORY_GET_WB_GAMMA_DATA:
+            ret = mpPqClient->FactoryGetWhitebalanceGamma(setValue[0], setValue[1], setValue[2]);
+            printf("%s: offset is %d\n", __FUNCTION__, ret);
+            break;
         default:
             break;
             }
@@ -550,6 +596,10 @@ int main(int argc, char **argv) {
     printf("#### select 270 to set color customize by 3dlut ####\n");
     printf("#### select 271 to get color customize by 3d lut ####\n");
     printf("#### select 272 to reset color customize ####\n");
+    printf("#### select 273 to set Whitebalance Gamma ####\n");
+    printf("#### select 274 to get whitebalance Gamma ####\n");
+    printf("#### select 275 to set SuperResolution ####\n");
+    printf("#### select 276 to get SuperResolution ####\n");
 
     printf("#### below is factory cmd####\n");
     printf("#### select 301 to reset pq mode ####\n");
@@ -580,6 +630,10 @@ int main(int argc, char **argv) {
     printf("#### select 326 to get WB G OFFSET ####\n");
     printf("#### select 327 to set WB B OFFSET ####\n");
     printf("#### select 328 to get WB B OFFSET ####\n");
+    printf("#### select 335 to set CRI colortemp params####\n");
+    printf("#### select 336 to get CRI colortemp params ####\n");
+    printf("#### select 343 to set CRI Whitebalance Gamma ####\n");
+    printf("#### select 344 to get CRI Whitebalance Gamma ####\n");
 
     printf("#### select 999 to exit####\n");
     printf("##########################\n");
@@ -607,856 +661,1349 @@ int main(int argc, char **argv) {
             break;
           }
           case 201: {
-              printf("please input 2 parameters:\n"
-                   "pq_mode value:(0~10)\n"
-                   "is save:(0~1)\n");
-              scanf_ret = scanf("%d %d", &mode, &is_save);
-              if (scanf_ret != 2)    break;
+              printf("PQ_SET_PICTURE_MODE\n");
+              printf("pq_mode value: STANDARD(0), BRIGHT(1), SOFT(2), USER(3), MOVIE(4), COLORFUL(5), MONITOR(6), GAME(7), SPORTS(8), SONY(9), SAMSUNG(10), SHARP(11), DV_BRIGHT(12), DV_DARK(13)\n");
+              scanf_ret = scanf("%d", &mode);
               test->setValue[0] = mode;
+
+              printf("is save:(0 ~ 1)\n");
+              scanf_ret += scanf("%d", &is_save);
               test->setValue[1] = is_save;
+
+              if (scanf_ret != 2)
+                break;
+
               test->cmdID = PQ_SET_PICTURE_MODE;
               break;
           }
           case 202: {
+              printf("PQ_GET_PICTURE_MODE\n");
               test->cmdID = PQ_GET_PICTURE_MODE;
               break;
           }
           case 203: {
-              printf("please input 4 parameters:\n"
-                   "ColorTemperature mode value:(0~3)\n"
-                   "is save:(0~1)\n"
-                   "rgb_ogo_type_t:(0~5)(-1:only change ColorTemperature mode)\n"
-                   "value:(0~5)\n");
               int rgb_type = 0, value = 0;
-              scanf_ret = scanf("%d %d %d %d", &mode, &is_save, &rgb_type, &value);
-              if (scanf_ret != 4)    break;
+              printf("PQ_SET_COLOR_TEMPERATURE_MODE\n");
+              printf("ColorTemperature mode value:(0:Sandard, 1:warm, 2:cool, 3:user, 4:warmer, 5:cooler)\n");
+              scanf_ret = scanf("%d", &mode);
               test->setValue[0] = mode;
-              test->setValue[1] = is_save;
-              test->setValue[2] = rgb_type;
-              test->setValue[3] = value;
+
+              if (mode == 3) {
+                  printf("rgb_ogo_type_t:(0: R_GAIN, 1: G_GAIN, 2: B_GAIN, 3: R_POST_OFFSET, 4: G_POST_OFFSET, 5: B_POST_OFFSET)\n");
+                  scanf_ret += scanf("%d", &rgb_type);
+                  test->setValue[2] = rgb_type;
+
+                  if (rgb_type == 0)
+                    printf("red gain:     (0 ~ 2047)\n");
+                  else if (rgb_type == 1)
+                    printf("green gain:   (0 ~ 2047)\n");
+                  else if (rgb_type == 2)
+                    printf("blue gain:    (0 ~ 2047)\n");
+                  else if (rgb_type == 3)
+                    printf("red offset:   (-1024 ~ 1023)\n");
+                  else if (rgb_type == 4)
+                    printf("green offset: (-1024 ~ 1023)\n");
+                  else if (rgb_type == 5)
+                    printf("blue offset:  (-1024 ~ 1023)\n");
+                  else
+                    break;
+                  scanf_ret += scanf("%d", &value);
+                  test->setValue[3] = value;
+                  if (scanf_ret != 3) break;
+              } else {
+                printf("is save:(0 ~ 1)\n");
+                scanf_ret += scanf("%d", &is_save);
+                test->setValue[1] = is_save;
+                if (scanf_ret != 2) break;
+                test->setValue[2] = -1;
+                test->setValue[3] = 0;
+              }
               test->cmdID = PQ_SET_COLOR_TEMPERATURE_MODE;
               break;
           }
           case 204: {
+              printf("PQ_GET_COLOR_TEMPERATURE_MODE\n");
               test->cmdID = PQ_GET_COLOR_TEMPERATURE_MODE;
               break;
           }
           case 205: {
-              printf("please input 2 parameters:\n"
-                   "Brightness value:(0~100)\n"
-                   "is save:(0~1)\n");
-              scanf_ret = scanf("%d %d", &mode, &is_save);
-              if (scanf_ret != 2)    break;
+              printf("PQ_SET_BRIGHTNESS\n");
+              printf("Brightness value:(0 ~ 100)\n");
+              scanf_ret = scanf("%d", &mode);
               test->setValue[0] = mode;
+
+              printf("is save:(0 ~ 1)\n");
+              scanf_ret += scanf("%d", &is_save);
               test->setValue[1] = is_save;
+
+              if (scanf_ret != 2) break;
               test->cmdID = PQ_SET_BRIGHTNESS;
               break;
           }
           case 206: {
+              printf("PQ_GET_BRIGHTNESS\n");
               test->cmdID = PQ_GET_BRIGHTNESS;
               break;
           }
           case 207: {
-              printf("please input 2 parameters:\n"
-                   "Contrast value:(0~100)\n"
-                   "is save:(0~1)\n");
-              scanf_ret = scanf("%d %d", &mode, &is_save);
-              if (scanf_ret != 2)    break;
+              printf("PQ_SET_CONTRAST\n");
+              printf("Contrast value:(0 ~ 100)\n");
+              scanf_ret = scanf("%d", &mode);
               test->setValue[0] = mode;
+
+              printf("is save:(0 ~ 1)\n");
+              scanf_ret += scanf("%d", &is_save);
               test->setValue[1] = is_save;
+
+              if (scanf_ret != 2) break;
               test->cmdID = PQ_SET_CONTRAST;
               break;
           }
           case 208: {
+              printf("PQ_GET_CONTRAST\n");
               test->cmdID = PQ_GET_CONTRAST;
               break;
           }
           case 209: {
-              printf("please input 2 parameters:\n"
-                   "Saturatioin value:(0~100)\n"
-                   "is save:(0~1)\n");
-              scanf_ret = scanf("%d %d", &mode, &is_save);
-              if (scanf_ret != 2)    break;
+              printf("PQ_SET_SATURATION\n");
+              printf("Saturatioin value:(0 ~ 100)\n");
+              scanf_ret = scanf("%d", &mode);
               test->setValue[0] = mode;
+
+              printf("is save:(0 ~ 1)\n");
+              scanf_ret += scanf("%d", &is_save);
               test->setValue[1] = is_save;
+              if (scanf_ret != 2) break;
+
               test->cmdID = PQ_SET_SATUATION;
               break;
           }
           case 210: {
+              printf("PQ_GET_SATURATION\n");
               test->cmdID = PQ_GET_SATUATION;
               break;
           }
           case 211: {
-              printf("please input 2 parameters:\n"
-                   "Hue value:(0~100)\n"
-                   "is save:(0~1)\n");
-              scanf_ret = scanf("%d %d", &mode, &is_save);
-              if (scanf_ret != 2)    break;
+              printf("PQ_SET_HUE\n");
+              printf("Hue value:(0 ~ 100)\n");
+              scanf_ret = scanf("%d", &mode);
               test->setValue[0] = mode;
+
+              printf("is save:(0 ~ 1)\n");
+              scanf_ret += scanf("%d", &is_save);
               test->setValue[1] = is_save;
+              if (scanf_ret != 2) break;
+
               test->cmdID = PQ_SET_HUE;
               break;
           }
           case 212: {
+              printf("PQ_GET_HUE\n");
               test->cmdID = PQ_GET_HUE;
               break;
           }
           case 213: {
-              printf("please input 2 parameters:\n"
-                   "Sharpness value:(0~100)\n"
-                   "is save:(0~1)\n");
-              scanf_ret = scanf("%d %d", &mode, &is_save);
-              if (scanf_ret != 2)    break;
+              printf("PQ_SET_SHARPNESS\n");
+              printf("Sharpness value:(0 ~ 100)\n");
+              scanf_ret = scanf("%d", &mode);
               test->setValue[0] = mode;
+
+              printf("is save:(0 ~ 1)\n");
+              scanf_ret += scanf("%d", &is_save);
               test->setValue[1] = is_save;
+              if (scanf_ret != 2) break;
+
               test->cmdID = PQ_SET_SHARPNESS;
               break;
           }
           case 214: {
+              printf("PQ_GET_SHARPNESS\n");
               test->cmdID = PQ_GET_SHARPNESS;
               break;
           }
           case 215: {
-              printf("please input 2 parameters:\n"
-                   "NoiseRedution value:(0~4)\n"
-                   "is save:(0~1)\n");
-              scanf_ret = scanf("%d %d", &mode, &is_save);
-              if (scanf_ret != 2)    break;
+              printf("PQ_SET_NOISE_REDUCTION_MODE\n");
+              printf("NoiseReduction: OFF(0), LOW(1), MID(2), HIGH(3), AUTO(4)\n");
+              scanf_ret = scanf("%d", &mode);
               test->setValue[0] = mode;
+
+              printf("is save:(0 ~ 1)\n");
+              scanf_ret += scanf("%d", &is_save);
               test->setValue[1] = is_save;
+              if (scanf_ret != 2) break;
+
               test->cmdID = PQ_SET_NOISE_REDUCTION_MODE;
               break;
           }
           case 216: {
+              printf("PQ_GET_NOISE_REDUCTION_MODE\n");
               test->cmdID = PQ_GET_NOISE_REDUCTION_MODE;
               break;
           }
           case 217: {
-              printf("please input 1 parameters:\n"
-                   "EyeProtection value:(0~1)\n");
+              printf("PQ_SET_EYE_PROTECTION_MODE\n");
+              printf("EyeProtection(0: OFF, 1: ON)\n");
               scanf_ret = scanf("%d", &mode);
-              if (scanf_ret != 1)    break;
               test->setValue[0] = mode;
+              if (scanf_ret != 1) break;
+
               test->cmdID = PQ_SET_EYE_PROTECTION_MODE;
               break;
           }
           case 218: {
+              printf("PQ_GET_EYE_PROTECTION_MODE\n");
               test->cmdID = PQ_GET_EYE_PROTECTION_MODE;
               break;
           }
           case 219: {
-              printf("please input 2 parameters:\n"
-                   "Gamma value:(0~11)\n"
-                   "is save:(0~1)\n");
-              scanf_ret = scanf("%d %d", &mode, &is_save);
-              if (scanf_ret != 2)    break;
+              printf("PQ_SET_GAMMA\n");
+              printf("Gamma(0:[2.2], 1:[1.7], 2:[1.8], 3:[1.9], 4:[2.0], 5:[2.2], 6:[2.2], 7:[2.3], 8:[2.4], 9:[2.5], 10:[2.6], 11:[2.7], 12:[BT1886])\n");
+              scanf_ret = scanf("%d", &mode);
               test->setValue[0] = mode;
+
+              printf("is save:(0 ~ 1)\n");
+              scanf_ret += scanf("%d", &is_save);
               test->setValue[1] = is_save;
+              if (scanf_ret != 2) break;
+
               test->cmdID = PQ_SET_GAMMA;
               break;
           }
           case 220: {
+              printf("PQ_GET_GAMMA\n");
               test->cmdID = PQ_GET_GAMMA;
               break;
           }
           case 221: {
-              printf("please input 3 parameters:\n"
-                   "is used:(0~1)\n"
-                   "displaymode value:(0/4/5/6)\n"
-                   "is save:(0~1)\n");
-              int is_used = 0;
-              scanf_ret = scanf("%d %d %d", &is_used, &mode, &is_save);
-              if (scanf_ret != 3)    break;
+            int is_used = 0;
+              printf("PQ_SET_DISPLAY_MODE\n");
+              printf("is used:(0 ~ 1)\n");
+              scanf_ret = scanf("%d", &is_used);
               test->setValue[0] = is_used;
+
+              printf("displaymode(0:[16:9], 1:[PERSON], 2:[MOVIE], 3:[CAPTION], 4:[4:3], 5:[FULL], 6:[NORMAL], 7:[NOSCALEUP], 8:[CROP_FULL], 9:[CROP], 10:[ZOOM])\n");
+              scanf_ret += scanf("%d", &mode);
               test->setValue[1] = mode;
+
+              printf("is save:(0 ~ 1)\n");
+              scanf_ret += scanf("%d", &is_save);
               test->setValue[2] = is_save;
+              if (scanf_ret != 3) break;
+
               test->cmdID = PQ_SET_DISPLAY_MODE;
               break;
           }
           case 222: {
+              printf("PQ_GET_DISPLAY_MODE\n");
               test->cmdID = PQ_GET_DISPLAY_MODE;
               break;
           }
           case 223: {
-              printf("please input 2 parameters:\n"
-                   "backlight value:(0~100)\n"
-                   "is save:(0~1)\n");
-              scanf_ret = scanf("%d %d", &mode, &is_save);
-              if (scanf_ret != 2)    break;
+              printf("PQ_SET_BACKLIGHT\n");
+              printf("backlight value:(0 ~ 100)\n");
+              scanf_ret = scanf("%d", &mode);
               test->setValue[0] = mode;
+
+              printf("is save:(0 ~ 1)\n");
+              scanf_ret += scanf("%d", &is_save);
               test->setValue[1] = is_save;
+              if (scanf_ret != 2) break;
+
               test->cmdID = PQ_SET_BACKLIGHT;
               break;
           }
           case 224: {
+              printf("PQ_GET_BACKLIGHT\n");
               test->cmdID = PQ_GET_BACKLIGHT;
               break;
           }
           case 225: {
-              printf("please input 2 parameters:"
-                   "DynamicBacklight value:(0~2)\n"
-                   "is save:(0~1)\n");
-              scanf_ret = scanf("%d %d", &mode, &is_save);
-              if (scanf_ret != 2)    break;
+              printf("PQ_SET_DYNAMICBACKLIGHT\n");
+              printf("DynamicBacklight: OFF(0), LOW(1), HIGH(2)\n");
+
+              scanf_ret = scanf("%d", &mode);
               test->setValue[0] = mode;
+
+              printf("is save:(0 ~ 1)\n");
+              scanf_ret += scanf("%d", &is_save);
               test->setValue[1] = is_save;
+              if (scanf_ret != 2) break;
+
               test->cmdID = PQ_SET_DYNAMICBACKLIGHT;
               break;
           }
           case 226: {
+              printf("PQ_GET_DYNAMICBACKLIGHT\n");
               test->cmdID = PQ_GET_DYNAMICBACKLIGHT;
               break;
           }
           case 227: {
-              printf("please input 2 parameters:\n"
-                   "LocalContrast value:(0~3)\n"
-                   "is save:(0~1)\n");
-              scanf_ret = scanf("%d %d", &mode, &is_save);
-              if (scanf_ret != 2)    break;
+              printf("PQ_SET_LOCALCONTRAST\n");
+              printf("LocalContrast: OFF(0), LOW(1), MID(2), HIGH(3)\n");
+              scanf_ret = scanf("%d", &mode);
               test->setValue[0] = mode;
+
+              printf("is save:(0 ~ 1)\n");
+              scanf_ret += scanf("%d", &is_save);
               test->setValue[1] = is_save;
+              if (scanf_ret != 2) break;
+
               test->cmdID = PQ_SET_LOCALCONTRAST;
               break;
           }
           case 228: {
+              printf("PQ_GET_LOCALCONTRAST\n");
               test->cmdID = PQ_GET_LOCALCONTRAST;
               break;
           }
           case 229: {
-              printf("please input 2 parameters:\n"
-                   "CM value:(0~3)\n"
-                   "is save:(0~1)\n");
-              scanf_ret = scanf("%d %d", &mode, &is_save);
-              if (scanf_ret != 2)    break;
+              printf("PQ_SET_CM\n");
+              printf("CM value: OFF(0), 1: OPTIMIZE(1), ENHANCE(2), DEMO(3)\n");
+              scanf_ret = scanf("%d", &mode);
               test->setValue[0] = mode;
+
+              printf("is save:(0 ~ 1)\n");
+              scanf_ret += scanf("%d", &is_save);
               test->setValue[1] = is_save;
+              if (scanf_ret != 2) break;
+
               test->cmdID = PQ_SET_CM;
               break;
           }
           case 230: {
+              printf("PQ_GET_CM\n");
               test->cmdID = PQ_GET_CM;
               break;
           }
           case 231: {
-              printf("please input 3 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n");
               int sig_fmt = 0, fmt_3d = 0;
-              scanf_ret = scanf("%d %d %d", &mode, &sig_fmt, &fmt_3d);
-              if (scanf_ret != 3)    break;
+              printf("PQ_SET_SOURCE_CHANNEL\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &mode);
               test->setValue[0] = mode;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+              if (scanf_ret != 3) break;
+
               test->cmdID = PQ_SET_SOURCE_CHANNEL;
               break;
           }
           case 232: {
+              printf("PQ_GET_SOURCE_CHANNEL\n");
               test->cmdID = PQ_GET_SOURCE_CHANNEL;
               break;
           }
           case 233: {
-              printf("please input 2 parameters:\n"
-                   "ColorGamut value:(0~2)\n"
-                   "is save:(0~1)\n");
-              scanf_ret = scanf("%d %d", &mode, &is_save);
-              if (scanf_ret != 2)    break;
+              printf("PQ_SET_COLORGAMUT\n");
+              printf("ColorGamut(SRC(0), AUTO(1), NATIVE(2)\n");
+              scanf_ret = scanf("%d", &mode);
               test->setValue[0] = mode;
+
+              printf("is save:(0 ~ 1)\n");
+              scanf_ret += scanf("%d", &is_save);
               test->setValue[1] = is_save;
+              if (scanf_ret != 2) break;
+
               test->cmdID = PQ_SET_COLORGAMUT;
               break;
           }
           case 234: {
+              printf("PQ_GET_COLORGAMUT\n");
               test->cmdID = PQ_GET_COLORGAMUT;
               break;
           }
           case 235: {
+              printf("PQ_GET_SOURCE_HDR_TYPE\n");
               test->cmdID = PQ_GET_SOURCE_HDR_TYPE;
               break;
           }
           case 236: {
-              printf("please input 2 parameters:\n"
-                   "DynamicContrast value:(0~3)\n"
-                   "is save:(0~1)\n");
-              scanf_ret = scanf("%d %d", &mode, &is_save);
-              if (scanf_ret != 2)    break;
+              printf("PQ_SET_DYNAMICCONTRAST\n");
+              printf("DynamicContrast: OFF(0), LOW(1), MID(2), HIGH(3)\n");
+              scanf_ret = scanf("%d", &mode);
               test->setValue[0] = mode;
+
+              printf("is save:(0 ~ 1)\n");
+              scanf_ret += scanf("%d", &is_save);
               test->setValue[1] = is_save;
+              if (scanf_ret != 2) break;
+
               test->cmdID = PQ_SET_DYNAMICCONTRAST;
               break;
           }
           case 237: {
+              printf("PQ_GET_DYNAMICCONTRAST\n");
               test->cmdID = PQ_GET_DYNAMICCONTRAST;
               break;
           }
           case 238: {
+              printf("PQ_SET_RECOVERYPQ\n");
               test->cmdID = PQ_SET_RECOVERYPQ;
               break;
           }
           case 239: {
+              printf("PQ_GET_HAS_MEMC\n");
               test->cmdID = PQ_GET_HAS_MEMC;
               break;
           }
           case 240: {
-              printf("please input 2 parameters:\n"
-                   "mode value:(0~1)\n"
-                   "is save:(0~1)\n");
-              scanf_ret = scanf("%d %d", &mode, &is_save);
-              if (scanf_ret != 2)    break;
+              printf("PQ_SET_MEMCMODE\n");
+              printf("Memc mode: OFF(0), LOW(1), MID(2), HIGH(3)\n");
+              scanf_ret = scanf("%d", &mode);
               test->setValue[0] = mode;
+
+              printf("is save:(0 ~ 1)\n");
+              scanf_ret += scanf("%d", &is_save);
               test->setValue[1] = is_save;
+              if (scanf_ret != 2) break;
+
               test->cmdID = PQ_SET_MEMCMODE;
               break;
           }
           case 241: {
+              printf("PQ_GET_MEMCMODE\n");
               test->cmdID = PQ_GET_MEMCMODE;
               break;
           }
           case 248: {
-              printf("please input 2 parameters:\n"
-                   "mode value:(0~3) refer vpp_deblock_mode_t\n"
-                   "is save:(0~1)\n");
-              scanf_ret = scanf("%d %d", &mode, &is_save);
-              if (scanf_ret != 2)    break;
+              printf("PQ_SET_DEBLOCK\n");
+              printf("DeBlock: OFF(0), LOW(1), MID(2), HIGH(3), AUTO(4)\n");
+              scanf_ret = scanf("%d", &mode);
               test->setValue[0] = mode;
+
+              printf("is save:(0~1)\n");
+              scanf_ret += scanf("%d", &is_save);
               test->setValue[1] = is_save;
+              if (scanf_ret != 2) break;
+
               test->cmdID = PQ_SET_DEBLOCK;
               break;
           }
           case 249: {
+              printf("PQ_GET_DEBLOCK\n");
               test->cmdID = PQ_GET_DEBLOCK;
               break;
           }
           case 250: {
-              printf("please input 2 parameters:\n"
-                   "mode value:(0~3) refer vpp_demosquito_mode_t\n"
-                   "is save:(0~1)\n");
-              scanf_ret = scanf("%d %d", &mode, &is_save);
-              if (scanf_ret != 2)    break;
+              printf("PQ_SET_DEMOSQUITO\n");
+              printf("DeMosquito: OFF(0), LOW(1), MID(2), HIGH(3), AUTO(4)\n");
+              scanf_ret = scanf("%d", &mode);
               test->setValue[0] = mode;
+
+              printf("is save:(0~1)\n");
+              scanf_ret += scanf("%d", &is_save);
               test->setValue[1] = is_save;
+              if (scanf_ret != 2) break;
+
               test->cmdID = PQ_SET_DEMOSQUITO;
               break;
           }
           case 251: {
+              printf("PQ_GET_DEMOSQUITO\n");
               test->cmdID = PQ_GET_DEMOSQUITO;
               break;
           }
           case 256: {
+              printf("PQ_GET_HAS_AIPQ\n");
               test->cmdID = PQ_GET_HAS_AIPQ;
               break;
           }
           case 257: {
-              printf("please input  parameters:\n"
-                   "mode value:(0~1)\n");
+              printf("PQ_SET_AIPQ\n");
+              printf("AIPQ enable: OFF(0), ON(1)\n");
               scanf_ret = scanf("%d", &mode);
-              if (scanf_ret != 1)    break;
               test->setValue[0] = mode;
+              if (scanf_ret != 1) break;
+
               test->cmdID = PQ_SET_AIPQ;
               break;
           }
           case 258: {
+              printf("PQ_GET_AIPQ\n");
               test->cmdID = PQ_GET_AIPQ;
               break;
           }
           case 259: {
+              printf("PQ_GET_HAS_AISR\n");
               test->cmdID = PQ_GET_HAS_AISR;
               break;
           }
           case 260: {
-              printf("please input  parameters:\n"
-                   "mode value:(0~1)\n");
+              printf("PQ_SET_AISR\n");
+              printf("AISR enable: 0: OFF, 1: ON\n");
               scanf_ret = scanf("%d", &mode);
-              if (scanf_ret != 1)    break;
               test->setValue[0] = mode;
+              if (scanf_ret != 1) break;
+
               test->cmdID = PQ_SET_AISR;
               break;
           }
           case 261: {
+              printf("PQ_GET_AISR\n");
               test->cmdID = PQ_GET_AISR;
               break;
           }
           case 268: {
-              printf("please input 4 parameters:\n"
-                   "color:(0~8); refer vpp_cms_color_t\n"
-                   "type:(0~2); refer vpp_cms_type_t\n"
-                   "value:(-50~50)\n"
-                   "is save:(0~1)\n");
-              scanf_ret = scanf("%d %d %d %d", &color, &type, &value, &is_save);
-              if (scanf_ret != 4)    break;
+              printf("PQ_SET_COLOR_CUSTOMIZE\n");
+              printf("color: PURPLE(0), RED(1), SKIN(2), YELLOW(3), YELLOW_GREEN(4), GREEN(5), BLUE_GREEN(6), CYAN(7), BLUE(8)\n");
+              scanf_ret= scanf("%d", &color);
               test->setValue[0] = color;
+
+              printf("type: Saturation(0), Hue(1), Luminance(2)\n");
+              scanf_ret += scanf("%d", &type);
               test->setValue[1] = type;
+
+              printf("value: -50 ~ 50\n");
+              scanf_ret += scanf("%d", &value);
               test->setValue[2] = value;
+
+              printf("is save:(0~1)\n");
+              scanf_ret += scanf("%d", &is_save);
               test->setValue[3] = is_save;
+              if (scanf_ret != 4) break;
+
               test->cmdID = PQ_SET_COLOR_CUSTOMIZE;
               break;
           }
           case 269: {
-              printf("please input 1 parameters:\n"
-                   "color:(0~8); refer vpp_cms_color_t\n");
+              printf("PQ_SET_COLOR_CUSTOMIZE\n");
+              printf("color: PURPLE(0), RED(1), SKIN(2), YELLOW(3), YELLOW_GREEN(4), GREEN(5), BLUE_GREEN(6), CYAN(7), BLUE(8)\n");
               scanf_ret = scanf("%d", &color);
-              if (scanf_ret != 1)    break;
               test->setValue[0] = color;
+              if (scanf_ret != 1) break;
+
               test->cmdID = PQ_GET_COLOR_CUSTOMIZE;
               break;
           }
           case 270: {
-              printf("please input 4 parameters:\n"
-                   "color:(0~5); refer vpp_cms_6color_t\n"
-                   "type:(3~5); refer vpp_cms_type_t\n"
-                   "value:(-100~100)\n"
-                   "is save:(0~1)\n");
-              scanf_ret = scanf("%d %d %d %d", &color, &type, &value, &is_save);
-              if (scanf_ret != 4)    break;
+              printf("PQ_SET_COLOR_CUSTOMIZE_3DLUT\n");
+              printf("color: RED(0), GREEN(1), BLUE(2), CYAN(3), MAGENTA(4), YELLOW(5)\n");
+              scanf_ret = scanf("%d", &color);
               test->setValue[0] = color;
+
+              printf("type: (RED(3), GREEN(4), BLUE(5)\n");
+              scanf_ret += scanf("%d", &type);
               test->setValue[1] = type;
+
+              printf("value: (-100 ~ 100)\n");
+              scanf_ret += scanf("%d", &value);
               test->setValue[2] = value;
+
+              printf("is save:(0~1)\n");
+              scanf_ret += scanf("%d", &is_save);
               test->setValue[3] = is_save;
+              if (scanf_ret != 4) break;
+
               test->cmdID = PQ_SET_COLOR_CUSTOMIZE_3DLUT;
               break;
           }
           case 271: {
-              printf("please input 1 parameters:\n"
-                   "color:(0~5); refer vpp_cms_6color_t\n");
+              printf("PQ_GET_COLOR_CUSTOMIZE_3DLUT\n");
+              printf("color: RED(0), GREEN(1), BLUE(2), CYAN(3), MAGENTA(4), YELLOW(5)\n");
               scanf_ret = scanf("%d", &color);
-              if (scanf_ret != 1)    break;
               test->setValue[0] = color;
+              if (scanf_ret != 1) break;
+
               test->cmdID = PQ_GET_COLOR_CUSTOMIZE_3DLUT;
               break;
           }
           case 272: {
-            printf("please input 1 parameters:\n"
-                   "color:(0~1); refer vpp_cms_method_t\n");
+              printf("PQ_RESET_COLOR_CUSTOMIZE\n");
+              printf("Module: CMS(0), 3DLUT(1)\n");
               scanf_ret = scanf("%d", &value);
-              if (scanf_ret != 1)    break;
               test->setValue[0] = value;
-            test->cmdID = PQ_RESET_COLOR_CUSTOMIZE;
+              if (scanf_ret != 1) break;
+
+              test->cmdID = PQ_RESET_COLOR_CUSTOMIZE;
+            break;
+          }
+          case 273: {
+              int offset = 0;
+              printf("PQ_SET_WB_GAMMA_DATA\n");
+              printf("color: RED CHANNEL(0), GREEN CHANNEL(1), BLUE CHANNEL(2)\n");
+              scanf_ret = scanf("%d", &color);
+              test->setValue[0] = color;
+
+              printf("mode: 5% per step(0%(0) ~ 100%(21)\n");
+              scanf_ret += scanf("%d", &mode);
+              test->setValue[1] = mode;
+
+              printf("offset: -1023 ~ 1023\n");
+              scanf_ret += scanf("%d", &offset);
+              test->setValue[2] = offset;
+
+              if (scanf_ret != 3) break;
+
+              test->cmdID = PQ_SET_WB_GAMMA_DATA;
+              break;
+          }
+          case 274: {
+              printf("PQ_GET_WB_GAMMA_DATA\n");
+              printf("color: RED CHANNEL(0), GREEN CHANNEL(1), BLUE CHANNEL(2)\n");
+              scanf_ret = scanf("%d", &color);
+              test->setValue[0] = color;
+
+              printf("mode: 5% per step(0%(0) ~ 100%(21)\n");
+              scanf_ret += scanf("%d", &mode);
+              test->setValue[1] = mode;
+
+              if (scanf_ret != 2) break;
+
+              test->cmdID = PQ_GET_WB_GAMMA_DATA;
+            break;
+          }
+          case 275: {
+              printf("PQ_SET_SUPERRESOLUTION\n");
+              printf("mode: OFF(0), MID(1), HIGH(2)\n");
+              scanf_ret = scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              printf("is save:(0 ~ 1)\n");
+              scanf_ret += scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+              if (scanf_ret != 2) break;
+
+              test->cmdID = PQ_SET_SUPERRESOLUTION;
+              break;
+          }
+          case 276: {
+              printf("PQ_GET_SUPERRESOLUTION\n");
+              test->cmdID = PQ_GET_SUPERRESOLUTION;
             break;
           }
 
           //factory cmd
           case 301: {
+              printf("PQ_FACTORY_RESET_PICTURE_MODE\n");
               test->cmdID = PQ_FACTORY_RESET_PICTURE_MODE;
               break;
           }
           case 302: {
+              printf("PQ_FACTORY_RESET_COLOR_TEMPERATURE_MODE\n");
               test->cmdID = PQ_FACTORY_RESET_COLOR_TEMPERATURE_MODE;
               break;
           }
           case 303: {
-              printf("please input 4 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n"
-                   "color mode value:\n");
-              int source = 0, sig_fmt = 0, fmt_3d = 0, color_mode = 0;
-              scanf_ret = scanf("%d %d %d %d", &source, &sig_fmt, &fmt_3d);
-              if (scanf_ret != 4)    break;
+              printf("PQ_FACTORY_SET_COLOR_TEMPERATURE_MODE\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              test->setValue[3] = color_mode;
+
+              printf("ColorTemperature mode value:(0:Sandard, 1:warm, 2:cool, 3:user, 4:warmer, 5:cooler)\n");
+              scanf_ret += scanf("%d", &colortemp_mode);
+              test->setValue[3] = colortemp_mode;
+              if (scanf_ret != 4) break;
+
               test->cmdID = PQ_FACTORY_SET_COLOR_TEMPERATURE_MODE;
               break;
           }
           case 304: {
+              printf("PQ_FACTORY_GET_COLOR_TEMPERATURE_MODE\n");
               test->cmdID = PQ_FACTORY_GET_COLOR_TEMPERATURE_MODE;
               break;
           }
           case 305: {
-              printf("please input 5 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n"
-                   "pq mode value:(0~10)\n"
-                   "brightness mode value:\n");
-              scanf_ret = scanf("%d %d %d %d %d", &source, &sig_fmt, &fmt_3d, &pq_mode, &mode);
-              if (scanf_ret != 5)    break;
+              printf("PQ_FACTORY_SET_BRIGHTNESS\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+
+              printf("pq_mode value: STANDARD(0), BRIGHT(1), SOFT(2), USER(3), MOVIE(4), COLORFUL(5), MONITOR(6), GAME(7), SPORTS(8), SONY(9), SAMSUNG(10), SHARP(11), DV_BRIGHT(12), DV_DARK(13)\n");
+              scanf_ret += scanf("%d", &pq_mode);
               test->setValue[3] = pq_mode;
+
+              printf("brightness value: 0 ~ 100\n");
+              scanf_ret += scanf("%d", &mode);
               test->setValue[4] = mode;
+              if (scanf_ret != 5) break;
+
               test->cmdID = PQ_FACTORY_SET_BRIGHTNESS;
               break;
           }
           case 306: {
-              printf("please input 4 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n"
-                   "pq mode value:(0~10)\n");
-              scanf_ret = scanf("%d %d %d %d", &source, &sig_fmt, &fmt_3d, &pq_mode);
-              if (scanf_ret != 4)    break;
+              printf("PQ_FACTORY_GET_BRIGHTNESS\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+
+              printf("pq_mode value: STANDARD(0), BRIGHT(1), SOFT(2), USER(3), MOVIE(4), COLORFUL(5), MONITOR(6), GAME(7), SPORTS(8), SONY(9), SAMSUNG(10), SHARP(11), DV_BRIGHT(12), DV_DARK(13)\n");
+              scanf_ret += scanf("%d", &pq_mode);
               test->setValue[3] = pq_mode;
+              if (scanf_ret != 4) break;
+
               test->cmdID = PQ_FACTORY_GET_BRIGHTNESS;
               break;
           }
           case 307: {
-              printf("please input 4 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n"
-                   "pq mode value:(0~10)\n");
-              scanf_ret = scanf("%d %d %d %d", &source, &sig_fmt, &fmt_3d, &pq_mode);
-              if (scanf_ret != 4)    break;
+              printf("PQ_FACTORY_SET_CONTRAST\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+
+              printf("pq_mode value: STANDARD(0), BRIGHT(1), SOFT(2), USER(3), MOVIE(4), COLORFUL(5), MONITOR(6), GAME(7), SPORTS(8), SONY(9), SAMSUNG(10), SHARP(11), DV_BRIGHT(12), DV_DARK(13)\n");
+              scanf_ret += scanf("%d", &pq_mode);
               test->setValue[3] = pq_mode;
+
+              printf("contrast value: 0 ~ 100\n");
+              scanf_ret += scanf("%d", &mode);
+              test->setValue[4] = mode;
+              if (scanf_ret != 5) break;
+
               test->cmdID = PQ_FACTORY_SET_CONTRAST;
               break;
           }
           case 308: {
-              printf("please input 4 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "fmt_3d value:\n"
-                   "pq mode value:(0~10)\n");
-              scanf_ret = scanf("%d %d %d %d", &source, &sig_fmt, &fmt_3d, &pq_mode);
-              if (scanf_ret != 4)    break;
+              printf("PQ_FACTORY_GET_CONTRAST\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+
+              printf("pq_mode value: STANDARD(0), BRIGHT(1), SOFT(2), USER(3), MOVIE(4), COLORFUL(5), MONITOR(6), GAME(7), SPORTS(8), SONY(9), SAMSUNG(10), SHARP(11), DV_BRIGHT(12), DV_DARK(13)\n");
+              scanf_ret += scanf("%d", &pq_mode);
               test->setValue[3] = pq_mode;
+              if (scanf_ret != 4) break;
+
               test->cmdID = PQ_FACTORY_GET_CONTRAST;
               break;
           }
           case 309: {
-              printf("please input 5 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n"
-                   "pq mode value:(0~10)\n"
-                   "saturation mode value:\n");
-              scanf_ret = scanf("%d %d %d %d %d", &source, &sig_fmt, &fmt_3d, &pq_mode, &mode);
-              if (scanf_ret != 5)    break;
+              printf("PQ_FACTORY_SET_SATURATION\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+
+              printf("pq_mode value: STANDARD(0), BRIGHT(1), SOFT(2), USER(3), MOVIE(4), COLORFUL(5), MONITOR(6), GAME(7), SPORTS(8), SONY(9), SAMSUNG(10), SHARP(11), DV_BRIGHT(12), DV_DARK(13)\n");
+              scanf_ret += scanf("%d", &pq_mode);
               test->setValue[3] = pq_mode;
+
+              printf("Saturation value: 0 ~ 100\n");
+              scanf_ret += scanf("%d", &mode);
               test->setValue[4] = mode;
+              if (scanf_ret != 5) break;
+
               test->cmdID = PQ_FACTORY_SET_SATUATION;
               break;
           }
           case 310: {
-              printf("please input 4 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n"
-                   "pq mode value:(0~10)\n");
-              scanf_ret = scanf("%d %d %d %d", &source, &sig_fmt, &fmt_3d, &pq_mode);
-              if (scanf_ret != 4)    break;
+              printf("PQ_FACTORY_GET_SATURATION\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+
+              printf("pq_mode value: STANDARD(0), BRIGHT(1), SOFT(2), USER(3), MOVIE(4), COLORFUL(5), MONITOR(6), GAME(7), SPORTS(8), SONY(9), SAMSUNG(10), SHARP(11), DV_BRIGHT(12), DV_DARK(13)\n");
+              scanf_ret += scanf("%d", &pq_mode);
               test->setValue[3] = pq_mode;
+              if (scanf_ret != 4) break;
+
               test->cmdID = PQ_FACTORY_GET_SATUATION;
               break;
           }
           case 311: {
-              printf("please input 5 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n"
-                   "pq mode value:(0~10)\n"
-                   "hue mode value:\n");
-              scanf_ret = scanf("%d", &source, &sig_fmt, &fmt_3d, &pq_mode, &mode);
-              if (scanf_ret != 5)    break;
+              printf("PQ_FACTORY_SET_HUE\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+
+              printf("pq_mode value: STANDARD(0), BRIGHT(1), SOFT(2), USER(3), MOVIE(4), COLORFUL(5), MONITOR(6), GAME(7), SPORTS(8), SONY(9), SAMSUNG(10), SHARP(11), DV_BRIGHT(12), DV_DARK(13)\n");
+              scanf_ret += scanf("%d", &pq_mode);
               test->setValue[3] = pq_mode;
+
+              printf("Hue value: 0 ~ 100\n");
+              scanf_ret += scanf("%d", &mode);
               test->setValue[4] = mode;
+              if (scanf_ret != 5) break;
+
               test->cmdID = PQ_FACTORY_SET_HUE;
               break;
           }
           case 312: {
-              printf("please input 4 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n"
-                   "pq mode value:(0~10)\n");
-              scanf_ret = scanf("%d %d %d %d", &source, &sig_fmt, &fmt_3d, &pq_mode);
-              if (scanf_ret != 4)    break;
+              printf("PQ_FACTORY_GET_HUE\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+
+              printf("pq_mode value: STANDARD(0), BRIGHT(1), SOFT(2), USER(3), MOVIE(4), COLORFUL(5), MONITOR(6), GAME(7), SPORTS(8), SONY(9), SAMSUNG(10), SHARP(11), DV_BRIGHT(12), DV_DARK(13)\n");
+              scanf_ret += scanf("%d", &pq_mode);
               test->setValue[3] = pq_mode;
+              if (scanf_ret != 4) break;
+
               test->cmdID = PQ_FACTORY_GET_HUE;
               break;
           }
           case 313: {
-              printf("please input 5 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n"
-                   "pq mode value:(0~10)\n"
-                   "sharpness mode value:\n");
-              int source = 0;
-              scanf_ret = scanf("%d %d %d %d %d", &source, &sig_fmt, &fmt_3d, &pq_mode, &mode);
-              if (scanf_ret != 5)    break;
+              printf("PQ_FACTORY_SET_SHARPNESS\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+
+              printf("pq_mode value: STANDARD(0), BRIGHT(1), SOFT(2), USER(3), MOVIE(4), COLORFUL(5), MONITOR(6), GAME(7), SPORTS(8), SONY(9), SAMSUNG(10), SHARP(11), DV_BRIGHT(12), DV_DARK(13)\n");
+              scanf_ret += scanf("%d", &pq_mode);
               test->setValue[3] = pq_mode;
+
+              printf("sharpness value: 0 ~ 100\n");
+              scanf_ret += scanf("%d", &mode);
               test->setValue[4] = mode;
+              if (scanf_ret != 5) break;
+
               test->cmdID = PQ_FACTORY_SET_SHARPNESS;
               break;
           }
           case 314: {
-              printf("please input 4 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n"
-                   "pq mode value:(0~10)\n");
-              int source = 0;
-              scanf_ret = scanf("%d %d %d %", &source, &sig_fmt, &fmt_3d, &pq_mode);
-              if (scanf_ret != 4)    break;
+              printf("PQ_FACTORY_GET_SHARPNESS\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+
+              printf("pq_mode value: STANDARD(0), BRIGHT(1), SOFT(2), USER(3), MOVIE(4), COLORFUL(5), MONITOR(6), GAME(7), SPORTS(8), SONY(9), SAMSUNG(10), SHARP(11), DV_BRIGHT(12), DV_DARK(13)\n");
+              scanf_ret += scanf("%d", &pq_mode);
               test->setValue[3] = pq_mode;
+              if (scanf_ret != 4) break;
+
               test->cmdID = PQ_FACTORY_GET_SHARPNESS;
               break;
           }
           case 315: {
-              printf("please input 8 parameters:\n"
-                   "source value(tv_source_input_t):\n"
-                   "sig_fmt value(tvin_sig_fmt_t):\n"
-                   "3d_fmt value(tvin_trans_fmt_t):\n"
-                   "display mode(vpp_display_mode_t):\n"
-                   "input he:\n"
-                   "input hs:\n"
-                   "input ve:\n"
-                   "input vs:\n");
               int dmode = 0;
               int he = 0, hs = 0, ve = 0, vs = 0;
-              scanf_ret = scanf("%d %d %d %d %d %d %d %d", &source, &sig_fmt, &fmt_3d, &dmode, &hs, &he, &vs, &ve);
-              if (scanf_ret != 8)    break;
+              printf("PQ_FACTORY_SET_OVERSCAN\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+
+              printf("displaymode(0:[16:9], 1:[PERSON], 2:[MOVIE], 3:[CAPTION], 4:[4:3], 5:[FULL], 6:[NORMAL], 7:[NOSCALEUP], 8:[CROP_FULL], 9:[CROP], 10:[ZOOM])\n");
+              scanf_ret += scanf("%d", &dmode);
               test->setValue[3] = dmode;
+
+              printf("hs value: \n");
+              scanf_ret += scanf("%d", &hs);
               test->setValue[4] = hs;
+
+              printf("he value: \n");
+              scanf_ret += scanf("%d", &he);
               test->setValue[5] = he;
+
+              printf("vs value: \n");
+              scanf_ret += scanf("%d", &vs);
               test->setValue[6] = vs;
+
+              printf("ve value: \n");
+              scanf_ret += scanf("%d", &ve);
               test->setValue[7] = ve;
+              if (scanf_ret != 8) break;
+
               test->cmdID = PQ_FACTORY_SET_OVERSCAN;
               break;
           }
           case 316: {
-              printf("please input 4 parameters:\n"
-                   "source value(tv_source_input_t):\n"
-                   "sig_fmt value(tvin_sig_fmt_t):\n"
-                   "3d_fmt value(tvin_trans_fmt_t):\n"
-                   "display mode(vpp_display_mode_t):\n");
               int dmode = 0;
-              scanf_ret = scanf("%d %d %d %d", &source, &sig_fmt, &fmt_3d, &dmode);
-              if (scanf_ret != 4)    break;
+              printf("PQ_FACTORY_GET_OVERSCAN\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+
+              printf("displaymode(0:[16:9], 1:[PERSON], 2:[MOVIE], 3:[CAPTION], 4:[4:3], 5:[FULL], 6:[NORMAL], 7:[NOSCALEUP], 8:[CROP_FULL], 9:[CROP], 10:[ZOOM])\n");
+              scanf_ret += scanf("%d", &dmode);
               test->setValue[3] = dmode;
+              if (scanf_ret != 4) break;
+
               test->cmdID = PQ_FACTORY_GET_OVERSCAN;
               break;
           }
           case 317: {
-              printf("please input 5 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n"
-                   "colortemp_mode:(0~3)\n"
-                   "red gain value:\n");
-              scanf_ret = scanf("%d", &source, &sig_fmt, &fmt_3d, &pq_mode, &mode);
-              if (scanf_ret != 5)    break;
+              printf("PQ_FACTORY_SET_WB_RED_GAIN\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
-              test->setValue[3] = pq_mode;
+
+              printf("ColorTemperature mode value:(0:Sandard, 1:warm, 2:cool, 3:user, 4:warmer, 5:cooler)\n");
+              scanf_ret += scanf("%d", &colortemp_mode);
+              test->setValue[3] = colortemp_mode;
+
+              printf("red gain: 0 ~ 2047\n");
+              scanf_ret += scanf("%d", &mode);
               test->setValue[4] = mode;
+              if (scanf_ret != 5) break;
+
               test->cmdID = PQ_FACTORY_SET_WB_RED_GAIN;
               break;
           }
           case 318: {
-              printf("please input 4 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n"
-                   "colortemp_mode:(0~3)\n");
-              scanf_ret = scanf("%d %d %d %d", &source, &sig_fmt, &fmt_3d, &colortemp_mode);
-              if (scanf_ret != 4)    break;
+              printf("PQ_FACTORY_GET_WB_RED_GAIN\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+
+              printf("ColorTemperature mode value:(0:Sandard, 1:warm, 2:cool, 3:user, 4:warmer, 5:cooler)\n");
+              scanf_ret += scanf("%d", &colortemp_mode);
               test->setValue[3] = colortemp_mode;
+              if (scanf_ret != 4) break;
+
               test->cmdID = PQ_FACTORY_GET_WB_RED_GAIN;
               break;
           }
           case 319: {
-              printf("please input 5 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n"
-                   "colortemp_mode:(0~3)\n"
-                   "green gain value:\n");
-              scanf_ret = scanf("%d %d %d %d %d", &source, &sig_fmt, &fmt_3d, &colortemp_mode, &mode);
-              if (scanf_ret != 5)    break;
+              printf("PQ_FACTORY_SET_WB_GREEN_GAIN\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+
+              printf("ColorTemperature mode value:(0:Sandard, 1:warm, 2:cool, 3:user, 4:warmer, 5:cooler)\n");
+              scanf_ret += scanf("%d", &colortemp_mode);
               test->setValue[3] = colortemp_mode;
+
+              printf("green gain: 0 ~ 2047\n");
+              scanf_ret += scanf("%d", &mode);
               test->setValue[4] = mode;
+              if (scanf_ret != 5) break;
+
               test->cmdID = PQ_FACTORY_SET_WB_GREEN_GAIN;
               break;
           }
           case 320: {
-              printf("please input 4 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n"
-                   "colortemp_mode:(0~3)\n");
-              scanf_ret = scanf("%d %d %d %d", &source, &sig_fmt, &fmt_3d, &colortemp_mode);
-              if (scanf_ret != 4)    break;
+              printf("PQ_FACTORY_GET_WB_GREEN_GAIN\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+
+              printf("ColorTemperature mode value:(0:Sandard, 1:warm, 2:cool, 3:user, 4:warmer, 5:cooler)\n");
+              scanf_ret += scanf("%d", &colortemp_mode);
               test->setValue[3] = colortemp_mode;
+              if (scanf_ret != 4) break;
+
               test->cmdID = PQ_FACTORY_GET_WB_GREEN_GAIN;
               break;
           }
           case 321: {
-              printf("please input 5 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n"
-                   "colortemp_mode:(0~3)\n"
-                   "blue gain value:\n");
-              scanf_ret = scanf("%d %d %d %d %d", &source, &sig_fmt, &fmt_3d, &colortemp_mode, &mode);
-              if (scanf_ret != 5)    break;
+              printf("PQ_FACTORY_SET_WB_BLUE_GAIN\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+
+              printf("ColorTemperature mode value:(0:Sandard, 1:warm, 2:cool, 3:user, 4:warmer, 5:cooler)\n");
+              scanf_ret += scanf("%d", &colortemp_mode);
               test->setValue[3] = colortemp_mode;
+
+              printf("blue gain: 0 ~ 2047\n");
+              scanf_ret += scanf("%d", &mode);
               test->setValue[4] = mode;
+              if (scanf_ret != 5) break;
+
               test->cmdID = PQ_FACTORY_SET_WB_BLUE_GAIN;
               break;
           }
           case 322: {
-              printf("please input 4 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n"
-                   "colortemp_mode:(0~3)\n");
-              scanf_ret = scanf("%d %d %d %d", &source, &sig_fmt, &fmt_3d, &colortemp_mode);
-              if (scanf_ret != 4)    break;
+              printf("PQ_FACTORY_GET_WB_BLUE_GAIN\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+
+              printf("ColorTemperature mode value:(0:Sandard, 1:warm, 2:cool, 3:user, 4:warmer, 5:cooler)\n");
+              scanf_ret += scanf("%d", &colortemp_mode);
               test->setValue[3] = colortemp_mode;
+              if (scanf_ret != 4) break;
+
               test->cmdID = PQ_FACTORY_GET_WB_BLUE_GAIN;
               break;
           }
           case 323: {
-              printf("please input 5 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n"
-                   "colortemp_mode:(0~3)\n"
-                   "red offset value:\n");
-              scanf_ret = scanf("%d %d %d %d %d", &source, &sig_fmt, &fmt_3d, &colortemp_mode, &mode);
-              if (scanf_ret != 5)    break;
+              printf("PQ_FACTORY_SET_WB_RED_OFFSET\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+
+              printf("ColorTemperature mode value:(0:Sandard, 1:warm, 2:cool, 3:user, 4:warmer, 5:cooler)\n");
+              scanf_ret += scanf("%d", &colortemp_mode);
               test->setValue[3] = colortemp_mode;
+
+              printf("red offset: -1024 ~ 1023\n");
+              scanf_ret += scanf("%d", &mode);
               test->setValue[4] = mode;
+              if (scanf_ret != 5) break;
+
               test->cmdID = PQ_FACTORY_SET_WB_RED_OFFSET;
               break;
           }
           case 324: {
-              printf("please input 4 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n"
-                   "colortemp_mode:(0~3)\n");
-              scanf_ret = scanf("%d %d %d %d", &source, &sig_fmt, &fmt_3d, &colortemp_mode);
-              if (scanf_ret != 4)    break;
+              printf("PQ_FACTORY_GET_WB_RED_OFFSET\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+
+              printf("ColorTemperature mode value:(0:Sandard, 1:warm, 2:cool, 3:user, 4:warmer, 5:cooler)\n");
+              scanf_ret += scanf("%d", &colortemp_mode);
               test->setValue[3] = colortemp_mode;
+              if (scanf_ret != 4) break;
+
               test->cmdID = PQ_FACTORY_GET_WB_RED_OFFSET;
               break;
           }
           case 325: {
-              printf("please input 5 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n"
-                   "colortemp_mode:(0~3)\n"
-                   "green offset value:\n");
-              scanf_ret = scanf("%d %d %d %d %d", &source, &sig_fmt, &fmt_3d, &colortemp_mode, &mode);
-              if (scanf_ret != 5)    break;
+              printf("PQ_FACTORY_SET_WB_GREEN_OFFSET\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+
+              printf("ColorTemperature mode value:(0:Sandard, 1:warm, 2:cool, 3:user, 4:warmer, 5:cooler)\n");
+              scanf_ret += scanf("%d", &colortemp_mode);
               test->setValue[3] = colortemp_mode;
+
+              printf("green offset: -1024 ~ 1023\n");
+              scanf_ret += scanf("%d", &mode);
               test->setValue[4] = mode;
+              if (scanf_ret != 5) break;
+
               test->cmdID = PQ_FACTORY_SET_WB_GREEN_OFFSET;
               break;
           }
           case 326: {
-              printf("please input 4 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n"
-                   "colortemp_mode:(0~3)\n");
-              scanf_ret = scanf("%d %d %d %d", &source, &sig_fmt, &fmt_3d, &colortemp_mode);
-              if (scanf_ret != 4)    break;
+              printf("PQ_FACTORY_GET_WB_GREEN_OFFSET\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+
+              printf("ColorTemperature mode value:(0:Sandard, 1:warm, 2:cool, 3:user, 4:warmer, 5:cooler)\n");
+              scanf_ret += scanf("%d", &colortemp_mode);
               test->setValue[3] = colortemp_mode;
+              if (scanf_ret != 4) break;
+
               test->cmdID = PQ_FACTORY_GET_WB_GREEN_OFFSET;
               break;
           }
           case 327: {
-              printf("please input 5 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n"
-                   "colortemp_mode:(0~3)\n"
-                   "blue offset value:\n");
-              scanf_ret = scanf("%d %d %d %d %d", &source, &sig_fmt, &fmt_3d, &colortemp_mode, &mode);
-              if (scanf_ret != 5)    break;
+              printf("PQ_FACTORY_SET_WB_BLUE_OFFSET\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+
+              printf("ColorTemperature mode value:(0:Sandard, 1:warm, 2:cool, 3:user, 4:warmer, 5:cooler)\n");
+              scanf_ret += scanf("%d", &colortemp_mode);
               test->setValue[3] = colortemp_mode;
+
+              printf("blue offset: -1024 ~ 1023\n");
+              scanf_ret += scanf("%d", &mode);
               test->setValue[4] = mode;
+              if (scanf_ret != 5) break;
+
               test->cmdID = PQ_FACTORY_SET_WB_BLUE_OFFSET;
               break;
           }
           case 328: {
-              printf("please input 4 parameters:\n"
-                   "source value:\n"
-                   "sig_fmt value:\n"
-                   "3d_fmt value:\n"
-                   "colortemp_mode:(0~3)\n");
-              scanf_ret = scanf("%d % %d %d", &source, &sig_fmt, &fmt_3d, &colortemp_mode);
-              if (scanf_ret != 4)    break;
+              printf("PQ_FACTORY_GET_WB_BLUE_OFFSET\n");
+              printf("source: INVALID(-1), TV(0), AV1(1), AV2(2), YPBPR1(3), YPBPR2(4), HDMI1(5), HDMI2(6), HDMI3(7), HDMI4(8), VGA(9), MPEG(10), DTV(11), SVIDEO(12), IPTV(13), DUMMY(14), SPDIF(15), ADTV(16)\n");
+              scanf_ret = scanf("%d", &source);
               test->setValue[0] = source;
+
+              printf("sig_fmt: TVIN_SIG_FMT_NULL(0) ~ TVIN_SIG_FMT_MAX(0xc01)\n");
+              scanf_ret += scanf("%d", &sig_fmt);
               test->setValue[1] = sig_fmt;
+
+              printf("fmt_3d: TVIN_TFMT_2D(0) ~ TVIN_TFMT_3D_DET_CHESSBOARD(15)\n");
+              scanf_ret += scanf("%d", &fmt_3d);
               test->setValue[2] = fmt_3d;
+
+              printf("ColorTemperature mode value:(0:Sandard, 1:warm, 2:cool, 3:user, 4:warmer, 5:cooler)\n");
+              scanf_ret += scanf("%d", &colortemp_mode);
               test->setValue[3] = colortemp_mode;
+              if (scanf_ret != 4) break;
+
               test->cmdID = PQ_FACTORY_GET_WB_BLUE_OFFSET;
               break;
           }
+          case 335: {
+              int en = 0, rgain = 0, ggain = 0, bgain = 0, roffset = 0, goffset = 0, boffset = 0;
+              printf("PQ_FACTORY_SET_COLOR_PARAMS\n");
+              printf("ColorTemperature mode :(0:Sandard, 1:warm, 2:cool, 3:user, 4:warmer, 5:cooler)\n");
+              scanf_ret = scanf("%d", &mode);
+              test->setValue[0] = mode;
 
+              printf("en: 0 ~ 1\n");
+              scanf_ret += scanf("%d", &en);
+              test->setValue[1] = en;
+
+              printf("rgain: 0 ~ 2047\n");
+              scanf_ret += scanf("%d", &rgain);
+              test->setValue[2] = rgain;
+
+              printf("ggain: 0 ~ 2047\n");
+              scanf_ret += scanf("%d", &ggain);
+              test->setValue[3] = ggain;
+
+              printf("bgain: 0 ~ 2047\n");
+              scanf_ret += scanf("%d", &bgain);
+              test->setValue[4] = bgain;
+
+              printf("roffset: -1023 ~ 1024\n");
+              scanf_ret += scanf("%d", &roffset);
+              test->setValue[5] = roffset;
+
+              printf("goffset: -1023 ~ 1024\n");
+              scanf_ret += scanf("%d", &goffset);
+              test->setValue[6] = goffset;
+
+              printf("boffset: -1023 ~ 1024\n");
+              scanf_ret += scanf("%d", &boffset);
+              test->setValue[7] = boffset;
+
+              if (scanf_ret != 8) break;
+
+              test->cmdID = PQ_FACTORY_SET_COLOR_PARAMS;
+              break;
+          }
+          case 336: {
+              printf("PQ_FACTORY_GET_COLOR_PARAMS\n");
+              printf("ColorTemperature mode value:(0:Sandard, 1:warm, 2:cool, 3:user, 4:warmer, 5:cooler)\n");
+              scanf_ret = scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              if (scanf_ret != 1) break;
+
+              test->cmdID = PQ_FACTORY_GET_COLOR_PARAMS;
+            break;
+          }
+
+          case 343: {
+              int offset = 0;
+              int level = 0;
+              printf("PQ_FACTORY_SET_WB_GAMMA_DATA\n");
+              printf("ColorTemperature mode value:(0:Sandard, 1:warm, 2:cool, 3:user, 4:warmer, 5:cooler)\n");
+              scanf_ret = scanf("%d", &level);
+              test->setValue[0] = level;
+
+              printf("color: RED CHANNEL(0), GREEN CHANNEL(1), BLUE CHANNEL(2)\n");
+              scanf_ret += scanf("%d", &color);
+              test->setValue[1] = color;
+
+              printf("mode: 5 per step(0 per(0) ~ 100 per(21)\n");
+              scanf_ret += scanf("%d", &mode);
+              test->setValue[2] = mode;
+
+              printf("offset: -1023 ~ 1023\n");
+              scanf_ret += scanf("%d", &offset);
+              test->setValue[3] = offset;
+
+              if (scanf_ret != 4) break;
+
+              test->cmdID = PQ_FACTORY_SET_WB_GAMMA_DATA;
+              break;
+          }
+          case 344: {
+              int level = 0;
+              printf("PQ_FACTORY_GET_WB_GAMMA_DATA\n");
+              printf("ColorTemperature mode value:(0:Sandard, 1:warm, 2:cool, 3:user, 4:warmer, 5:cooler)\n");
+              scanf_ret = scanf("%d", &level);
+              test->setValue[0] = level;
+
+              printf("color: RED CHANNEL(0), GREEN CHANNEL(1), BLUE CHANNEL(2)\n");
+              scanf_ret += scanf("%d", &color);
+              test->setValue[1] = color;
+
+              printf("mode: 5 per step(0 per(0) ~ 100 per(21)\n");
+              scanf_ret += scanf("%d", &mode);
+              test->setValue[2] = mode;
+
+              if (scanf_ret != 3) break;
+
+              test->cmdID = PQ_FACTORY_GET_WB_GAMMA_DATA;
+            break;
+          }
           default: {
               test->cmdID = PQ_MODULE_CMD_MAX;
               run = 0;
