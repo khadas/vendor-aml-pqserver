@@ -69,7 +69,7 @@ public:
             printf("%s: current pq mode is %d.\n", __FUNCTION__, ret);
             break;
         case PQ_SET_COLOR_TEMPERATURE_MODE:
-            ret = mpPqClient->SetColorTemperature(setValue[0], setValue[1], setValue[2], setValue[3]);
+            ret = mpPqClient->SetColorTemperature(setValue[0], setValue[1]);
             break;
         case PQ_GET_COLOR_TEMPERATURE_MODE:
             ret = mpPqClient->GetColorTemperature();
@@ -682,42 +682,16 @@ int main(int argc, char **argv) {
               break;
           }
           case 203: {
-              int rgb_type = 0, value = 0;
               printf("PQ_SET_COLOR_TEMPERATURE_MODE\n");
               printf("ColorTemperature mode value:(0:Sandard, 1:warm, 2:cool, 3:user, 4:warmer, 5:cooler)\n");
               scanf_ret = scanf("%d", &mode);
               test->setValue[0] = mode;
 
-              if (mode == 3) {
-                  printf("rgb_ogo_type_t:(0: R_GAIN, 1: G_GAIN, 2: B_GAIN, 3: R_POST_OFFSET, 4: G_POST_OFFSET, 5: B_POST_OFFSET)\n");
-                  scanf_ret += scanf("%d", &rgb_type);
-                  test->setValue[2] = rgb_type;
+              printf("is save:(0 ~ 1)\n");
+              scanf_ret += scanf("%d", &is_save);
+              test->setValue[1] = is_save;
 
-                  if (rgb_type == 0)
-                    printf("red gain:     (0 ~ 2047)\n");
-                  else if (rgb_type == 1)
-                    printf("green gain:   (0 ~ 2047)\n");
-                  else if (rgb_type == 2)
-                    printf("blue gain:    (0 ~ 2047)\n");
-                  else if (rgb_type == 3)
-                    printf("red offset:   (-1024 ~ 1023)\n");
-                  else if (rgb_type == 4)
-                    printf("green offset: (-1024 ~ 1023)\n");
-                  else if (rgb_type == 5)
-                    printf("blue offset:  (-1024 ~ 1023)\n");
-                  else
-                    break;
-                  scanf_ret += scanf("%d", &value);
-                  test->setValue[3] = value;
-                  if (scanf_ret != 3) break;
-              } else {
-                printf("is save:(0 ~ 1)\n");
-                scanf_ret += scanf("%d", &is_save);
-                test->setValue[1] = is_save;
-                if (scanf_ret != 2) break;
-                test->setValue[2] = -1;
-                test->setValue[3] = 0;
-              }
+              if (scanf_ret != 2) break;
               test->cmdID = PQ_SET_COLOR_TEMPERATURE_MODE;
               break;
           }

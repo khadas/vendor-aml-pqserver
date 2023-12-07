@@ -1495,6 +1495,52 @@ bool SSMAction::GetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int src, int tim
     return true;
 }
 
+bool SSMAction::CriDataGetWhitebalanceRGBGainOffsetData(tcon_rgb_ogo_t *pData, int level)
+{
+    USUC usuc;
+    USUC ret;
+
+    usuc.c[0] = 0x55;
+    usuc.c[1] = 0xAA;
+
+    int tmp_off =  (SSM_RGBOGO_FILE_OFFSET + (CRI_DATE_RGBOGO_LEN * level));
+    int Label_offset = tmp_off + CRI_DATE_RGBOGO_LEN - 2;
+
+    if (ReadDataFromFile(mWhiteBalanceFilePath, Label_offset, 2, ret.c) < 0) {
+        return false;
+    }
+
+    if ((usuc.c[0] != ret.c[0]) || (usuc.c[1] != ret.c[1])) {
+        return false;
+    }
+
+    if (ReadDataFromFile(mWhiteBalanceFilePath, tmp_off, sizeof(tcon_rgb_ogo_t), (unsigned char *)pData) < 0) {
+        return false;
+    }
+
+    return true;
+}
+
+bool SSMAction::CriDataSetWhitebalanceRGBGainOffsetData(tcon_rgb_ogo_t *pData, int level)
+{
+    USUC ret;
+    ret.c[0] = 0x55;
+    ret.c[1] = 0xAA;
+
+    int tmp_off =  (SSM_RGBOGO_FILE_OFFSET + (CRI_DATE_RGBOGO_LEN * level));
+    int Label_offset = tmp_off + CRI_DATE_RGBOGO_LEN - 2;
+
+    if (SaveDataToFile(mWhiteBalanceFilePath, tmp_off, sizeof(tcon_rgb_ogo_t), (unsigned char *)pData) < 0) {
+        return false;
+    }
+
+    if (SaveDataToFile(mWhiteBalanceFilePath, Label_offset, 2, ret.c) < 0) {
+        return false;
+    }
+
+    return true;
+}
+
 bool SSMAction::CriDataGetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level)
 {
     USUC usuc;

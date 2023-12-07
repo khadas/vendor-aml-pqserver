@@ -153,14 +153,14 @@ int PqClient::GetPQMode()
     return ret;
 }
 
-int PqClient::SetColorTemperature(int colorTemperatureValue, int isSave, int rgb_type, int value)
+int PqClient::SetColorTemperature(int colorTemperatureValue, int isSave)
 {
     LOGD("%s\n", __FUNCTION__);
 
     char buf[32] = {0};
     int  ret     = -1;
 
-    sprintf(buf, "pq.set.%d.%d.%d.%d.%d", PQ_SET_COLOR_TEMPERATURE_MODE, colorTemperatureValue, isSave, rgb_type, value);
+    sprintf(buf, "pq.set.%d.%d.%d", PQ_SET_COLOR_TEMPERATURE_MODE, colorTemperatureValue, isSave);
     SendMethodCall(buf);
 
     ret = atoi(mRetBuf);
@@ -169,7 +169,7 @@ int PqClient::SetColorTemperature(int colorTemperatureValue, int isSave, int rgb
     return ret;
 }
 
-int PqClient::GetColorTemperature()
+int PqClient::GetColorTemperature(void)
 {
     LOGD("%s\n", __FUNCTION__);
 
@@ -185,29 +185,72 @@ int PqClient::GetColorTemperature()
     return ret;
 }
 
-tvpq_rgb_ogo_t PqClient::GetColorTemperatureUserParam()
+int PqClient::SetColorTemperatureUserParam(tvpq_rgb_ogo_t *pData)
 {
     LOGD("%s\n", __FUNCTION__);
+    if (mpqServicebinder == NULL) {
+        return -1;
+    }
 
-    char buf[32] = {0};
+    if (pData == NULL) {
+        LOGE("%s pData is null\n", __FUNCTION__);
+        return -1;
+    }
 
-    sprintf(buf, "pq.get.%d", PQ_GET_COLORTEMP_USER_PARAM);
-    SendMethodCall(buf);
-    SplitRetBuf(mRetBuf);
+    Parcel send, reply;
+    send.writeInt32(pData->en);
 
-    tvpq_rgb_ogo_t rgbogo;
-    rgbogo.en = atoi(mRet[0].c_str());
-    rgbogo.r_pre_offset = atoi(mRet[1].c_str());
-    rgbogo.g_pre_offset = atoi(mRet[2].c_str());
-    rgbogo.b_pre_offset = atoi(mRet[3].c_str());
-    rgbogo.r_gain = atoi(mRet[4].c_str());
-    rgbogo.g_gain = atoi(mRet[5].c_str());
-    rgbogo.b_gain = atoi(mRet[6].c_str());
-    rgbogo.r_post_offset = atoi(mRet[7].c_str());
-    rgbogo.g_post_offset = atoi(mRet[8].c_str());
-    rgbogo.b_post_offset = atoi(mRet[9].c_str());
+    send.writeInt32(pData->r_gain);
+    send.writeInt32(pData->g_gain);
+    send.writeInt32(pData->b_gain);
 
-    return rgbogo;
+    send.writeInt32(pData->r_post_offset);
+    send.writeInt32(pData->g_post_offset);
+    send.writeInt32(pData->b_post_offset);
+
+    send.writeInt32(pData->r_pre_offset);
+    send.writeInt32(pData->g_pre_offset);
+    send.writeInt32(pData->b_pre_offset);
+
+    if (mpqServicebinder->transact(CMD_PQ_SET_COLORTEMPERATURE_USER_PARAM, send, &reply) != 0) {
+        LOGE("PqClient: call %d failed\n", CMD_PQ_SET_COLORTEMPERATURE_USER_PARAM);
+        return -1;
+    }
+
+    return reply.readInt32();
+}
+
+tvpq_rgb_ogo_t PqClient::GetColorTemperatureUserParam(void)
+{
+    LOGD("%s\n", __FUNCTION__);
+    tvpq_rgb_ogo_t Data;
+    memset(&Data, 0, sizeof(tvpq_rgb_ogo_t));
+
+    if (mpqServicebinder == NULL) {
+        return Data;
+    }
+
+    Parcel send, reply;
+    if (mpqServicebinder->transact(CMD_PQ_GET_COLORTEMPERATURE_USER_PARAM, send, &reply) != 0) {
+        LOGE("PqClient: call %d failed\n", CMD_PQ_GET_COLORTEMPERATURE_USER_PARAM);
+        return Data;
+    }
+
+    Data.en = reply.readInt32();
+
+    Data.r_gain = reply.readInt32();
+    Data.g_gain = reply.readInt32();
+    Data.b_gain = reply.readInt32();
+
+    Data.r_post_offset = reply.readInt32();
+    Data.g_post_offset = reply.readInt32();
+    Data.b_post_offset = reply.readInt32();
+
+    Data.r_pre_offset = reply.readInt32();
+    Data.g_pre_offset = reply.readInt32();
+    Data.b_pre_offset = reply.readInt32();
+
+    return Data;
 }
 
 int PqClient::SetBrightness(int brightnessValue, int isSave)

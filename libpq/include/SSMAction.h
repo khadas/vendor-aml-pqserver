@@ -14,13 +14,15 @@
 #include "SSMHandler.h"
 #include "PQSettingCfg.h"
 
-#define SSM_RGBOGO_FILE_OFFSET    (0)
+#define SSM_RGBOGO_FILE_OFFSET                      (0)
+#define CRI_DATE_RGBOGO_LEN                         (42) //sizeof(tcon_rgb_ogo_t) + 2
+#define CRI_DATE_RGBOGO_INDEX_MAX                   (8)
 
 #define SSM_CR_RGBOGO_LEN                           (256)
 #define SSM_CR_RGBOGO_CHKSUM_LEN                    (2)
 #define DEFAULT_BACKLIGHT_BRIGHTNESS                (10)
 
-#define CRI_DATA_WB_GAMMA_OFFSET                    (SSM_CR_RGBOGO_LEN + SSM_CR_RGBOGO_CHKSUM_LEN)
+#define CRI_DATA_WB_GAMMA_OFFSET                    (SSM_RGBOGO_FILE_OFFSET + (CRI_DATE_RGBOGO_LEN * CRI_DATE_RGBOGO_INDEX_MAX))
 #define CRI_DATE_WB_GAMMA_LEN                       (254) //sizeof(WB_GAMMA_TABLE) + 2
 #define CRI_DATE_WB_GAMMA_INDEX_MAX                 (8)
 
@@ -207,14 +209,17 @@ public:
     bool SetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int src, int timming, int level);
     bool GetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int src, int timming, int level);
 
-    bool CriDataGetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level);
-    bool CriDataSetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level);
-
-
     int SSMSaveColorCustomizeParams(int offset, int size, int *rw_val);
     int SSMReadColorCustomizeParams(int offset, int size, int *rw_val);
     int SSMSaveColorCustomizeParamsBy3DLut(int offset, int size, int *rw_val);
     int SSMReadColorCustomizeParamsBy3DLut(int offset, int size, int *rw_val);
+
+    // CRI DATA
+    bool CriDataSetWhitebalanceRGBGainOffsetData(tcon_rgb_ogo_t *pData, int level);
+    bool CriDataGetWhitebalanceRGBGainOffsetData(tcon_rgb_ogo_t *pData, int level);
+
+    bool CriDataGetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level);
+    bool CriDataSetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level);
 
     int m_dev_fd;
     static SSMAction *mInstance;

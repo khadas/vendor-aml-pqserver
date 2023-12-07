@@ -46,6 +46,8 @@ public:
         CMD_PQ_GET_LVDS_SSC_FREP,
         CMD_PQ_SET_LVDS_SSC_MODE,
         CMD_PQ_GET_LVDS_SSC_MODE,
+        CMD_PQ_SET_COLORTEMPERATURE_USER_PARAM,
+        CMD_PQ_GET_COLORTEMPERATURE_USER_PARAM,
     };
 
     PqClient();
@@ -53,9 +55,10 @@ public:
     static PqClient *GetInstance();
     int SetPQMode(int mode, int isSave = 0);
     int GetPQMode();
-    int SetColorTemperature(int colorTemperatureValue, int isSave, int rgb_type, int value);
-    int GetColorTemperature();
-    tvpq_rgb_ogo_t GetColorTemperatureUserParam();
+    int SetColorTemperature(int colorTemperatureValue, int isSave);
+    int GetColorTemperature(void);
+    int SetColorTemperatureUserParam(tvpq_rgb_ogo_t *pData);
+    tvpq_rgb_ogo_t GetColorTemperatureUserParam(void);
     int SetBrightness(int brightnessValue, int isSave = 0);
     int GetBrightness();
     int SetContrast(int contrastValue, int isSave = 0);

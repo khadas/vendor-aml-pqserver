@@ -214,36 +214,14 @@ public:
     int SetFacColorParams(source_input_param_t source_input_param, vpp_picture_mode_t pqMode);
 
     //color Temperature
-    int SetUserGammaValue(int level, vpp_color_temperature_mode_t color_mode);
     int SetColorTemperature(int temp_mode, int is_save);
     int GetColorTemperature(void);
     int SaveColorTemperature(int value);
     int Cpq_SetColorTemperature(int level);
     int Cpq_SetWhitebalance(int level, int gamma);
 
-    tvpq_rgb_ogo_t GetColorTemperatureUserParam(void);
-    int Cpq_SetColorTemperatureWithoutSave(vpp_color_temperature_mode_t Tempmode, tv_source_input_t tv_source_input __unused);
-    int Cpq_CheckColorTemperatureParamAlldata(source_input_param_t source_input_param);
-    unsigned short Cpq_CalColorTemperatureParamsChecksum(void);
-    int Cpq_SetColorTemperatureParamsChecksum(void);
-    unsigned short Cpq_GetColorTemperatureParamsChecksum(void);
-    int Cpq_SetColorTemperatureUser(tv_source_input_t source_input, rgb_ogo_type_t rgb_ogo_type, int is_save, int value);
-    int Cpq_GetColorTemperatureUser(tv_source_input_t source_input, tcon_rgb_ogo_t *p_tcon_rgb_ogo);
-    int Cpq_SaveColorTemperatureUser(tv_source_input_t source_input, rgb_ogo_type_t rgb_ogo_type, int value);
-    int Cpq_RestoreColorTemperatureParamsFromDB(source_input_param_t source_input_param);
-    int Cpq_CheckTemperatureDataLabel(void);
-    int Cpq_SetTemperatureDataLabel(void);
-    int SetColorTemperatureParams(vpp_color_temperature_mode_t Tempmode, tcon_rgb_ogo_t params);
-    int GetColorTemperatureParams(vpp_color_temperature_mode_t Tempmode, tcon_rgb_ogo_t *params);
-    int SaveColorTemperatureParams(vpp_color_temperature_mode_t Tempmode, tcon_rgb_ogo_t params);
-    int Cpq_CheckColorTemperatureParams(void);
-    int CheckCriDataTemperatureData(void);
-    int SetColorTempParams(int ColorTemp, rgb_ogo_type_t rgb_ogo_type, int value);
+    int SetColorTempParams(int ColorTemp, tcon_rgb_ogo_t *param);
     tvpq_rgb_ogo_t GetColorTempParams(int ColorTemp);
-
-    int Cpq_CheckWBGammaDataLabel(int level);
-    int Cpq_SetWBGammaDataLabel(int level);
-
 
     //Brightness
     int SetBrightness(int value, int is_save);
@@ -305,12 +283,11 @@ public:
 
     //Memc
     bool hasMemcFunc();
-    int initMemc(void);
     int Memc_enable(int enable);
     int SetMemcMode(int memc_mode, int is_save);
     int GetMemcMode(void);
     int SaveMemcMode(vpp_memc_mode_t memc_mode);
-    int Cpq_SetMemcMode(vpp_memc_mode_t memc_mode, source_input_param_t source_input_param);
+    int Cpq_SetMemcMode(int memc_mode, source_input_param_t source_input_param);
     int SetMemcDeBlurLevel(int level, int is_save);
     int GetMemcDeBlurLevel(void);
     int SaveMemcDeBlurLevel(int level);
@@ -354,7 +331,6 @@ public:
     int GetLocalContrastMode(void);
     int SaveLocalContrastMode(local_contrast_mode_t mode);
     int Cpq_SetLocalContrastMode(local_contrast_mode_t mode);
-
     //MpegNr
     int SetMpegNr(vpp_pq_level_t mode, int is_save);
     int GetMpegNr(void);
@@ -639,6 +615,10 @@ private:
     bool ResetColorTemperatureData(void);
     bool ResetColorTemperatureDataBySrc(void);
     bool ResetColorTemperatureDataAll(void);
+
+    bool FactoryGetWhitebalanceRGBGainOffsetData(tcon_rgb_ogo_t *pData, int level);
+    bool FactorySetWhitebalanceRGBGainOffsetData(tcon_rgb_ogo_t *pData, int level);
+    bool CheckCriDataWhitebalanceRGBGainOffsetData(void);
 
     bool SetWhitebalanceGammaData(WB_GAMMA_TABLE *params, int level);
     bool GetWhitebalanceGammaData(WB_GAMMA_TABLE *params, int level);

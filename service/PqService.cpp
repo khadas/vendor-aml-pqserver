@@ -111,11 +111,7 @@ int PqService::SetCmd(pq_moudle_param_t param)
             ret = mpPQcontrol->SetPQMode(paramData[0], paramData[1]);
             break;
         case PQ_SET_COLOR_TEMPERATURE_MODE:
-            if (paramData[0] == VPP_COLOR_TEMPERATURE_MODE_USER) {
-                ret = mpPQcontrol->SetColorTempParams(paramData[0], (rgb_ogo_type_t)paramData[2], paramData[3]);
-            } else {
-                ret = mpPQcontrol->SetColorTemperature(paramData[0], paramData[1]);
-            }
+            ret = mpPQcontrol->SetColorTemperature(paramData[0], paramData[1]);
             break;
         case PQ_SET_BRIGHTNESS:
             ret = mpPQcontrol->SetBrightness(paramData[0], paramData[1]);
@@ -224,6 +220,7 @@ int PqService::SetCmd(pq_moudle_param_t param)
         case PQ_SET_SUPERRESOLUTION:
             ret = mpPQcontrol->SetSuperResolution(paramData[0], paramData[1]);
             break;
+
 
         //Factory cmd
         case PQ_FACTORY_RESET_PICTURE_MODE:
@@ -758,6 +755,49 @@ status_t PqService::onTransact(uint32_t code,
             int pqServiceCallBackID = SetClientProxyToServer(data.readStrongBinder());
             reply->writeInt32(pqServiceCallBackID);
             LOGD("%s %s pqServiceCallBackID %d\n", __FUNCTION__, "CMD_SET_PQ_CB", pqServiceCallBackID);
+            break;
+        }
+        case CMD_PQ_SET_COLORTEMPERATURE_USER_PARAM: {
+            int ret = -1;
+            tcon_rgb_ogo_t Params;
+            memset(&Params, 0, sizeof(tcon_rgb_ogo_t));
+
+            Params.en = data.readInt32();
+
+            Params.r_gain = data.readInt32();
+            Params.g_gain = data.readInt32();
+            Params.b_gain = data.readInt32();
+
+            Params.r_post_offset = data.readInt32();
+            Params.g_post_offset = data.readInt32();
+            Params.b_post_offset = data.readInt32();
+
+            Params.r_pre_offset = data.readInt32();
+            Params.g_pre_offset = data.readInt32();
+            Params.b_pre_offset = data.readInt32();
+
+            ret = mpPQcontrol->SetColorTempParams(mpPQcontrol->GetColorTemperature(),&Params);
+            reply->writeInt32(ret);
+            break;
+        }
+        case CMD_PQ_GET_COLORTEMPERATURE_USER_PARAM: {
+            tvpq_rgb_ogo_t pData;
+            memset(&pData, 0, sizeof(tvpq_rgb_ogo_t));
+            pData = mpPQcontrol->GetColorTempParams(mpPQcontrol->GetColorTemperature());
+
+            reply->writeInt32(pData.en);
+
+            reply->writeInt32(pData.r_gain);
+            reply->writeInt32(pData.g_gain);
+            reply->writeInt32(pData.b_gain);
+
+            reply->writeInt32(pData.r_post_offset);
+            reply->writeInt32(pData.g_post_offset);
+            reply->writeInt32(pData.b_post_offset);
+
+            reply->writeInt32(pData.r_pre_offset);
+            reply->writeInt32(pData.g_post_offset);
+            reply->writeInt32(pData.b_post_offset);
             break;
         }
         default:
