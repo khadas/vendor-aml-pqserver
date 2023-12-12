@@ -33,9 +33,10 @@ public:
         CMD_PQ_ACTION = IBinder::FIRST_CALL_TRANSACTION + 1,
         CMD_SET_PQ_CB = IBinder::FIRST_CALL_TRANSACTION + 2,
         CMD_CLR_PQ_CB = IBinder::FIRST_CALL_TRANSACTION + 3,
-        EVT_SRC_CT_CB = IBinder::FIRST_CALL_TRANSACTION + 4,
-        EVT_SIG_DT_CB = IBinder::FIRST_CALL_TRANSACTION + 5,
-        CMD_HDR_DT_CB = IBinder::FIRST_CALL_TRANSACTION + 6,
+        CMD_HDR_DT_CB = IBinder::FIRST_CALL_TRANSACTION + 4,
+        CMD_ALLM_GAME_CB = IBinder::FIRST_CALL_TRANSACTION + 5,
+        CMD_FMM_PQ_CB = IBinder::FIRST_CALL_TRANSACTION + 6,
+        CMD_REFRESH_RATE_CB = IBinder::FIRST_CALL_TRANSACTION + 7,
 
         CMD_PQ_SET_DDR_SSC,
         CMD_PQ_GET_DDR_SSC,
@@ -55,6 +56,7 @@ public:
     static PqClient *GetInstance();
     int SetPQMode(int mode, int isSave = 0);
     int GetPQMode();
+    int GetLastPQMode();
     int SetColorTemperature(int colorTemperatureValue, int isSave);
     int GetColorTemperature(void);
     int SetColorTemperatureUserParam(tvpq_rgb_ogo_t *pData);
@@ -236,6 +238,9 @@ public:
 private:
     int TransactCbData(CPqClientCb &cb_data);
     static int GetHdrTypeFromPqserver(const void *param);
+    static int GetAllmGameModeFromPqserver(const void *param);
+    static int GetFilmMakerFromPqserver(const void* param);
+    static int GetRefreshRateFromPqserver(const void* param);
 
     std::map<int, PqClientIObserver *> mPqClientObserver;
     int mpqServicebinderId;

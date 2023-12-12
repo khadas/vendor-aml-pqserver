@@ -17,6 +17,9 @@ extern "C" {
 class CPqClientCb {
 public:
     static const int PQ_CB_TYPE_HDRTYPE = 0;
+    static const int PQ_CB_TYPE_ALLM_GAME_MODE = 1;
+    static const int PQ_CB_TYPE_FILM_MAKER_MODE = 2;
+    static const int PQ_CB_TYPE_REFRESH_RATE = 3;
 
 
     CPqClientCb(int type) {
@@ -41,6 +44,36 @@ namespace  PqClientCb {
         }
         ~HdrTypeCb() {}
         int mHdrType;
+    };
+
+    class AllmGameModeCb: public CPqClientCb {
+    public:
+        AllmGameModeCb() : CPqClientCb(CPqClientCb::PQ_CB_TYPE_ALLM_GAME_MODE)
+        {
+            mAllmGameMode = 0; //0: game mode off; 1: game mode on
+        }
+        ~AllmGameModeCb() {}
+        int mAllmGameMode;
+    };
+
+    class FilmMakerModeCb: public CPqClientCb {
+    public:
+        FilmMakerModeCb() : CPqClientCb(CPqClientCb::PQ_CB_TYPE_FILM_MAKER_MODE)
+        {
+            mFilmMakerMode = 0; //0: filmmaker off; 1: filmmaker on
+        }
+        ~FilmMakerModeCb() {}
+        int mFilmMakerMode;
+    };
+
+    class RefreshRateCb: public CPqClientCb {
+    public:
+        RefreshRateCb() : CPqClientCb(CPqClientCb::PQ_CB_TYPE_REFRESH_RATE)
+        {
+            mRefreshRate = 60; //60hz
+        }
+        ~RefreshRateCb() {}
+        int mRefreshRate;
     };
 };
 

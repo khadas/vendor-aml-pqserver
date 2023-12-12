@@ -153,6 +153,22 @@ int PqClient::GetPQMode()
     return ret;
 }
 
+int PqClient::GetLastPQMode()
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d", PQ_GET_LAST_PICTURE_MODE);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
 int PqClient::SetColorTemperature(int colorTemperatureValue, int isSave)
 {
     LOGD("%s\n", __FUNCTION__);
@@ -2292,6 +2308,18 @@ status_t PqClient::onTransact(uint32_t code,
             GetHdrTypeFromPqserver(&data);
             break;
         }
+        case CMD_ALLM_GAME_CB: {
+            GetAllmGameModeFromPqserver(&data);
+            break;
+        }
+        case CMD_FMM_PQ_CB: {
+            GetFilmMakerFromPqserver(&data);
+            break;
+        }
+        case CMD_REFRESH_RATE_CB: {
+            GetRefreshRateFromPqserver(&data);
+            break;
+        }
         case CMD_START:
         default:
             return BBinder::onTransact(code, data, reply, flags);
@@ -2377,4 +2405,46 @@ int PqClient::GetHdrTypeFromPqserver(const void* param)
     return 0;
 }
 
+int PqClient::GetAllmGameModeFromPqserver(const void* param)
+{
+    LOGD("%s the main process pid %p\n", __FUNCTION__, getpid());
+    Parcel *parcel = (Parcel *) param;
 
+    PqClientCb::AllmGameModeCb cb_data;
+    cb_data.mAllmGameMode = parcel->readInt32();
+    LOGD("%s cb_data.mAllmGameMode %d\n", __FUNCTION__, cb_data.mAllmGameMode);
+
+    mInstance->TransactCbData(cb_data);
+
+    return 0;
+}
+
+int PqClient::GetFilmMakerFromPqserver(const void* param)
+{
+    LOGD("%s the main process pid %p\n", __FUNCTION__, getpid());
+    Parcel *parcel = (Parcel *) param;
+
+    PqClientCb::FilmMakerModeCb cb_data;
+    cb_data.mFilmMakerMode = parcel->readInt32();
+    LOGD("%s cb_data.mFilmMakerMode %d\n", __FUNCTION__, cb_data.mFilmMakerMode);
+
+    mInstance->TransactCbData(cb_data);
+
+    return 0;
+}
+
+
+
+int PqClient::GetRefreshRateFromPqserver(const void* param)
+{
+    LOGD("%s the main process pid %p\n", __FUNCTION__, getpid());
+    Parcel *parcel = (Parcel *) param;
+
+    PqClientCb::RefreshRateCb cb_data;
+    cb_data.mRefreshRate = parcel->readInt32();
+    LOGD("%s cb_data.mRefreshRate %d\n", __FUNCTION__, cb_data.mRefreshRate);
+
+    mInstance->TransactCbData(cb_data);
+
+    return 0;
+}

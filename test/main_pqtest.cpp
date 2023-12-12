@@ -68,6 +68,10 @@ public:
             ret = mpPqClient->GetPQMode();
             printf("%s: current pq mode is %d.\n", __FUNCTION__, ret);
             break;
+        case PQ_GET_LAST_PICTURE_MODE:
+            ret = mpPqClient->GetLastPQMode();
+            printf("%s: current last pq mode is %d.\n", __FUNCTION__, ret);
+            break;
         case PQ_SET_COLOR_TEMPERATURE_MODE:
             ret = mpPqClient->SetColorTemperature(setValue[0], setValue[1]);
             break;
@@ -600,6 +604,7 @@ int main(int argc, char **argv) {
     printf("#### select 274 to get whitebalance Gamma ####\n");
     printf("#### select 275 to set SuperResolution ####\n");
     printf("#### select 276 to get SuperResolution ####\n");
+    printf("#### select 277 to get last pq mode ####\n");
 
     printf("#### below is factory cmd####\n");
     printf("#### select 301 to reset pq mode ####\n");
@@ -1250,6 +1255,11 @@ int main(int argc, char **argv) {
               printf("PQ_GET_SUPERRESOLUTION\n");
               test->cmdID = PQ_GET_SUPERRESOLUTION;
             break;
+          }
+          case 277: {
+              printf("PQ_GET_LAST_PICTURE_MODE\n");
+              test->cmdID = PQ_GET_LAST_PICTURE_MODE;
+              break;
           }
 
           //factory cmd

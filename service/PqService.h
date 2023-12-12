@@ -36,9 +36,10 @@ public:
         CMD_PQ_ACTION = IBinder::FIRST_CALL_TRANSACTION + 1,
         CMD_SET_PQ_CB = IBinder::FIRST_CALL_TRANSACTION + 2,
         CMD_CLR_PQ_CB = IBinder::FIRST_CALL_TRANSACTION + 3,
-        EVT_SRC_CT_CB = IBinder::FIRST_CALL_TRANSACTION + 4,
-        EVT_SIG_DT_CB = IBinder::FIRST_CALL_TRANSACTION + 5,
-        CMD_HDR_DT_CB = IBinder::FIRST_CALL_TRANSACTION + 6,
+        CMD_HDR_DT_CB = IBinder::FIRST_CALL_TRANSACTION + 4,
+        CMD_ALLM_GAME_CB = IBinder::FIRST_CALL_TRANSACTION + 5,
+        CMD_FMM_PQ_CB = IBinder::FIRST_CALL_TRANSACTION + 6,
+        CMD_REFRESH_RATE_CB = IBinder::FIRST_CALL_TRANSACTION + 7,
 
         CMD_PQ_SET_DDR_SSC,
         CMD_PQ_GET_DDR_SSC,
@@ -73,7 +74,10 @@ private:
     //used to libpq callback data to pqserver
     virtual void GetCbDataFromLibpq(CPQControlCb &cb_data);
 
-    void Sethdrtype(CPQControlCb &cb_data);
+    void SetHdrType(CPQControlCb &cb_data);
+    void SetAllmGameMode(CPQControlCb &cb_data);
+    void SetFilmMakerMode(CPQControlCb &cb_data);
+    void SetRefreshRate(CPQControlCb &cb_data);
 
     std::map<int, sp<IBinder>> mPqServiceCallBack;
 

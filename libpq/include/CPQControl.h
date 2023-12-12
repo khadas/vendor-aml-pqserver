@@ -64,9 +64,9 @@
 #define VIDEO_AISR_ENABLE                "/sys/module/aml_media/parameters/uvm_open_nn"
 #define VDETECT_AIPQ_ENABLE              "/sys/class/vdetect/aipq_enable"
 #define DECODER_COMMON_PARAMETERS_DEBUG_VDETECT "/sys/module/decoder_common/parameters/debug_vdetect"
-
 #define AMDOLBY_VISION_HDR10_POLICY      "/sys/module/aml_media/parameters/dolby_vision_hdr10_policy"
 #define AML_AUTO_NR_PARAMS               "/sys/class/deinterlace/di0/autonr_param"
+#define SYS_VIDEO_FRAME_RATE             "/sys/class/display/frame_rate"
 
 
 // screem mode index value
@@ -573,9 +573,10 @@ private:
     int VDINCloseModule(void);
     int VDINDeviceIOCtl(int request, ...);
     int AFEDeviceIOCtl ( int request, ... );
+    int Cpq_GetAllmAndVrrInfo(void);
     void stopVdin(void);
     void onSigStatusChange(void);
-    void onVrrStatusChange(void);
+    void onAllmOrVrrStatusChange(void);
     int SetCurrenSourceInfo(struct tvin_parm_s sig_info);
     enum tvin_sig_fmt_e getVideoResolutionToFmt();
     int GetWindowStatus(void);
@@ -591,7 +592,7 @@ private:
     bool isPqDatabaseMachChip();
     bool CheckPQModeTableInDb(void);
     int Cpq_SetVadjEnableStatus(int isvadj1Enable, int isvadj2Enable);
-    int SetPqModeForDvGame(void);
+    int SetPqModeToGame(void);
 
     int GetBaseGammaData(int level, GAMMA_TABLE *pData);
     int GetWBGammaData(int level, GAMMA_TABLE *pData);
@@ -711,8 +712,7 @@ private:
     struct tvin_parm_s mCurrentSignalInfo;
     tvin_inputparam_t mCurrentTvinInfo;
     game_pc_mode_t mGamemode = MODE_OFF;
-    struct tvin_latency_s mPreAllmInfo;
-    struct vdin_vrr_freesync_param_s mPreVrrParm;
+
     bool mbDtvKitEnable;
     bool mbDatabaseMatchChipStatus;
     bool mbVideoIsPlaying = false;//video don't playing
@@ -734,6 +734,13 @@ public:
 private:
     ICPQControlObserver *mpObserver; //to get upper pqserver object
 
+    int mPreAllmGameMode = 0;
+    int mPreFilmMakerMode = 0;
+    int mPreRefreshRate = 0;
+
     int Cpq_SetHdrType(int data);
+    int Cpq_SetAllmStatus(void);
+    int Cpq_SetFilmMakerMode(int value);
+    int Cpq_SetRefreshRate(void);
 };
 #endif

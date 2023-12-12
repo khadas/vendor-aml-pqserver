@@ -101,8 +101,6 @@ CPQControl::CPQControl()
     memset(&mCurrentSourceInputInfo, 0, sizeof(source_input_param_t));
     memset(&mCurrentSignalInfo, 0, sizeof(struct tvin_parm_s));
     memset(&mCurrentTvinInfo, 0, sizeof(tvin_inputparam_t));
-    memset(&mPreAllmInfo, 0, sizeof(struct tvin_latency_s));
-    memset(&mPreVrrParm, 0, sizeof(struct vdin_vrr_freesync_param_s));
 }
 
 CPQControl::~CPQControl()
@@ -686,6 +684,32 @@ enum tvin_sig_fmt_e CPQControl::getVideoResolutionToFmt()
     return sig_fmt;
 }
 
+int CPQControl::Cpq_GetAllmAndVrrInfo(void)
+{
+    int ret = -1;
+    struct tvin_latency_s allmInfo;
+    struct vdin_vrr_freesync_param_s vrrparm;
+
+    memset(&allmInfo, 0x0, sizeof(struct tvin_latency_s));
+    memset(&vrrparm, 0x0, sizeof(struct vdin_vrr_freesync_param_s));
+
+    ret = mpVdin->Tvin_GetAllmInfo(&allmInfo);
+    LOGD("%s allm_mode: %d, it_content: %d, cn_type: %d\n", __FUNCTION__,
+        allmInfo.allm_mode, allmInfo.it_content, allmInfo.cn_type);
+
+    mCurrentTvinInfo.allmInfo.allm_mode  = allmInfo.allm_mode;
+    mCurrentTvinInfo.allmInfo.it_content = allmInfo.it_content;
+    mCurrentTvinInfo.allmInfo.cn_type    = allmInfo.cn_type;
+
+    ret |= mpVdin->Tvin_GetVrrFreesyncParm(&vrrparm);
+    LOGD("%s cur_vrr_status: %d\n", __FUNCTION__, vrrparm.cur_vrr_status);
+
+    mCurrentTvinInfo.vrrparm.cur_vrr_status = vrrparm.cur_vrr_status;
+
+    LOGD("%s get info %s\n", __FUNCTION__, (ret < 0) ? "fail" : "success");
+    return ret;
+}
+
 int CPQControl::SetCurrenSourceInfo(struct tvin_parm_s sig_info)
 {
     if (mCurrentSignalInfo.info.trans_fmt  != sig_info.info.trans_fmt
@@ -709,30 +733,14 @@ int CPQControl::SetCurrenSourceInfo(struct tvin_parm_s sig_info)
 
         if ((SourceInput == SOURCE_MPEG)
             || (SourceInput != SOURCE_MPEG && mCurrentSignalInfo.info.status == TVIN_SIG_STATUS_STABLE)) {
-            struct tvin_latency_s allmInfo;
-            memset(&allmInfo, 0x0, sizeof(struct tvin_latency_s));
-            mpVdin->Tvin_GetAllmInfo(&allmInfo);
-            mCurrentTvinInfo.allmInfo.allm_mode  = allmInfo.allm_mode;
-            mCurrentTvinInfo.allmInfo.it_content = allmInfo.it_content;
-            mCurrentTvinInfo.allmInfo.cn_type    = allmInfo.cn_type;
+            source_input_param_t source_input_param;
+            memset(&source_input_param, 0x0, sizeof(source_input_param_t));
+
+            Cpq_GetAllmAndVrrInfo();
+
             mCurrentTvinInfo.is_dvi              = mCurrentSignalInfo.info.is_dvi;
             mCurrentTvinInfo.hdr_info            = mCurrentSignalInfo.info.signal_type;
-            LOGD("%s allmInfo.allm_mode: %d, allmInfo.it_content: %d, cn_type: %d, is_dvi: %d, hdr_info: %d\n", __FUNCTION__,
-                mCurrentTvinInfo.allmInfo.allm_mode, mCurrentTvinInfo.allmInfo.it_content,
-                mCurrentTvinInfo.allmInfo.cn_type, mCurrentTvinInfo.is_dvi, mCurrentTvinInfo.hdr_info);
 
-            struct vdin_vrr_freesync_param_s vrrparm;
-            memset(&vrrparm, 0x0, sizeof(struct vdin_vrr_freesync_param_s));
-            mpVdin->Tvin_GetVrrFreesyncParm(&vrrparm);
-            mCurrentTvinInfo.vrrparm.cur_vrr_status = vrrparm.cur_vrr_status;
-            mCurrentTvinInfo.vrrparm.tone_mapping_en = vrrparm.tone_mapping_en;
-            mCurrentTvinInfo.vrrparm.local_dimming_disable = vrrparm.local_dimming_disable;
-            mCurrentTvinInfo.vrrparm.native_color_en = vrrparm.native_color_en;
-            LOGD("%s cur_vrr_status: %d tone_mapping_en: %d local_dimming_disable: %d native_color_en: %d\n", __FUNCTION__,
-                mCurrentTvinInfo.vrrparm.cur_vrr_status, mCurrentTvinInfo.vrrparm.tone_mapping_en,
-                mCurrentTvinInfo.vrrparm.local_dimming_disable, mCurrentTvinInfo.vrrparm.native_color_en);
-
-            source_input_param_t source_input_param;
             source_input_param.source_input = SourceInput;
             source_input_param.sig_fmt      = mCurrentSignalInfo.info.fmt;
             source_input_param.trans_fmt    = mCurrentSignalInfo.info.trans_fmt;
@@ -760,37 +768,16 @@ void CPQControl::onSigStatusChange(void)
     return;
 }
 
-void CPQControl::onVrrStatusChange(void)
+void CPQControl::onAllmOrVrrStatusChange(void)
 {
     int ret = -1;
-    struct tvin_latency_s allmInfo;
-    memset(&allmInfo, 0x0, sizeof(struct tvin_latency_s));
-    ret = mpVdin->Tvin_GetAllmInfo(&allmInfo);
-    mCurrentTvinInfo.allmInfo.allm_mode  = allmInfo.allm_mode;
-    mCurrentTvinInfo.allmInfo.it_content = allmInfo.it_content;
-    mCurrentTvinInfo.allmInfo.cn_type    = allmInfo.cn_type;
-    LOGD("%s allmInfo.allm_mode: %d, allmInfo.it_content: %d, cn_type: %d, is_dvi: %d, hdr_info: %d\n", __FUNCTION__,
-        mCurrentTvinInfo.allmInfo.allm_mode, mCurrentTvinInfo.allmInfo.it_content,
-        mCurrentTvinInfo.allmInfo.cn_type, mCurrentTvinInfo.is_dvi, mCurrentTvinInfo.hdr_info);
 
-    struct vdin_vrr_freesync_param_s vrrparm;
-    memset(&vrrparm, 0x0, sizeof(struct vdin_vrr_freesync_param_s));
-    ret |= mpVdin->Tvin_GetVrrFreesyncParm(&vrrparm);
-    mCurrentTvinInfo.vrrparm.cur_vrr_status = vrrparm.cur_vrr_status;
-    mCurrentTvinInfo.vrrparm.tone_mapping_en = vrrparm.tone_mapping_en;
-    mCurrentTvinInfo.vrrparm.local_dimming_disable = vrrparm.local_dimming_disable;
-    mCurrentTvinInfo.vrrparm.native_color_en = vrrparm.native_color_en;
-    LOGD("%s cur_vrr_status: %d tone_mapping_en: %d local_dimming_disable: %d native_color_en: %d\n", __FUNCTION__,
-        mCurrentTvinInfo.vrrparm.cur_vrr_status, mCurrentTvinInfo.vrrparm.tone_mapping_en,
-        mCurrentTvinInfo.vrrparm.local_dimming_disable, mCurrentTvinInfo.vrrparm.native_color_en);
-
+    ret = Cpq_GetAllmAndVrrInfo();
     if (ret < 0) {
         LOGD("%s Get vrr or allm status error\n", __FUNCTION__);
     } else {
-        SetPqModeForDvGame();
+        SetPqModeToGame();
     }
-
-    return;
 }
 
 void CPQControl::stopVdin(void)
@@ -890,8 +877,8 @@ void CPQControl::onUevent(uevent_data_t ueventData)
         }
         case TVIN_SIG_CHG_DV_ALLM:
         case TVIN_SIG_CHG_VRR:
-            LOGD("%s: vrr change!\n", __FUNCTION__);
-            onVrrStatusChange();
+            LOGD("%s: allm || vrr info change!\n", __FUNCTION__);
+            onAllmOrVrrStatusChange();
             break;
         case TVIN_SIG_CHG_CLOSE_FE:
             stopVdin();
@@ -931,7 +918,7 @@ int CPQControl::LoadPQSettings()
             mCurrentSourceInputInfo.source_input, mCurrentSourceInputInfo.sig_fmt,
             mCurrentSourceInputInfo.sig_fmt, mCurrentSourceInputInfo.trans_fmt);
 
-        SetPqModeForDvGame();
+        SetPqModeToGame();
 
         if (mbCpqCfg_new_picture_mode_enable) {
             ret |= LoadPQUISettings();
@@ -2895,7 +2882,7 @@ int CPQControl::Cpq_SetSharpness1Variable(int value, source_input_param_t source
         return 0;
     }
 
-    if (!mbCpqCfg_sharpness0_enable) {
+    if (!mbCpqCfg_sharpness1_enable) {
         LOGD("%s: sharpness1 disabled\n", __FUNCTION__);
         return 0;
     }
@@ -8112,61 +8099,27 @@ int CPQControl::SetCurrentSourceInputInfo(source_input_param_t source_input_para
     return 0;
 }
 
-int CPQControl::SetPqModeForDvGame(void)
+int CPQControl::SetPqModeToGame(void)
 {
     LOGD("%s: start\n", __FUNCTION__);
 
-    /*
-    LOGD("%s: mCurrentSourceInputInfo.source_input %d\n", __FUNCTION__, mCurrentSourceInputInfo.source_input);
-    LOGD("%s: mCurrentHdrType %d\n", __FUNCTION__, mCurrentHdrType);
+    if (mCurrentSourceInputInfo.source_input < SOURCE_HDMI1 ||
+        mCurrentSourceInputInfo.source_input > SOURCE_HDMI4)
+        return 0;
 
-    LOGD("%s: mCurrentTvinInfo.allmInfo.allm_mode %d\n", __FUNCTION__, mCurrentTvinInfo.allmInfo.allm_mode);
-    LOGD("%s: mPreAllmInfo.allm_mode %d\n", __FUNCTION__, mPreAllmInfo.allm_mode);
-
-    LOGD("%s: mCurrentTvinInfo.allmInfo.it_content %d\n", __FUNCTION__, mCurrentTvinInfo.allmInfo.it_content);
-    LOGD("%s: mCurrentTvinInfo.allmInfo.cn_type %d\n", __FUNCTION__, mCurrentTvinInfo.allmInfo.cn_type);
-    LOGD("%s: mPreAllmInfo.it_content %d\n", __FUNCTION__, mPreAllmInfo.it_content);
-    LOGD("%s: mPreAllmInfo.cn_type %d\n", __FUNCTION__, mPreAllmInfo.cn_type);
-
-    LOGD("%s: mCurrentTvinInfo.vrrparm.cur_vrr_status %d\n", __FUNCTION__, mCurrentTvinInfo.vrrparm.cur_vrr_status);
-    LOGD("%s: mPreVrrParm.cur_vrr_status %d\n", __FUNCTION__, mPreVrrParm.cur_vrr_status);
-    */
-
-    if ((mCurrentSourceInputInfo.source_input >= SOURCE_HDMI1 && mCurrentSourceInputInfo.source_input <= SOURCE_HDMI4)
-        && (mCurrentHdrType == HDRTYPE_DOVI)) {
-        if ((mCurrentTvinInfo.allmInfo.allm_mode == true && mPreAllmInfo.allm_mode == false) //allm_mode from false to true
-            || ((mCurrentTvinInfo.allmInfo.it_content == true && mCurrentTvinInfo.allmInfo.cn_type == GAME) &&
-                (mPreAllmInfo.it_content == false && mPreAllmInfo.cn_type != GAME)) //it_content & cn_type from fase to true
-            || (mCurrentTvinInfo.vrrparm.cur_vrr_status != VDIN_VRR_OFF && mPreVrrParm.cur_vrr_status == VDIN_VRR_OFF) //vrr from 0 to !0
-            ) { //dv + game
-                LOGD("%s: dv game\n", __FUNCTION__);
-
-                SetPQMode((int)VPP_PICTURE_MODE_GAME, 1);
-
-                mPreAllmInfo.allm_mode = mCurrentTvinInfo.allmInfo.allm_mode;
-                mPreAllmInfo.it_content = mCurrentTvinInfo.allmInfo.it_content;
-                mPreAllmInfo.cn_type = mCurrentTvinInfo.allmInfo.cn_type;
-                mPreVrrParm.cur_vrr_status = mCurrentTvinInfo.vrrparm.cur_vrr_status;
-        } else if ((mCurrentTvinInfo.allmInfo.allm_mode == false && mPreAllmInfo.allm_mode == true) //allm_mode from true to false
-                   || ((mCurrentTvinInfo.allmInfo.it_content == false && mCurrentTvinInfo.allmInfo.cn_type != GAME) &&
-                      (mPreAllmInfo.it_content == true && mPreAllmInfo.cn_type == GAME)) //it_content & cn_type from true to false
-                   || (mCurrentTvinInfo.vrrparm.cur_vrr_status == VDIN_VRR_OFF && mPreVrrParm.cur_vrr_status != VDIN_VRR_OFF) //vrr from !0 to 0
-            ) {
-                LOGD("%s: rollback dv game\n", __FUNCTION__);
-
-                int last_pq_mode = GetLastPQMode();
-                LOGD("%s: last_pq_mode: %d\n", __FUNCTION__, last_pq_mode);
-                SetPQMode(last_pq_mode, 1);
-
-                mPreAllmInfo.allm_mode = mCurrentTvinInfo.allmInfo.allm_mode;
-                mPreAllmInfo.it_content = mCurrentTvinInfo.allmInfo.it_content;
-                mPreAllmInfo.cn_type = mCurrentTvinInfo.allmInfo.cn_type;
-                mPreVrrParm.cur_vrr_status = mCurrentTvinInfo.vrrparm.cur_vrr_status;
-        } else {
-            LOGD("%s: nothing 1\n", __FUNCTION__);
-        }
+    if ((mCurrentTvinInfo.allmInfo.allm_mode == true) ||
+        (mCurrentTvinInfo.allmInfo.it_content == true && mCurrentTvinInfo.allmInfo.cn_type == GAME) ||
+        (mCurrentHdrType == HDRTYPE_DOVI && mCurrentTvinInfo.vrrparm.cur_vrr_status != VDIN_VRR_OFF)) {
+        LOGD("%s: game mode\n", __FUNCTION__);
+        SetPQMode((int)VPP_PICTURE_MODE_GAME, 1);
+    } else if ((mCurrentTvinInfo.allmInfo.allm_mode == false) ||
+               (mCurrentTvinInfo.allmInfo.it_content == false && mCurrentTvinInfo.allmInfo.cn_type != GAME) ||
+               (mCurrentHdrType == HDRTYPE_DOVI && mCurrentTvinInfo.vrrparm.cur_vrr_status == VDIN_VRR_OFF)) {
+        int last_pq_mode = GetLastPQMode();
+        LOGD("%s: last_pq_mode:%d\n", __FUNCTION__, last_pq_mode);
+        SetPQMode(last_pq_mode, 1);
     } else {
-        LOGD("%s: nothing 2\n", __FUNCTION__);
+        LOGD("%s: nothing\n", __FUNCTION__);
     }
 
     return 0;
@@ -9400,6 +9353,110 @@ int CPQControl::Cpq_SetHdrType(int data)
 
     return 0;
 }
+
+int CPQControl::Cpq_SetAllmStatus(void)
+{
+    int mAllmGameMode = 0;
+
+    if (mCurrentSourceInputInfo.source_input >= SOURCE_HDMI1 &&
+        mCurrentSourceInputInfo.source_input <= SOURCE_HDMI4) {
+        if ((mCurrentTvinInfo.allmInfo.allm_mode == true) ||
+            (mCurrentTvinInfo.allmInfo.it_content == true &&
+             mCurrentTvinInfo.allmInfo.cn_type == GAME) ||
+            (mCurrentTvinInfo.vrrparm.cur_vrr_status != VDIN_VRR_OFF)) {
+            mAllmGameMode = 1;
+        }
+    } else {
+        LOGD("%s: reset mPreAllmGameMode\n", __FUNCTION__);
+        mPreAllmGameMode = 0;
+    }
+
+    LOGD("%s: mAllmGameMode:%d mPreAllmGameMode:%d\n", __FUNCTION__, mAllmGameMode, mPreAllmGameMode);
+
+    if (mPreAllmGameMode != mAllmGameMode) {
+        if (mpObserver != NULL) {
+            PQControlCb::AllmGameModeCb cb_data;
+            cb_data.mAllmGameMode = mAllmGameMode;
+            mpObserver->GetCbDataFromLibpq(cb_data);
+        } else {
+            LOGD("%s mpObserver is NULL\n", __FUNCTION__);
+            return -1;
+        }
+
+        mPreAllmGameMode = mAllmGameMode;
+    }
+
+    return 0;
+}
+
+int CPQControl::Cpq_SetFilmMakerMode(int value)
+{
+    int mFilmMakerMode = 0;
+
+    if (mCurrentSourceInputInfo.source_input >= SOURCE_HDMI1 &&
+        mCurrentSourceInputInfo.source_input <= SOURCE_HDMI4) {
+        if (mCurrentTvinInfo.allmInfo.it_content == true &&
+            mCurrentTvinInfo.allmInfo.cn_type == CINEMA) {
+            mFilmMakerMode = 1;
+        }
+    } else if (mCurrentSourceInputInfo.source_input == SOURCE_MPEG) {
+        if (value == 1) {
+            mFilmMakerMode = 1;
+        }
+    } else {
+        LOGD("%s: reset mPreFilmMakerMode\n", __FUNCTION__);
+        mPreFilmMakerMode = 0;
+    }
+
+    LOGD("%s: mFilmMakerMode:%d mPreFilmMakerMode:%d\n", __FUNCTION__, mFilmMakerMode, mPreFilmMakerMode);
+
+    if (mPreFilmMakerMode != mFilmMakerMode) {
+        if (mpObserver != NULL) {
+            PQControlCb::FilmMakerModeCb cb_data;
+            cb_data.mFilmMakerMode = mFilmMakerMode;
+            mpObserver->GetCbDataFromLibpq(cb_data);
+        } else {
+            LOGD("%s mpObserver is NULL\n", __FUNCTION__);
+            return -1;
+        }
+
+        mPreFilmMakerMode = mFilmMakerMode;
+    }
+
+    return 0;
+}
+
+int CPQControl::Cpq_SetRefreshRate(void)
+{
+    char frame_rate[10] = {0};
+    int mRefreshRate = 0;
+
+    if (pqReadSys(SYS_VIDEO_FRAME_RATE, frame_rate, sizeof(frame_rate)) > 0) {
+        LOGD("%s frame_rate %s\n", __FUNCTION__, frame_rate);
+        mRefreshRate = atoi(frame_rate);
+    } else {
+        LOGD("%s read %s failed\n", __FUNCTION__, SYS_VIDEO_FRAME_RATE);
+        return -1;
+    }
+
+    LOGD("%s: mRefreshRate:%d mPreRefreshRate:%d\n", __FUNCTION__, mRefreshRate, mPreRefreshRate);
+
+    if (mPreRefreshRate != mRefreshRate) {
+        if (mpObserver != NULL) {
+            PQControlCb::RefreshRateCb cb_data;
+            cb_data.mRefreshRate = mRefreshRate;
+            mpObserver->GetCbDataFromLibpq(cb_data);
+        } else {
+            LOGD("%s mpObserver is NULL\n", __FUNCTION__);
+            return -1;
+        }
+
+        mPreRefreshRate = mRefreshRate;
+    }
+
+    return 0;
+}
+
 
 int CPQControl::SetSharpnessParamsCheckVal(int param_type, int val)
 {

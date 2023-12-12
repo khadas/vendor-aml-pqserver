@@ -88,6 +88,7 @@ typedef enum pqcmd_e {
     PQ_GET_WB_GAMMA_DATA          = 274,
     PQ_SET_SUPERRESOLUTION        = 275,
     PQ_GET_SUPERRESOLUTION        = 276,
+    PQ_GET_LAST_PICTURE_MODE      = 277,
 
     PQ_MODULE_CMD_MAX             = 299,
     //PQ factory(300~399)

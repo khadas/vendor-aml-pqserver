@@ -396,6 +396,9 @@ char* PqService::GetCmd(pq_moudle_param_t param)
         case PQ_GET_PICTURE_MODE:
             ret = mpPQcontrol->GetPQMode();
             break;
+        case PQ_GET_LAST_PICTURE_MODE:
+            ret = mpPQcontrol->GetLastPQMode();
+            break;
         case PQ_GET_COLOR_TEMPERATURE_MODE:
             ret = mpPQcontrol->GetColorTemperature();
             break;
@@ -850,7 +853,16 @@ void PqService::GetCbDataFromLibpq(CPQControlCb &cb_data)
 
     switch (cbType) {
         case CPQControlCb::PQ_CB_TYPE_HDRTYPE:
-            Sethdrtype(cb_data);
+            SetHdrType(cb_data);
+            break;
+        case CPQControlCb::PQ_CB_TYPE_ALLM_GAME_MODE:
+            SetAllmGameMode(cb_data);
+            break;
+        case CPQControlCb::PQ_CB_TYPE_FILM_MAKER_MODE:
+            SetFilmMakerMode(cb_data);
+            break;
+        case CPQControlCb::PQ_CB_TYPE_REFRESH_RATE:
+            SetRefreshRate(cb_data);
             break;
         default :
             LOGE("%s invalie callback type\n", __FUNCTION__);
@@ -860,7 +872,7 @@ void PqService::GetCbDataFromLibpq(CPQControlCb &cb_data)
     return;
 }
 
-void PqService::Sethdrtype(CPQControlCb &cb_data)
+void PqService::SetHdrType(CPQControlCb &cb_data)
 {
     LOGD("%s the main process's pid %p\n", __FUNCTION__, getpid());
     Parcel send, reply;
@@ -881,6 +893,73 @@ void PqService::Sethdrtype(CPQControlCb &cb_data)
 
     return;
 }
+
+void PqService::SetAllmGameMode(CPQControlCb &cb_data)
+{
+    LOGD("%s the main process's pid %p\n", __FUNCTION__, getpid());
+    Parcel send, reply;
+
+    PQControlCb::AllmGameModeCb *allmGameCb = (PQControlCb::AllmGameModeCb *)(&cb_data);
+    int clientSize = mPqServiceCallBack.size();
+    LOGD("%s now has %d pqclient\n", __FUNCTION__, clientSize);
+
+    for (int i = 0; i < clientSize; i++) {
+        if (mPqServiceCallBack[i] != NULL) {
+            LOGD("%s send callback data from server to client by binder i %d\n", __FUNCTION__, i);
+            send.writeInt32(allmGameCb->mAllmGameMode);
+            mPqServiceCallBack[i]->transact(CMD_ALLM_GAME_CB, send, &reply);
+        } else {
+            LOGE("%s mPqServiceCallBack is NULL\n");
+        }
+    }
+
+    return;
+}
+
+void PqService::SetFilmMakerMode(CPQControlCb &cb_data)
+{
+    LOGD("%s the main process's pid %p\n", __FUNCTION__, getpid());
+    Parcel send, reply;
+
+    PQControlCb::FilmMakerModeCb *filmMakerCb = (PQControlCb::FilmMakerModeCb *)(&cb_data);
+    int clientSize = mPqServiceCallBack.size();
+    LOGD("%s now has %d pqclient\n", __FUNCTION__, clientSize);
+
+    for (int i = 0; i < clientSize; i++) {
+        if (mPqServiceCallBack[i] != NULL) {
+            LOGD("%s send callback data from server to client by binder i %d\n", __FUNCTION__, i);
+            send.writeInt32(filmMakerCb->mFilmMakerMode);
+            mPqServiceCallBack[i]->transact(CMD_FMM_PQ_CB, send, &reply);
+        } else {
+            LOGE("%s mPqServiceCallBack is NULL\n");
+        }
+    }
+
+    return;
+}
+
+void PqService::SetRefreshRate(CPQControlCb &cb_data)
+{
+    LOGD("%s the main process's pid %p\n", __FUNCTION__, getpid());
+    Parcel send, reply;
+
+    PQControlCb::RefreshRateCb *refreshRateCb = (PQControlCb::RefreshRateCb *)(&cb_data);
+    int clientSize = mPqServiceCallBack.size();
+    LOGD("%s now has %d pqclient\n", __FUNCTION__, clientSize);
+
+    for (int i = 0; i < clientSize; i++) {
+        if (mPqServiceCallBack[i] != NULL) {
+            LOGD("%s send callback data from server to client by binder i %d\n", __FUNCTION__, i);
+            send.writeInt32(refreshRateCb->mRefreshRate);
+            mPqServiceCallBack[i]->transact(CMD_REFRESH_RATE_CB, send, &reply);
+        } else {
+            LOGE("%s mPqServiceCallBack is NULL\n");
+        }
+    }
+
+    return;
+}
+
 #ifdef __cplusplus
 }
 #endif
