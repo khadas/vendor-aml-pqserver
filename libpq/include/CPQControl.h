@@ -603,6 +603,7 @@ private:
     bool SetPictureMode(vpp_picture_mode_t PictureMode);
     bool GetPictureMode(vpp_picture_mode_t *PictureMode);
     bool ResetPictureMode(void);
+    bool ResetPictureModeBySrc(void);
     bool ResetPictureModeAll(void);
 
     bool SetPictureModeData(vpp_pictur_mode_para_t *params, vpp_picture_mode_t picmode);

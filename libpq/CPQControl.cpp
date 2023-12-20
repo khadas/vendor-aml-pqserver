@@ -1059,6 +1059,8 @@ void CPQControl::resetPQUiSetting(void)
 //reset current input source picture ui setting by Reset_Picture
 void CPQControl::resetCurSrcPqUiSetting(void)
 {
+    //ResetPictureModeAll();
+    ResetPictureModeBySrc();
     ResetPictureModeDataBySrc();
     ResetColorTemperatureDataBySrc();
     mbResetPicture = true;
@@ -9962,6 +9964,31 @@ bool CPQControl::ResetPictureMode(void)
         }
         if (!mSSMAction->SetPictureMode((int)pqmode, (int)CurSource, (int)CurTimming)) {
             LOGE("%s SetPictureMode fail\n", __FUNCTION__);
+        }
+    }
+
+    LOGD("%s: done\n", __FUNCTION__);
+    return true;
+}
+
+bool CPQControl::ResetPictureModeBySrc(void)
+{
+    if (mSSMAction == NULL) {
+        return false;
+    }
+
+    LOGD("%s: start\n", __FUNCTION__);
+    vpp_picture_mode_t pqmode = VPP_PICTURE_MODE_STANDARD;
+    for (int j = PQ_FMT_DEFAULT; j < PQ_FMT_MAX; j++) {
+        if (mSSMAction->GetPictureMode((int *)&pqmode, (int)CurSource, j)) {
+            if (j == PQ_FMT_DOLVI) {
+                pqmode = VPP_PICTURE_MODE_DOLVI_BRIGHT;
+            } else {
+                pqmode = VPP_PICTURE_MODE_STANDARD;
+            }
+            if (!mSSMAction->SetPictureMode((int)pqmode, (int)CurSource, j)) {
+                LOGE("%s SetPictureMode fail\n", __FUNCTION__);
+            }
         }
     }
 
