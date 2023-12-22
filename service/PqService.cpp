@@ -109,6 +109,9 @@ int PqService::SetCmd(pq_moudle_param_t param)
         switch (moduleId) {
         case PQ_SET_PICTURE_MODE:
             ret = mpPQcontrol->SetPQMode(paramData[0], paramData[1]);
+            if (paramData[1] == 1) {
+                ret |= mpPQcontrol->SaveLastPQMode(paramData[0]);
+            }
             break;
         case PQ_SET_COLOR_TEMPERATURE_MODE:
             ret = mpPQcontrol->SetColorTemperature(paramData[0], paramData[1]);
