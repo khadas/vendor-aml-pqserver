@@ -1209,7 +1209,7 @@ int main(int argc, char **argv) {
               scanf_ret = scanf("%d", &color);
               test->setValue[0] = color;
 
-              printf("mode: 5% per step(0%(0) ~ 100%(21)\n");
+              printf("point: 10 percent per step(0%(0) ~ 100%(10)\n");
               scanf_ret += scanf("%d", &mode);
               test->setValue[1] = mode;
 
@@ -1228,7 +1228,7 @@ int main(int argc, char **argv) {
               scanf_ret = scanf("%d", &color);
               test->setValue[0] = color;
 
-              printf("mode: 5% per step(0%(0) ~ 100%(21)\n");
+              printf("mode: 10 percent per step(0 percent(0) ~ 100 percent(11)\n");
               scanf_ret += scanf("%d", &mode);
               test->setValue[1] = mode;
 
@@ -1955,7 +1955,7 @@ int main(int argc, char **argv) {
               scanf_ret += scanf("%d", &color);
               test->setValue[1] = color;
 
-              printf("mode: 5 per step(0 per(0) ~ 100 per(21)\n");
+              printf("mode: 10 percent per step(0 per(0) ~ 100 per(11)\n");
               scanf_ret += scanf("%d", &mode);
               test->setValue[2] = mode;
 
@@ -1971,7 +1971,7 @@ int main(int argc, char **argv) {
           case 344: {
               int level = 0;
               printf("PQ_FACTORY_GET_WB_GAMMA_DATA\n");
-              printf("ColorTemperature mode value:(0:Sandard, 1:warm, 2:cool, 3:user, 4:warmer, 5:cooler)\n");
+              printf("ColorTemperature mode value:(0: Sandard, 1: warm, 2: cool, 3: user, 4: warmer, 5: cooler)\n");
               scanf_ret = scanf("%d", &level);
               test->setValue[0] = level;
 
@@ -1979,7 +1979,7 @@ int main(int argc, char **argv) {
               scanf_ret += scanf("%d", &color);
               test->setValue[1] = color;
 
-              printf("mode: 5 per step(0 per(0) ~ 100 per(21)\n");
+              printf("mode: 10 percent per step(0 per(0) ~ 100 per(11)\n");
               scanf_ret += scanf("%d", &mode);
               test->setValue[2] = mode;
 

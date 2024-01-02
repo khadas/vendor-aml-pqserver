@@ -30,15 +30,15 @@
 #define MAX_PICTUREMODE_INDEX             (14) //(VPP_PICTURE_MODE_MAX)
 #define MAX_COLORTEMP_INDEX               (6)  //(VPP_COLOR_TEMPERATURE_MODE_MAX)
 
-#define MAX_WB_GAMMA_POINT                (21)
+#define MAX_WB_GAMMA_POINT                (11)
 
-#define MAX_PICTUREMODE_SIZE              ((1  + 1) * 4) // > sizeof(vpp_picture_mode_t) + sizeof(int)
-#define MAX_PICTUREMODE_PARAM_SIZE        ((30 + 1) * 4) // > sizeof(vpp_pictur_mode_para_t) + sizeof(int)
-#define MAX_COLORTEMP_PARAM_SIZE          ((10 + 1) * 4) // > sizeof(tcon_rgb_ogo_s) + sizeof(int)
-#define MAX_WB_GAMMA_PARAM_SIZE           ((63 + 1) * 4) // > (sizeof(WB_GAMMA_TABLE) + sizeof(int))
+#define MAX_PICTUREMODE_SIZE              ((1  * 4) + 4) // > sizeof(vpp_picture_mode_t) + sizeof(int)
+#define MAX_PICTUREMODE_PARAM_SIZE        ((30 * 4) + 4) // > sizeof(vpp_pictur_mode_para_t) + sizeof(int)
+#define MAX_COLORTEMP_PARAM_SIZE          ((10 * 4) + 4) // > sizeof(tcon_rgb_ogo_s) + sizeof(int)
+#define MAX_WB_GAMMA_PARAM_SIZE           ((MAX_WB_GAMMA_POINT * 3 * 4) + 4) // > (sizeof(WB_GAMMA_TABLE) + sizeof(int))
 
 
-#define MAX_LVDS_SSC_PARAM_SIZE           20
+#define MAX_LVDS_SSC_PARAM_SIZE              20
 
 #define MAX_COLORCUSTOMIZE_CM_PARAM_SIZE     120
 #define MAX_COLORCUSTOMIZE_3DLUT_PARAM_SIZE  80

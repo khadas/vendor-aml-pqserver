@@ -3468,8 +3468,8 @@ int CPQControl::GetWBGammaData(int level, GAMMA_TABLE *pData)
         return -1;
     }
 
-    #if 0
-    float x[MAX_WB_GAMMA_POINT] = {0, 13, 26, 39, 51, 64, 77, 90, 103, 116, 129, 141, 154, 167, 180, 193, 206, 218, 231, 244, 256};
+    #if 1
+    float x[MAX_WB_GAMMA_POINT] = {0, 26, 51, 77, 103, 129, 154, 180, 206, 231, 255};
     #else
     float x[MAX_WB_GAMMA_POINT] = {0, 13, 26, 38, 51, 64, 76, 90, 102, 115, 128, 141, 154, 166, 179, 192, 205, 218, 230, 243, 255};
     #endif
@@ -3653,11 +3653,10 @@ int CPQControl::SetWhitebalanceGamma(int channel, int point, int offset)
     WB_GAMMA_TABLE pData;
     if (FactoryGetWhitebalanceGammaData(&pData, colortemp)) {
         LOGE("%s, CRI DATA have data, skip this API\n", __FUNCTION__);
-        return 0;
-    }
-
-    if (!GetWhitebalanceGammaData(&pData, colortemp)) {
+    } else if (GetWhitebalanceGammaData(&pData, colortemp)) {
         LOGE("%s, GetWhitebalanceGammaData fail\n", __FUNCTION__);
+    } else {
+        LOGE("%s, Have no data\n", __FUNCTION__);
         return -1;
     }
 
@@ -3735,7 +3734,7 @@ int CPQControl::FactorySetWhitebalanceGamma(int colortemp, int channel, int poin
 
     WB_GAMMA_TABLE pData;
     if (!FactoryGetWhitebalanceGammaData(&pData, colortemp)) {
-        LOGE("%s, GetWhitebalanceGammaData fail\n", __FUNCTION__);
+        LOGE("%s, FactoryGetWhitebalanceGammaData fail\n", __FUNCTION__);
         return -1;
     }
 
@@ -3749,7 +3748,7 @@ int CPQControl::FactorySetWhitebalanceGamma(int colortemp, int channel, int poin
         return -1;
 
     if (!FactorySetWhitebalanceGammaData(&pData, colortemp)) {
-        LOGE("%s, SetWhitebalanceGammaData fail\n", __FUNCTION__);
+        LOGE("%s, FactorySetWhitebalanceGammaData fail\n", __FUNCTION__);
         return -1;
     }
 
