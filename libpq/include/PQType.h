@@ -677,4 +677,9 @@ typedef enum vpp_SuperResolution_Level_e {
     VPP_SUPER_RESOLUTION_MAX,
 } vpp_SuperResolution_Level_t;
 
+typedef enum pq_mode_to_game_e {
+    TO_GAME_BY_SIG_CHG_DV_ALLM,
+    TO_GAME_BY_SIG_CHG_STS,
+    TO_GAME_BY_MAX,
+} pq_mode_to_game_t;
 #endif

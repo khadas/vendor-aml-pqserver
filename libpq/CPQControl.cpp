@@ -776,7 +776,7 @@ void CPQControl::onAllmOrVrrStatusChange(void)
     if (ret < 0) {
         LOGD("%s Get vrr or allm status error\n", __FUNCTION__);
     } else {
-        SetPqModeToGame();
+        SetPqModeToGame(TO_GAME_BY_SIG_CHG_DV_ALLM);
     }
 }
 
@@ -918,8 +918,6 @@ int CPQControl::LoadPQSettings()
             mCurrentSourceInputInfo.source_input, mCurrentSourceInputInfo.sig_fmt,
             mCurrentSourceInputInfo.sig_fmt, mCurrentSourceInputInfo.trans_fmt);
 
-        SetPqModeToGame();
-
         if (mbCpqCfg_new_picture_mode_enable) {
             ret |= LoadPQUISettings();
             ret |= LoadPQTableSettings();
@@ -949,7 +947,9 @@ int CPQControl::LoadPQUISettings()
 
     //picture mode
     vpp_picture_mode_t pqmode = (vpp_picture_mode_t)GetPQMode();
-    ret = Set_PictureMode (pqmode);
+    LOGD("%s, pqmode: %d\n", __FUNCTION__, pqmode);
+
+    ret = Set_PictureMode(pqmode);
 
     return ret;
 }
@@ -1012,6 +1012,7 @@ void CPQControl::resetPQUiSetting(void)
     //Picture mode param & Color Temp
     vpp_pictur_mode_para_t picture;
     tcon_rgb_ogo_t ColorTemp;
+    vpp_picture_mode_t pqmode = VPP_PICTURE_MODE_STANDARD;
 
     //PQ MODE
     mSSMAction->SetPictureMode(VPP_PICTURE_MODE_STANDARD, PQ_SRC_DEFAULT, PQ_FMT_DEFAULT);
@@ -1041,6 +1042,14 @@ void CPQControl::resetPQUiSetting(void)
                     }
                 }
             }
+
+            //last pq mode
+            if (j == PQ_FMT_DOLVI) {
+                pqmode = VPP_PICTURE_MODE_DOLVI_BRIGHT;
+            } else {
+                pqmode = VPP_PICTURE_MODE_STANDARD;
+            }
+            mSSMAction->SSMSaveLastPictureMode(i * PQ_FMT_MAX + j, (int)pqmode);
         }
     }
 
@@ -1707,6 +1716,7 @@ int CPQControl::SetPQMode(int pq_mode, int is_save)
     int ret = -1;
 
     int cur_mode = GetPQMode();
+    LOGD("%s, cur_mode: %d\n", __FUNCTION__, cur_mode);
     if (cur_mode == pq_mode && mbResetPicture != true) {
         LOGD("%s Same PQ mode,no need set again!\n", __FUNCTION__);
         ret = 0;
@@ -1787,9 +1797,19 @@ int CPQControl::SavePQMode(int pq_mode)
 
 int CPQControl::GetLastPQMode(void)
 {
+    int ret = -1;
+    int offset = 0;
     int mode = VPP_PICTURE_MODE_STANDARD;
 
-    mSSMAction->SSMReadLastPictureMode(mSourceInputForSaveParam, &mode);
+    if ( mbCpqCfg_new_picture_mode_enable) {
+        offset =  CurSource * PQ_FMT_MAX + CurTimming;
+    } else {
+        offset = mSourceInputForSaveParam;
+    }
+
+    ret = mSSMAction->SSMReadLastPictureMode(offset, &mode);
+    if (ret < 0)
+        LOGE("%s failed!\n",__FUNCTION__);
 
     if (mode < VPP_PICTURE_MODE_STANDARD || mode >= VPP_PICTURE_MODE_MAX) {
         mode = VPP_PICTURE_MODE_STANDARD;
@@ -1800,14 +1820,19 @@ int CPQControl::GetLastPQMode(void)
 
 }
 
-
 int CPQControl::SaveLastPQMode(int pq_mode)
 {
     int ret = -1;
-    LOGD("%s, source: %d, mode: %d\n", __FUNCTION__, CurSource, pq_mode);
+    LOGD("%s, source: %d, timing: %d, mode: %d\n", __FUNCTION__, CurSource, CurTimming, pq_mode);
 
-    ret = mSSMAction->SSMSaveLastPictureMode(mSourceInputForSaveParam, pq_mode);
+    int offset = 0;
+    if ( mbCpqCfg_new_picture_mode_enable) {
+        offset =  CurSource * PQ_FMT_MAX + CurTimming;
+    } else {
+        offset = mSourceInputForSaveParam;
+    }
 
+    ret = mSSMAction->SSMSaveLastPictureMode(offset, pq_mode);
     if (ret < 0)
         LOGE("%s failed!\n",__FUNCTION__);
 
@@ -8045,6 +8070,9 @@ int CPQControl::SetCurrentSourceInputInfo(source_input_param_t source_input_para
         vpp_display_mode_t display_mode = (vpp_display_mode_t)GetDisplayMode();
         SetDisplayMode(display_mode, 1);
 
+        //judge&triger to set game or not, when switch signal
+        SetPqModeToGame(TO_GAME_BY_SIG_CHG_STS);
+
         //load pq setting
         if (source_input_param.sig_fmt == TVIN_SIG_FMT_NULL) {//exit source
             mCurrentHdrType = HDRTYPE_NONE;
@@ -8100,27 +8128,56 @@ int CPQControl::SetCurrentSourceInputInfo(source_input_param_t source_input_para
     return 0;
 }
 
-int CPQControl::SetPqModeToGame(void)
+bool CPQControl::IsAllmGameMode(void)
 {
-    LOGD("%s: start\n", __FUNCTION__);
+    if ((mCurrentTvinInfo.allmInfo.allm_mode == true) ||
+        (mCurrentTvinInfo.allmInfo.it_content == true && mCurrentTvinInfo.allmInfo.cn_type == GAME) ||
+        (mCurrentHdrType == HDRTYPE_DOVI && mCurrentTvinInfo.vrrparm.cur_vrr_status != VDIN_VRR_OFF)) {
+        return true;
+    }
+
+    return false;
+}
+
+int CPQControl::SetPqModeToGame(pq_mode_to_game_t mode)
+{
+    LOGD("%s: mode:%d src:%d fmt:%d\n", __FUNCTION__, mode, CurSource, CurTimming);
 
     if (mCurrentSourceInputInfo.source_input < SOURCE_HDMI1 ||
         mCurrentSourceInputInfo.source_input > SOURCE_HDMI4)
         return 0;
 
-    if ((mCurrentTvinInfo.allmInfo.allm_mode == true) ||
-        (mCurrentTvinInfo.allmInfo.it_content == true && mCurrentTvinInfo.allmInfo.cn_type == GAME) ||
-        (mCurrentHdrType == HDRTYPE_DOVI && mCurrentTvinInfo.vrrparm.cur_vrr_status != VDIN_VRR_OFF)) {
-        LOGD("%s: game mode\n", __FUNCTION__);
-        SetPQMode((int)VPP_PICTURE_MODE_GAME, 1);
-    } else if ((mCurrentTvinInfo.allmInfo.allm_mode == false) ||
-               (mCurrentTvinInfo.allmInfo.it_content == false && mCurrentTvinInfo.allmInfo.cn_type != GAME) ||
-               (mCurrentHdrType == HDRTYPE_DOVI && mCurrentTvinInfo.vrrparm.cur_vrr_status == VDIN_VRR_OFF)) {
-        int last_pq_mode = GetLastPQMode();
-        LOGD("%s: last_pq_mode:%d\n", __FUNCTION__, last_pq_mode);
-        SetPQMode(last_pq_mode, 1);
+    if (IsAllmGameMode()) {
+        LOGD("%s: set to game mode\n", __FUNCTION__);
+
+        if (mode == TO_GAME_BY_SIG_CHG_DV_ALLM) {
+            //set & save pq mode to game
+            SetPQMode((int)VPP_PICTURE_MODE_GAME, 1);
+        } else if (mode == TO_GAME_BY_SIG_CHG_STS) {
+            //save pq mode to game, effect is by LoadPQUISettings()
+            SavePQMode((int)VPP_PICTURE_MODE_GAME);
+        } else {
+            //nothing now
+        }
+
+        aAllmSrcFmtFlag[CurSource][CurTimming] = true;
     } else {
-        LOGD("%s: nothing\n", __FUNCTION__);
+        if (aAllmSrcFmtFlag[CurSource][CurTimming] == true) {
+            int last_pq_mode = GetLastPQMode();
+            LOGD("%s: recovery to last pq mode:%d\n", __FUNCTION__, last_pq_mode);
+
+            if (mode == TO_GAME_BY_SIG_CHG_DV_ALLM) {
+                SetPQMode(last_pq_mode, 1);
+            } else if (mode == TO_GAME_BY_SIG_CHG_STS) {
+                SavePQMode(last_pq_mode);
+            } else {
+                //nothing now
+            }
+
+            aAllmSrcFmtFlag[CurSource][CurTimming] = false;
+        } else {
+            LOGD("%s: no need recovery\n", __FUNCTION__);
+        }
     }
 
     return 0;
@@ -9988,6 +10045,8 @@ bool CPQControl::ResetPictureModeBySrc(void)
             if (!mSSMAction->SetPictureMode((int)pqmode, (int)CurSource, j)) {
                 LOGE("%s SetPictureMode fail\n", __FUNCTION__);
             }
+
+            mSSMAction->SSMSaveLastPictureMode((int)CurSource * PQ_FMT_MAX + j, (int)pqmode);
         }
     }
 
@@ -10014,6 +10073,8 @@ bool CPQControl::ResetPictureModeAll(void)
                 if (!mSSMAction->SetPictureMode((int)pqmode, i, j)) {
                     LOGE("%s SetPictureMode fail\n", __FUNCTION__);
                 }
+
+                mSSMAction->SSMSaveLastPictureMode(i * PQ_FMT_MAX + j, (int)pqmode);
             }
         }
     }

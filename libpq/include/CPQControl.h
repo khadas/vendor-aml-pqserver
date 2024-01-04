@@ -164,9 +164,9 @@ typedef enum pq_type_e {
 } pq_type_t;
 
 class CPQControl: public UEventObserver::IUEventObserverCallBack,
-                       public CDevicePollCheckThread::IDevicePollCheckObserver,
-                         public CDynamicBackLight::IDynamicBackLightObserver,
-                         public SSMAction::ISSMActionObserver {
+                  public CDevicePollCheckThread::IDevicePollCheckObserver,
+                  public CDynamicBackLight::IDynamicBackLightObserver,
+                  public SSMAction::ISSMActionObserver {
 public:
     CPQControl();
     ~CPQControl();
@@ -592,7 +592,8 @@ private:
     bool isPqDatabaseMachChip();
     bool CheckPQModeTableInDb(void);
     int Cpq_SetVadjEnableStatus(int isvadj1Enable, int isvadj2Enable);
-    int SetPqModeToGame(void);
+    bool IsAllmGameMode(void);
+    int SetPqModeToGame(pq_mode_to_game_t mode);
 
     int GetBaseGammaData(int level, GAMMA_TABLE *pData);
     int GetWBGammaData(int level, GAMMA_TABLE *pData);
@@ -718,6 +719,8 @@ private:
     bool mbDatabaseMatchChipStatus;
     bool mbVideoIsPlaying = false;//video don't playing
     bool mbResetPicture = false;
+
+    bool aAllmSrcFmtFlag[PQ_SRC_MAX][PQ_FMT_MAX];
 
 //for callback to upper client
 public:
