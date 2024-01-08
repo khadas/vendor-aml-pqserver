@@ -2912,7 +2912,7 @@ int CPQControl::Cpq_SetSharpness1Variable(int value, source_input_param_t source
 int CPQControl::SetSuperResolution(int value, int is_save)
 {
     if (is_save) {
-        SaveSharpness(value);
+        SaveSuperResolution(value);
     }
 
     if (Cpq_SetSuperResolution(value) < 0) {
