@@ -192,6 +192,9 @@ int PqService::SetCmd(pq_moudle_param_t param)
         case PQ_SET_BLACKSTRETCH:
             ret = mpPQcontrol->SetBlackStretch(paramData[0], paramData[1]);
             break;
+        case PQ_SET_BLUESTRETCH:
+            ret = mpPQcontrol->SetBlueStretch(paramData[0], paramData[1]);
+            break;
         case PQ_SET_AIPQ:
             ret = mpPQcontrol->SetAipqEnable(paramData[0]);
             break;
