@@ -1577,7 +1577,7 @@ int PqClient::GetSuperResolution(void)
 
     char buf[32] = {0};
 
-    sprintf(buf, "pq.get.%d", PQ_GET_WB_GAMMA_DATA);
+    sprintf(buf, "pq.get.%d", PQ_GET_SUPERRESOLUTION);
     SendMethodCall(buf);
 
     int ret = atoi(mRetBuf);
