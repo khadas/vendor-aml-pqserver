@@ -1474,6 +1474,37 @@ vpp_single_color_param_cm_t PqClient::GetColorCustomize(int color)
     return color_param;
 }
 
+int PqClient::SetColorCustomizeEnable(int enable)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d", PQ_SET_COLOR_CUSTOMIZE_ENABLE, enable);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::GetColorCustomizeEnable(void)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d", PQ_GET_COLOR_CUSTOMIZE_ENABLE);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+
+    return ret;
+}
+
 int PqClient::SetColorCustomizeBy3DLut(int color, int type, int value, int isSave)
 {
     LOGD("%s\n", __FUNCTION__);

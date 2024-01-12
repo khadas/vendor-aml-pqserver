@@ -226,7 +226,9 @@ int PqService::SetCmd(pq_moudle_param_t param)
         case PQ_SET_SUPERRESOLUTION:
             ret = mpPQcontrol->SetSuperResolution(paramData[0], paramData[1]);
             break;
-
+        case PQ_SET_COLOR_CUSTOMIZE_ENABLE:
+            ret = mpPQcontrol->SetColorTuneEnable(paramData[0]);
+            break;
 
         //Factory cmd
         case PQ_FACTORY_RESET_PICTURE_MODE:
@@ -526,6 +528,9 @@ char* PqService::GetCmd(pq_moudle_param_t param)
             break;
         case PQ_GET_SUPERRESOLUTION:
             ret = mpPQcontrol->GetSuperResolution();
+            break;
+        case PQ_GET_COLOR_CUSTOMIZE_ENABLE:
+            ret = mpPQcontrol->GetColorTuneEnable();
             break;
 
         //Factory cmd

@@ -211,8 +211,12 @@ public:
 
     int SSMSaveColorCustomizeParams(int offset, int size, int *rw_val);
     int SSMReadColorCustomizeParams(int offset, int size, int *rw_val);
+
     int SSMSaveColorCustomizeParamsBy3DLut(int offset, int size, int *rw_val);
     int SSMReadColorCustomizeParamsBy3DLut(int offset, int size, int *rw_val);
+
+    int SSMSaveColortuneEnable(int offset, int *rw_val);
+    int SSMReadColortuneEnable(int offset, int *rw_val);
 
     // CRI DATA
     bool CriDataSetWhitebalanceRGBGainOffsetData(tcon_rgb_ogo_t *pData, int level);

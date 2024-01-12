@@ -991,10 +991,12 @@ int CPQControl::LoadPQTableSettings()
     vpp_smooth_plus_mode_t smoothplus_mode = VPP_SMOOTH_PLUS_MODE_OFF;
     ret |= Cpq_SetSmoothPlusMode(smoothplus_mode, mCurrentSourceInputInfo);
 
-    //color customize (CM)
+    //color customize (CMS)
     vpp_cms_cm_param_t param;
     memset(&param, 0, sizeof(vpp_cms_cm_param_t));
-    mSSMAction->SSMReadColorCustomizeParams(0, sizeof(vpp_cms_cm_param_t), (int *)&param);
+    if (GetColorTuneEnable())
+        mSSMAction->SSMReadColorCustomizeParams(0, sizeof(vpp_cms_cm_param_t), (int *)&param);
+
     for (int i = VPP_COLOR_9_PURPLE; i < VPP_COLOR_9_MAX; i++) {
         ret |= Cpq_SetColorCustomize((vpp_cms_color_t)i, VPP_CMS_TYPE_SAT, param.data[i].sat);
         ret |= Cpq_SetColorCustomize((vpp_cms_color_t)i, VPP_CMS_TYPE_HUE, param.data[i].hue);
@@ -3568,7 +3570,7 @@ int CPQControl::DBGammaBlend(tcon_gamma_table_t *wb_gamma, unsigned int *index_g
     unsigned int blend_alp, blend_bet;
     tcon_gamma_table_t target_gamma;
     unsigned int Node = (unsigned int)mPQdb->Gamma_nodes;
-    for (i = 1; i < Node - 1; i++) {
+    for (i = 1; i < (Node - 1); i++) {
         blend_alp = index_gamma[i] / 1000;
         blend_bet = index_gamma[i] % 1000;
         if (blend_alp > (Node - 1)) {
@@ -5010,19 +5012,22 @@ int CPQControl::Cpq_SetColorBaseMode(vpp_color_basemode_t basemode, source_input
 
 int CPQControl::SetColorCustomize(vpp_cms_color_t color, vpp_cms_type_t type, int value, int isSave)
 {
-    int ret = -1;
+    LOGD("%s color: %d, type: %d, value: %d, isSave: %d\n", __FUNCTION__, color, type, value, isSave);
 
-    LOGD("%s color:%d, type:%d, value:%d, isSave:%d\n", __FUNCTION__, color, type, value, isSave);
-
+    int ret = 0;
     if (type > VPP_CMS_TYPE_LUMA) {
         LOGE("%s type is error, not CM module request\n",__FUNCTION__);
         return ret;
     }
 
-    ret = Cpq_SetColorCustomize(color, type, value);
+    if (!GetColorTuneEnable())
+        return Cpq_SetColorCustomizeEnable(0);
+    else
+        Cpq_SetColorCustomizeEnable(1);
 
-    if ((ret ==0) && (isSave == 1)) {
-        ret = SaveColorCustomize(color, type, value);
+    ret |= Cpq_SetColorCustomize(color, type, value);
+    if ((ret == 0) && (isSave == 1)) {
+        SaveColorCustomize(color, type, value);
     }
 
     if (ret < 0) {
@@ -5038,23 +5043,19 @@ vpp_single_color_param_cm_t CPQControl::GetColorCustomize(vpp_cms_color_t color)
 {
     int offset = 0;
     vpp_cms_cm_param_t param;
-    vpp_single_color_param_cm_t single_param;
     memset(&param, 0, sizeof(vpp_cms_cm_param_t));
-    memset(&single_param, 0, sizeof(vpp_single_color_param_cm_t));
-
-    LOGD("%s color:%d\n", __FUNCTION__, color);
-
     if (mSSMAction->SSMReadColorCustomizeParams(offset, sizeof(vpp_cms_cm_param_t), (int *)&param) < 0) {
-        LOGE("%s SSMReadColorCustomizeParams failed!\n", __FUNCTION__);
+        LOGE("%s mSSMAction->SSMReadColorCustomizeParams failed!\n", __FUNCTION__);
     }
 
     for (int i = VPP_COLOR_9_PURPLE; i < VPP_COLOR_9_MAX; i++) {
-        LOGD("%s param.data[%d].sat/hue/luma: %d %d %d\n", __FUNCTION__,
-            i, param.data[i].sat, param.data[i].hue, param.data[i].luma);
+        LOGD("%s param.data[%d].sat/hue/luma: %d %d %d\n", __FUNCTION__, i, param.data[i].sat, param.data[i].hue, param.data[i].luma);
     }
 
-    single_param.sat = param.data[color].sat;
-    single_param.hue = param.data[color].hue;
+    vpp_single_color_param_cm_t single_param;
+    memset(&single_param, 0, sizeof(vpp_single_color_param_cm_t));
+    single_param.sat  = param.data[color].sat;
+    single_param.hue  = param.data[color].hue;
     single_param.luma = param.data[color].luma;
 
     return single_param;
@@ -5065,22 +5066,21 @@ int CPQControl::SaveColorCustomize(vpp_cms_color_t color, vpp_cms_type_t type, i
     int offset = 0;
     vpp_cms_cm_param_t param;
     memset(&param, 0, sizeof(vpp_cms_cm_param_t));
-
     if (mSSMAction->SSMReadColorCustomizeParams(offset, sizeof(vpp_cms_cm_param_t), (int *)&param) < 0) {
-        LOGE("%s SSMReadColorCustomizeParams failed!\n", __FUNCTION__);
+        LOGE("%s mSSMAction->SSMReadColorCustomizeParams failed!\n", __FUNCTION__);
         return -1;
     }
 
     if (type == VPP_CMS_TYPE_SAT) {
-        param.data[color].sat = value;
+        param.data[color].sat  = value;
     } else if (type == VPP_CMS_TYPE_HUE) {
-        param.data[color].hue = value;
+        param.data[color].hue  = value;
     } else if (type == VPP_CMS_TYPE_LUMA) {
         param.data[color].luma = value;
     }
 
     if (mSSMAction->SSMSaveColorCustomizeParams(offset, sizeof(vpp_cms_cm_param_t), (int *)&param) < 0) {
-        LOGE("%s SSMSaveCustomizeColorParams failed!\n", __FUNCTION__);
+        LOGE("%s mSSMAction->SSMSaveCustomizeColorParams failed!\n", __FUNCTION__);
         return -1;
     }
 
@@ -5091,51 +5091,113 @@ int CPQControl::Cpq_SetColorCustomize(vpp_cms_color_t color, vpp_cms_type_t type
 {
     struct cm_color_md pData;
     memset(&pData, 0, sizeof(struct cm_color_md));
-
-    if (type == VPP_CMS_TYPE_SAT) {
-        if (value < 0) {
-            value = (value * (0 - CMS_SAT_MIN)) / 50;
-        } else {
-            value = (value * CMS_SAT_MAX) / 50;
-        }
-        if (value < CMS_SAT_MIN) value = CMS_SAT_MIN;
-        if (value > CMS_SAT_MAX) value = CMS_SAT_MAX;
-    } else if (type == VPP_CMS_TYPE_HUE) {
-        value = (((value + 50) * (CMS_HUE_MAX - CMS_HUE_MIN)) / 100) - CMS_HUE_MAX;
-        if (value < CMS_HUE_MIN) value = CMS_HUE_MIN;
-        if (value > CMS_HUE_MAX) value = CMS_HUE_MAX;
-    } else if (type == VPP_CMS_TYPE_LUMA) {
-        value = (((value + 50) * (CMS_LUMA_MAX - CMS_LUMA_MIN)) / 100) - CMS_LUMA_MAX;
-        if (value < CMS_LUMA_MIN) value = CMS_LUMA_MIN;
-        if (value > CMS_LUMA_MAX) value = CMS_LUMA_MAX;
-    }
-
     pData.color_type = cm_9_color;
     pData.cm_9_color_md = (enum ecm2colormode)color;
     pData.cm_14_color_md = cm_14_ecm2colormode_max;
-    pData.color_value = value;
+    pData.color_value = GetDriverValueMap(type, value);
+    LOGD("%s cm_9_color_md = %d, cm_14_color_md = %d, color_value = %d.\n", __FUNCTION__, pData.cm_9_color_md, pData.cm_14_color_md, pData.color_value);
 
-    LOGD("%s cm_9_color_md = %d, cm_14_color_md = %d, color_value = %d.\n", __FUNCTION__,
-        pData.cm_9_color_md, pData.cm_14_color_md, pData.color_value);
-
-    if (type == VPP_CMS_TYPE_SAT) {
-        if (VPPDeviceIOCtl(AMVECM_IOC_S_CMS_SAT, &pData) < 0) {
-            LOGE("%s VPP_IOC_SET_CMS_SAT error(%s)\n", __FUNCTION__, strerror(errno));
-            return -1;
-        }
-    } else if (type == VPP_CMS_TYPE_HUE) {
-        if (VPPDeviceIOCtl(AMVECM_IOC_S_CMS_HUE_HS, &pData) < 0) {
-            LOGE("%s AMVECM_IOC_S_CMS_HUE_HS error(%s)\n", __FUNCTION__, strerror(errno));
-            return -1;
-        }
-    } else if (type == VPP_CMS_TYPE_LUMA) {
-        if (VPPDeviceIOCtl(AMVECM_IOC_S_CMS_LUMA, &pData) < 0) {
-            LOGE("%s AMVECM_IOC_S_CMS_LUMA error(%s)\n", __FUNCTION__, strerror(errno));
-            return -1;
-        }
+    int ret = 0;
+    switch (type) {
+        case VPP_CMS_TYPE_SAT:
+            ret = VPPDeviceIOCtl(AMVECM_IOC_S_CMS_SAT, &pData);
+            break;
+        case VPP_CMS_TYPE_HUE:
+            ret = VPPDeviceIOCtl(AMVECM_IOC_S_CMS_HUE_HS, &pData);
+            break;
+        case VPP_CMS_TYPE_LUMA:
+            ret = VPPDeviceIOCtl(AMVECM_IOC_S_CMS_LUMA, &pData);
+            break;
+        default:
+            break;
     }
 
-    return 0;
+    if (ret < 0) {
+        LOGE("%s failed!\n", __FUNCTION__);
+    }
+
+    return ret;
+}
+
+int CPQControl::Cpq_SetColorCustomizeEnable(int enable)
+{
+    if (mColorTuneEnable == enable) {
+        return 0;
+    }
+
+    mColorTuneEnable = enable;
+
+    vpp_cms_cm_param_t param;
+    memset(&param, 0, sizeof(vpp_cms_cm_param_t));
+    if (enable)
+        mSSMAction->SSMReadColorCustomizeParams(0, sizeof(vpp_cms_cm_param_t), (int *)&param);
+
+    int ret = 0;
+    for (int i = VPP_COLOR_9_PURPLE; i < VPP_COLOR_9_MAX; i++) {
+        ret |= Cpq_SetColorCustomize((vpp_cms_color_t)i, VPP_CMS_TYPE_SAT, param.data[i].sat);
+        ret |= Cpq_SetColorCustomize((vpp_cms_color_t)i, VPP_CMS_TYPE_HUE, param.data[i].hue);
+        ret |= Cpq_SetColorCustomize((vpp_cms_color_t)i, VPP_CMS_TYPE_LUMA, param.data[i].luma);
+    }
+
+    return ret;
+}
+
+int CPQControl::SetColorTuneEnable(int enable)
+{
+    int ret = 0;
+    mSSMAction->SSMSaveColortuneEnable(0, &enable);
+
+    ret = Cpq_SetColorCustomizeEnable(enable);
+
+    if (ret < 0) {
+        LOGE("%s failed\n",__FUNCTION__);
+    } else {
+        LOGD("%s success\n",__FUNCTION__);
+    }
+
+    return ret;
+}
+
+int CPQControl::GetColorTuneEnable(void)
+{
+    int enable = 0;
+    mSSMAction->SSMReadColortuneEnable(0, &enable);
+
+    if (enable < 0 || enable > 1) {
+        enable = 0;
+    }
+
+    LOGD("%s enable: %d\n",__FUNCTION__, enable);
+    return enable;
+}
+
+int CPQControl::GetDriverValueMap(vpp_cms_type_t type, int value)
+{
+    switch (type) {
+        case VPP_CMS_TYPE_SAT:
+            if (value < 0) {
+                value = (value * (0 - CMS_SAT_MIN)) / 50;
+            } else {
+                value = (value * CMS_SAT_MAX) / 50;
+            }
+            if (value < CMS_SAT_MIN) value = CMS_SAT_MIN;
+            if (value > CMS_SAT_MAX) value = CMS_SAT_MAX;
+            break;
+        case VPP_CMS_TYPE_HUE:
+            value = (((value + 50) * (CMS_HUE_MAX - CMS_HUE_MIN)) / 100) - CMS_HUE_MAX;
+            if (value < CMS_HUE_MIN) value = CMS_HUE_MIN;
+            if (value > CMS_HUE_MAX) value = CMS_HUE_MAX;
+            break;
+        case VPP_CMS_TYPE_LUMA:
+            value = (((value + 50) * (CMS_LUMA_MAX - CMS_LUMA_MIN)) / 100) - CMS_LUMA_MAX;
+            if (value < CMS_LUMA_MIN) value = CMS_LUMA_MIN;
+            if (value > CMS_LUMA_MAX) value = CMS_LUMA_MAX;
+            break;
+        default:
+            break;
+    }
+
+    return value;
 }
 
 int CPQControl::SetColorCustomizeBy3DLut(vpp_cms_6color_t color, vpp_cms_type_t type, int value, int isSave)
@@ -5168,19 +5230,17 @@ vpp_single_color_param_3dlut_t CPQControl::GetColorCustomizeBy3DLut(vpp_cms_6col
 {
     int offset = 0;
     vpp_cms_3dlut_param_t param;
-    vpp_single_color_param_3dlut_t single_param;
     memset(&param, 0, sizeof(vpp_cms_3dlut_param_t));
-    memset(&single_param, 0, sizeof(vpp_single_color_param_3dlut_t));
-
     if (mSSMAction->SSMReadColorCustomizeParamsBy3DLut(offset, sizeof(vpp_cms_3dlut_param_t), (int *)&param) < 0) {
         LOGE("%s SSMReadColorCustomizeParamsBy3DLut failed!\n",__FUNCTION__);
     }
 
     for (int i = VPP_COLOR_6_RED; i < VPP_COLOR_6_MAX; i++) {
-        LOGD("%s param.data[%d].red/green/blue: %d %d %d\n", __FUNCTION__,
-            i, param.data[i].red, param.data[i].green, param.data[i].blue);
+        LOGD("%s param.data[%d].red/green/blue: %d %d %d\n", __FUNCTION__, i, param.data[i].red, param.data[i].green, param.data[i].blue);
     }
 
+    vpp_single_color_param_3dlut_t single_param;
+    memset(&single_param, 0, sizeof(vpp_single_color_param_3dlut_t));
     single_param.red = param.data[color].red;
     single_param.green = param.data[color].green;
     single_param.blue = param.data[color].blue;
@@ -5193,7 +5253,6 @@ int CPQControl::SaveColorCustomizeBy3DLut(vpp_cms_6color_t color, vpp_cms_type_t
     int offset = 0;
     vpp_cms_3dlut_param_t param;
     memset(&param, 0, sizeof(vpp_cms_3dlut_param_t));
-
     if (mSSMAction->SSMReadColorCustomizeParamsBy3DLut(offset, sizeof(vpp_cms_3dlut_param_t), (int *)&param) < 0) {
         LOGE("%s SSMReadColorCustomizeParamsBy3DLut failed!\n", __FUNCTION__);
         return -1;
@@ -5220,14 +5279,14 @@ int CPQControl::Cpq_SetColorCustomizeBy3DLut(vpp_cms_6color_t color, vpp_cms_typ
     int gain = 0;
     int offset = 0;
     vpp_cms_3dlut_param_t param;
-    struct color_tune_parm_s pData;
     memset(&param, 0, sizeof(vpp_cms_3dlut_param_t));
-    memset(&pData, 0, sizeof(struct color_tune_parm_s));
-
     if (mSSMAction->SSMReadColorCustomizeParamsBy3DLut(offset, sizeof(struct color_tune_parm_s), (int *)&param) < 0) {
         LOGE("%s SSMReadColorCustomizeParamsBy3DLut failed!\n", __FUNCTION__);
         return -1;
     }
+
+    struct color_tune_parm_s pData;
+    memset(&pData, 0, sizeof(struct color_tune_parm_s));
 
     pData.rgain_r = param.data[VPP_COLOR_6_RED].red;
     pData.rgain_g = param.data[VPP_COLOR_6_RED].green;
@@ -9075,6 +9134,8 @@ void CPQControl::resetAllUserSettingParam()
 
     mSSMAction->SSMSaveAipqEnableVal(0);
     mSSMAction->SSMSaveAiSrEnable(1);
+
+    mSSMAction->SSMSaveColortuneEnable(0, &mColorTuneEnable);
 
     //color customize
     int offset = 0;

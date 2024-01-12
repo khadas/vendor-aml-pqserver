@@ -1602,3 +1602,10 @@ int SSMAction::SSMSaveColorCustomizeParamsBy3DLut(int offset, int size, int *rw_
 int SSMAction::SSMReadColorCustomizeParamsBy3DLut(int offset, int size, int *rw_val) {
     return SSMReadNTypes(VPP_DATA_POS_COLORCUSTOMIZE_3DLUT_START, size, rw_val, offset);
 }
+int SSMAction::SSMSaveColortuneEnable(int offset, int *rw_val) {
+    return SSMWriteNTypes(VPP_DATA_POS_COLOR_TUNE_START, 1, rw_val, offset);
+}
+
+int SSMAction::SSMReadColortuneEnable(int offset, int *rw_val) {
+    return SSMReadNTypes(VPP_DATA_POS_COLOR_TUNE_START, 1, rw_val, offset);
+}
