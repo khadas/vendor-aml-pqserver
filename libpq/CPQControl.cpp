@@ -8070,8 +8070,8 @@ int CPQControl::SetCurrentSourceInputInfo(source_input_param_t source_input_para
         vpp_display_mode_t display_mode = (vpp_display_mode_t)GetDisplayMode();
         SetDisplayMode(display_mode, 1);
 
-        //judge&triger to set game or not, when switch signal
-        SetPqModeToGame(TO_GAME_BY_SIG_CHG_STS);
+        //judge&triger to set game or not, when switch vdin different signal
+        SetPqModeToGame(TO_GAME_BY_SIG_CHG_STS_DIFF_SIG);
 
         //load pq setting
         if (source_input_param.sig_fmt == TVIN_SIG_FMT_NULL) {//exit source
@@ -8112,6 +8112,9 @@ int CPQControl::SetCurrentSourceInputInfo(source_input_param_t source_input_para
         }
     } else {
         LOGD("%s: same signal, no need set\n", __FUNCTION__);
+
+        //judge&triger to set game or not, when switch vdin same signal, patch for vdin
+        SetPqModeToGame(TO_GAME_BY_SIG_CHG_STS_SAME_SIG);
     }
 
     if (mCurrentSignalInfo.info.status == TVIN_SIG_STATUS_STABLE) {
@@ -8128,47 +8131,98 @@ int CPQControl::SetCurrentSourceInputInfo(source_input_param_t source_input_para
     return 0;
 }
 
-bool CPQControl::IsAllmGameMode(void)
+bool CPQControl::IsAllmVrrUiFuncCtrl(int *allm_func_ctrl, int *vrr_func_ctrl)
 {
-    if ((mCurrentTvinInfo.allmInfo.allm_mode == true) ||
-        (mCurrentTvinInfo.allmInfo.it_content == true && mCurrentTvinInfo.allmInfo.cn_type == GAME) ||
-        (mCurrentHdrType == HDRTYPE_DOVI && mCurrentTvinInfo.vrrparm.cur_vrr_status != VDIN_VRR_OFF)) {
+    char buf_allm[32] = {0};
+    char buf_vrr[32] = {0};
+
+    pqReadSys(HDMI_SET_ALLM_PARAM, buf_allm, sizeof(buf_allm));
+    pqReadSys(HDMI_VRR_ENABLED, buf_vrr, sizeof(buf_vrr));
+    LOGD("%s: buf_allm:%s buf_vrr:%s\n", __FUNCTION__, buf_allm, buf_vrr);
+
+    sscanf(buf_allm, "%*[^:]:%d", allm_func_ctrl);
+    sscanf(buf_vrr, "%*[^:]:%d", vrr_func_ctrl);
+    LOGD("%s: *allm_func_ctrl:%d *vrr_func_ctrl:%d\n", __FUNCTION__, allm_func_ctrl, vrr_func_ctrl);
+
+    //temp patch start
+    *allm_func_ctrl = 1;
+    //temp patch end
+
+    if (*allm_func_ctrl > 0 || *vrr_func_ctrl > 0) {
         return true;
-    }
+     }
 
     return false;
 }
 
+bool CPQControl::IsAllmVrrGameMode(int allm_func_ctrl, int vrr_func_ctrl)
+{
+    int game_condition = 0;
+
+    if (allm_func_ctrl > 0) {
+        if ((mCurrentTvinInfo.allmInfo.allm_mode == true) ||
+            (mCurrentTvinInfo.allmInfo.it_content == true && mCurrentTvinInfo.allmInfo.cn_type == GAME)) {
+            game_condition = 1;
+        }
+    }
+
+    if (vrr_func_ctrl > 0) {
+        if (mCurrentTvinInfo.vrrparm.cur_vrr_status != VDIN_VRR_OFF) {
+            game_condition = (game_condition | 2);
+        }
+    }
+
+    LOGD("%s: game_condition:%d\n", __FUNCTION__, game_condition);
+
+    return (game_condition > 0) ? true : false;
+}
+
 int CPQControl::SetPqModeToGame(pq_mode_to_game_t mode)
 {
+    int allm_func_ctrl = 0;
+    int vrr_func_ctrl = 0;
+
     LOGD("%s: mode:%d src:%d fmt:%d\n", __FUNCTION__, mode, CurSource, CurTimming);
 
     if (mCurrentSourceInputInfo.source_input < SOURCE_HDMI1 ||
         mCurrentSourceInputInfo.source_input > SOURCE_HDMI4)
         return 0;
 
-    if (IsAllmGameMode()) {
+    if (IsAllmVrrUiFuncCtrl(&allm_func_ctrl, &vrr_func_ctrl) == false) {
+        if (GetPQMode() == (int)VPP_PICTURE_MODE_GAME &&
+            (mCurrentHdrType == HDRTYPE_DOVI || mCurrentHdrType == HDRTYPE_HDR10)) {
+            LOGD("%s: keep game mode\n", __FUNCTION__);
+        } else {
+            LOGD("%s: skip game mode\n", __FUNCTION__);
+            return 0;
+        }
+    }
+
+    if (IsAllmVrrGameMode(allm_func_ctrl, vrr_func_ctrl)) {
         LOGD("%s: set to game mode\n", __FUNCTION__);
 
-        if (mode == TO_GAME_BY_SIG_CHG_DV_ALLM) {
+        if (mode == TO_GAME_BY_SIG_CHG_DV_ALLM ||
+            mode == TO_GAME_BY_SIG_CHG_STS_SAME_SIG) {
             //set & save pq mode to game
             SetPQMode((int)VPP_PICTURE_MODE_GAME, 1);
-        } else if (mode == TO_GAME_BY_SIG_CHG_STS) {
+        } else if (mode == TO_GAME_BY_SIG_CHG_STS_DIFF_SIG) {
             //save pq mode to game, effect is by LoadPQUISettings()
             SavePQMode((int)VPP_PICTURE_MODE_GAME);
         } else {
             //nothing now
         }
 
+        //remember which src + which timming done game setting, for next time to recovery
         aAllmSrcFmtFlag[CurSource][CurTimming] = true;
     } else {
         if (aAllmSrcFmtFlag[CurSource][CurTimming] == true) {
             int last_pq_mode = GetLastPQMode();
             LOGD("%s: recovery to last pq mode:%d\n", __FUNCTION__, last_pq_mode);
 
-            if (mode == TO_GAME_BY_SIG_CHG_DV_ALLM) {
+            if (mode == TO_GAME_BY_SIG_CHG_DV_ALLM ||
+                mode == TO_GAME_BY_SIG_CHG_STS_SAME_SIG) {
                 SetPQMode(last_pq_mode, 1);
-            } else if (mode == TO_GAME_BY_SIG_CHG_STS) {
+            } else if (mode == TO_GAME_BY_SIG_CHG_STS_DIFF_SIG) {
                 SavePQMode(last_pq_mode);
             } else {
                 //nothing now

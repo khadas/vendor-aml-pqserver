@@ -67,6 +67,8 @@
 #define AMDOLBY_VISION_HDR10_POLICY      "/sys/module/aml_media/parameters/dolby_vision_hdr10_policy"
 #define AML_AUTO_NR_PARAMS               "/sys/class/deinterlace/di0/autonr_param"
 #define SYS_VIDEO_FRAME_RATE             "/sys/class/display/frame_rate"
+#define HDMI_SET_ALLM_PARAM              "/sys/class/hdmirx/hdmirx0/allm_func_ctrl"
+#define HDMI_VRR_ENABLED                 "/sys/class/hdmirx/hdmirx0/vrr_func_ctrl"
 
 
 // screem mode index value
@@ -592,7 +594,8 @@ private:
     bool isPqDatabaseMachChip();
     bool CheckPQModeTableInDb(void);
     int Cpq_SetVadjEnableStatus(int isvadj1Enable, int isvadj2Enable);
-    bool IsAllmGameMode(void);
+    bool IsAllmVrrUiFuncCtrl(int *allm_func_ctrl, int *vrr_func_ctrl);
+    bool IsAllmVrrGameMode(int allm_func_ctrl, int vrr_func_ctrl);
     int SetPqModeToGame(pq_mode_to_game_t mode);
 
     int GetBaseGammaData(int level, GAMMA_TABLE *pData);
