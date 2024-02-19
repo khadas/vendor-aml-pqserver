@@ -1798,16 +1798,9 @@ int CPQControl::SavePQMode(int pq_mode)
 int CPQControl::GetLastPQMode(void)
 {
     int ret = -1;
-    int offset = 0;
     int mode = VPP_PICTURE_MODE_STANDARD;
 
-    if ( mbCpqCfg_new_picture_mode_enable) {
-        offset =  CurSource * PQ_FMT_MAX + CurTimming;
-    } else {
-        offset = mSourceInputForSaveParam;
-    }
-
-    ret = mSSMAction->SSMReadLastPictureMode(offset, &mode);
+    ret = mSSMAction->SSMReadLastPictureMode(mSourceInputForSaveParam, &mode);
     if (ret < 0)
         LOGE("%s failed!\n",__FUNCTION__);
 
@@ -1825,14 +1818,7 @@ int CPQControl::SaveLastPQMode(int pq_mode)
     int ret = -1;
     LOGD("%s, source: %d, timing: %d, mode: %d\n", __FUNCTION__, CurSource, CurTimming, pq_mode);
 
-    int offset = 0;
-    if ( mbCpqCfg_new_picture_mode_enable) {
-        offset =  CurSource * PQ_FMT_MAX + CurTimming;
-    } else {
-        offset = mSourceInputForSaveParam;
-    }
-
-    ret = mSSMAction->SSMSaveLastPictureMode(offset, pq_mode);
+    ret = mSSMAction->SSMSaveLastPictureMode(mSourceInputForSaveParam, pq_mode);
     if (ret < 0)
         LOGE("%s failed!\n",__FUNCTION__);
 
@@ -2379,6 +2365,7 @@ int CPQControl::GetContrast(void)
             data = pq_para.contrast;
         }
     }
+
     if (data < 0 || data > 100) {
         data = 50;
     }
@@ -2600,7 +2587,7 @@ int CPQControl::Cpq_SetSaturation(int value, source_input_param_t source_input_p
 //Hue
 int CPQControl::SetHue(int value, int is_save)
 {
-    LOGD("%s, source: %d, value = %d\n", __FUNCTION__, mCurrentSourceInputInfo.source_input, value);
+    LOGD("%s, source: %d, value = %d\n", __FUNCTION__, CurSource, value);
     int ret = Cpq_SetHue(value, mCurrentSourceInputInfo);
     if ((ret == 0) && (is_save == 1)) {
         ret = SaveHue(value);
