@@ -683,4 +683,10 @@ typedef enum pq_mode_to_game_e {
     TO_GAME_BY_SIG_CHG_STS_SAME_SIG,
     TO_GAME_BY_MAX,
 } pq_mode_to_game_t;
+
+typedef enum pq_wb_rgb_data_path_e {
+    WB_RGB_DATA_PATH_NULL = 0,
+    WB_RGB_DATA_PATH_CRI,
+    WB_RGB_DATA_PATH_SSM,
+} pq_wb_rgb_data_path_t;
 #endif
