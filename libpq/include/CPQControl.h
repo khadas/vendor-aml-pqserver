@@ -595,7 +595,7 @@ private:
     bool CheckPQModeTableInDb(void);
     int Cpq_SetVadjEnableStatus(int isvadj1Enable, int isvadj2Enable);
     bool IsAllmVrrUiFuncCtrl(int *allm_func_ctrl, int *vrr_func_ctrl);
-    bool IsAllmVrrGameMode(int allm_func_ctrl, int vrr_func_ctrl);
+    bool IsAllmVrrGameMode(void);
     int SetPqModeToGame(pq_mode_to_game_t mode);
 
     int GetBaseGammaData(int level, GAMMA_TABLE *pData);

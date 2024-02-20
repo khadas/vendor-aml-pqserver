@@ -50,6 +50,10 @@
 #define CMS_LUMA_MIN -15
 #define CMS_LUMA_MAX  15
 
+#define ALLM_MODE_HDMI           1 //"__u8 allm_mode" bit0=1 bit1=0
+#define ALLM_MODE_DLBY           2 //"__u8 allm_mode" bit0=0 bit1=1
+#define ALLM_MODE_HDMI_AND_DLBY  3 //"__u8 allm_mode" bit0=1 bit1=1
+
 typedef enum output_type_e {
     OUTPUT_TYPE_LVDS = -1,
     OUTPUT_TYPE_PAL,
