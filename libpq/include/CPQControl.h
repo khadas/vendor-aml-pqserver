@@ -366,6 +366,8 @@ public:
     int SetColorCustomizeBy3DLut(vpp_cms_6color_t color, vpp_cms_type_t type, int value, int isSave);
     vpp_single_color_param_3dlut_t GetColorCustomizeBy3DLut(vpp_cms_6color_t color);
     int ResetColorCustomize(vpp_cms_method_t mode);
+    int SetColorTuneEnable(int enable);
+    int GetColorTuneEnable(void);
 
     //BlackExtension
     int SetBlackExtensionParam(source_input_param_t source_input_param);
@@ -393,6 +395,7 @@ public:
     int FactoryGetPQMode_Hue(source_input_param_t source_input_param, int pq_mode );
     int FactorySetPQMode_Sharpness(source_input_param_t source_input_param, int pq_mode, int sharpness );
     int FactoryGetPQMode_Sharpness(source_input_param_t source_input_param, int pq_mode );
+
     int FactorySetColorTemp_Rgain ( int source_input, int colortemp_mode, int rgain );
     int FactorySaveColorTemp_Rgain ( int source_input, int colortemp_mode, int rgain );
     int FactoryGetColorTemp_Rgain ( int source_input, int colortemp_mode );
@@ -639,9 +642,14 @@ private:
     //color customize
     int SaveColorCustomize(vpp_cms_color_t color, vpp_cms_type_t type, int value);
     int Cpq_SetColorCustomize(vpp_cms_color_t color, vpp_cms_type_t type, int value);
+    int Cpq_SetColorCustomizeEnable(int enable);
+
     int SaveColorCustomizeBy3DLut(vpp_cms_6color_t color, vpp_cms_type_t type, int value);
     int Cpq_SetColorCustomizeBy3DLut(vpp_cms_6color_t color, vpp_cms_type_t type, int value);
     int Cpq_GetColorCustomizeDefValue(vpp_cms_cm_param_t *pCmsCm, vpp_cms_3dlut_param_t *pCms3DLut);
+
+
+    int GetDriverValueMap(vpp_cms_type_t type, int value);
 
     bool mInitialized;
     //cfg
@@ -722,6 +730,7 @@ private:
     bool mbDatabaseMatchChipStatus;
     bool mbVideoIsPlaying = false;//video don't playing
     bool mbResetPicture = false;
+    int mColorTuneEnable = 1;
 
     bool aAllmSrcFmtFlag[PQ_SRC_MAX][PQ_FMT_MAX];
 
