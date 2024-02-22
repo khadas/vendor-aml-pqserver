@@ -1357,6 +1357,39 @@ bool SSMAction::GetPictureMode(int *PictureMode, int src, int timming)
     return true;
 }
 
+bool SSMAction::SetLastPictureMode(int PictureMode, int src, int timming)
+{
+    PictureModeInfo Data;
+    Data.PictureMode = PictureMode;
+    Data.Flag = 1;
+
+    int offset = (src * MAX_PQ_TIMMING_INDEX + timming) * sizeof(PictureModeInfo);
+
+    if (SSMWriteNTypes(VPP_DATA_POS_LAST_PQ_MODE_START, sizeof(PictureModeInfo), (int *)&Data, offset) < 0) {
+        return false;
+    }
+
+    return true;
+}
+
+bool SSMAction::GetLastPictureMode(int *PictureMode, int src, int timming)
+{
+    PictureModeInfo Data;
+    int offset = (src * MAX_PQ_TIMMING_INDEX + timming) * sizeof(PictureModeInfo);
+
+    if (SSMReadNTypes(VPP_DATA_POS_LAST_PQ_MODE_START, sizeof(PictureModeInfo), (int *)&Data, offset) < 0) {
+        return false;
+    }
+
+    if (Data.Flag != 1) {
+        return false;
+    }
+
+    *PictureMode = Data.PictureMode;
+
+    return true;
+}
+
 bool SSMAction::SetPictureModeData(vpp_pictur_mode_para_t *pData, int src, int timming, int pqmode)
 {
     if (MAX_PICTUREMODE_PARAM_SIZE < (sizeof(vpp_pictur_mode_para_t) + sizeof(int))) {

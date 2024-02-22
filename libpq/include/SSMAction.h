@@ -200,6 +200,9 @@ public:
     bool SetPictureMode(int PictureMode, int src, int timming);
     bool GetPictureMode(int *PictureMode, int src, int timming);
 
+    bool SetLastPictureMode(int PictureMode, int src, int timming);
+    bool GetLastPictureMode(int *PictureMode, int src, int timming);
+
     bool SetPictureModeData(vpp_pictur_mode_para_t *pData, int src, int timming, int pqmode);
     bool GetPictureModeData(vpp_pictur_mode_para_t *pData, int src, int timming, int pqmode);
 

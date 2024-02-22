@@ -290,10 +290,12 @@ public:
     int GetMemcMode(void);
     int SaveMemcMode(vpp_memc_mode_t memc_mode);
     int Cpq_SetMemcMode(int memc_mode, source_input_param_t source_input_param);
+
     int SetMemcDeBlurLevel(int level, int is_save);
     int GetMemcDeBlurLevel(void);
     int SaveMemcDeBlurLevel(int level);
     int Cpq_SetMemcDeBlurLevel(int level, source_input_param_t source_input_param);
+
     int SetMemcDeJudderLevel(int level, int is_save);
     int GetMemcDeJudderLevel(void);
     int SaveMemcDeJudderLevel(int level);
@@ -609,6 +611,8 @@ private:
 
     bool SetPictureMode(vpp_picture_mode_t PictureMode);
     bool GetPictureMode(vpp_picture_mode_t *PictureMode);
+    bool SetLastPictureMode(vpp_picture_mode_t PictureMode);
+    bool GetLastPictureMode(vpp_picture_mode_t *PictureMode);
     bool ResetPictureMode(void);
     bool ResetPictureModeBySrc(void);
     bool ResetPictureModeAll(void);

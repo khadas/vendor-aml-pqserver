@@ -1799,12 +1799,15 @@ int CPQControl::SavePQMode(int pq_mode)
 
 int CPQControl::GetLastPQMode(void)
 {
-    int ret = -1;
     int mode = VPP_PICTURE_MODE_STANDARD;
-
-    ret = mSSMAction->SSMReadLastPictureMode(mSourceInputForSaveParam, &mode);
-    if (ret < 0)
-        LOGE("%s failed!\n",__FUNCTION__);
+    if ( mbCpqCfg_new_picture_mode_enable) {
+        if (GetLastPictureMode((vpp_picture_mode_t *)&mode) != true) {
+            LOGE("%s GetPictureMode failed!\n", __FUNCTION__);
+            return mode;
+        }
+    } else {
+        mSSMAction->SSMReadLastPictureMode(mSourceInputForSaveParam, &mode);
+    }
 
     if (mode < VPP_PICTURE_MODE_STANDARD || mode >= VPP_PICTURE_MODE_MAX) {
         mode = VPP_PICTURE_MODE_STANDARD;
@@ -1812,20 +1815,26 @@ int CPQControl::GetLastPQMode(void)
 
     LOGD("%s, source: %d, mode: %d\n", __FUNCTION__, CurSource, mode);
     return mode;
-
 }
 
 int CPQControl::SaveLastPQMode(int pq_mode)
 {
     int ret = -1;
     LOGD("%s, source: %d, timing: %d, mode: %d\n", __FUNCTION__, CurSource, CurTimming, pq_mode);
+    if ( mbCpqCfg_new_picture_mode_enable) {
+        if (SetLastPictureMode((vpp_picture_mode_t)pq_mode) != true) {
+            LOGE("%s: SetPictureMode fail\n", __FUNCTION__);
+            return -1;
+        }
+        return 0;
+    } else {
+        ret = mSSMAction->SSMSaveLastPictureMode(mSourceInputForSaveParam, pq_mode);
+    }
 
-    ret = mSSMAction->SSMSaveLastPictureMode(mSourceInputForSaveParam, pq_mode);
     if (ret < 0)
         LOGE("%s failed!\n",__FUNCTION__);
 
     return ret;
-
 }
 
 int CPQControl::Cpq_SetVppPCMode(game_pc_mode_t pcStatus)
@@ -3249,7 +3258,7 @@ int CPQControl::Cpq_SetNoiseReductionMode(vpp_noise_reduction_mode_t nr_mode, so
     di_regs.table_name = TABLE_NAME_NR;
     di_regs.table_len = regs.length;
     struct am_reg_s tmp_buf[regs.length];
-    for (unsigned int i=0;i<regs.length;i++) {
+    for (unsigned int i = 0; i < regs.length; i++) {
           tmp_buf[i].addr = regs.am_reg[i].addr;
           tmp_buf[i].mask = regs.am_reg[i].mask;
           tmp_buf[i].type = regs.am_reg[i].type;
@@ -10164,7 +10173,33 @@ bool CPQControl::GetPictureMode(vpp_picture_mode_t *PictureMode)
         return true;
     }
 
-    if (mSSMAction->GetPictureMode((int *)PictureMode, (int)PQ_SRC_DEFAULT, (int)PQ_FMT_DEFAULT)) {
+    if (mSSMAction->GetPictureMode((int *)PictureMode, PQ_SRC_DEFAULT, PQ_FMT_DEFAULT)) {
+        return true;
+    }
+
+    return false;
+}
+
+bool CPQControl::SetLastPictureMode(vpp_picture_mode_t PictureMode)
+{
+    if (mSSMAction == NULL) {
+        return false;
+    }
+
+    return mSSMAction->SetLastPictureMode((int)PictureMode, (int)CurSource, (int)CurTimming);
+}
+
+bool CPQControl::GetLastPictureMode(vpp_picture_mode_t *PictureMode)
+{
+    if (mSSMAction == NULL) {
+        return false;
+    }
+
+    if (mSSMAction->GetLastPictureMode((int *)PictureMode, (int)CurSource, (int)CurTimming)) {
+        return true;
+    }
+
+    if (mSSMAction->GetLastPictureMode((int *)PictureMode, PQ_SRC_DEFAULT, PQ_FMT_DEFAULT)) {
         return true;
     }
 
