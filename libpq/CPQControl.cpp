@@ -6875,15 +6875,19 @@ int CPQControl::FactoryGetPQMode_Sharpness(source_input_param_t source_input_par
     return pq_para.sharpness;
 }
 
-int CPQControl::FactorySetColorTemp_Rgain(int source_input,int colortemp_mode, int rgain)
+int CPQControl::FactorySetColorTemp_Rgain(int source_input, int colortemp_mode, int rgain)
 {
     tcon_rgb_ogo_t rgbogo;
     memset (&rgbogo, 0, sizeof (rgbogo));
     pq_source_input_t src = CheckPQSource((tv_source_input_t)source_input);
+    pq_wb_rgb_data_path_t data_path = WB_RGB_DATA_PATH_NULL;
+
     if (FactoryGetWhitebalanceRGBGainOffsetData(&rgbogo, colortemp_mode)) {
         LOGD("%s Get RGBGainOffset from cri_data \n", __FUNCTION__);
+        data_path = WB_RGB_DATA_PATH_CRI;
     } else if (GetColorTemperatureDataBySrcTimming(&rgbogo, src, CurTimming, colortemp_mode)) {
         LOGD("%s Get RGBGainOffset from ssm_data \n", __FUNCTION__);
+        data_path = WB_RGB_DATA_PATH_SSM;
     } else {
         LOGE("%s fail!\n", __FUNCTION__);
         return -1;
@@ -6891,9 +6895,16 @@ int CPQControl::FactorySetColorTemp_Rgain(int source_input,int colortemp_mode, i
 
     rgbogo.r_gain = rgain;
 
-    if (!SetColorTemperatureDataBySrcTimming(&rgbogo, src, CurTimming, colortemp_mode)) {
-        LOGE("%s SetColorTemperatureDataBySrcTimming fail!\n", __FUNCTION__);
-        return -1;
+    if (data_path == WB_RGB_DATA_PATH_CRI) {
+        if (!FactorySetWhitebalanceRGBGainOffsetData(&rgbogo, colortemp_mode)) {
+            LOGE("%s FactorySetWhitebalanceRGBGainOffsetData fail!\n", __FUNCTION__);
+            return -1;
+        }
+    } else if (data_path == WB_RGB_DATA_PATH_SSM) {
+        if (!SetColorTemperatureDataBySrcTimming(&rgbogo, src, CurTimming, colortemp_mode)) {
+            LOGE("%s SetColorTemperatureDataBySrcTimming fail!\n", __FUNCTION__);
+            return -1;
+        }
     }
 
     if (Cpq_SetRGBOGO(&rgbogo) != 0) {
@@ -6950,10 +6961,14 @@ int CPQControl::FactorySetColorTemp_Ggain(int source_input, int colortemp_mode, 
     tcon_rgb_ogo_t rgbogo;
     memset (&rgbogo, 0, sizeof (rgbogo));
     pq_source_input_t src = CheckPQSource((tv_source_input_t)source_input);
+    pq_wb_rgb_data_path_t data_path = WB_RGB_DATA_PATH_NULL;
+
     if (FactoryGetWhitebalanceRGBGainOffsetData(&rgbogo, colortemp_mode)) {
         LOGD("%s Get RGBGainOffset from cri_data \n", __FUNCTION__);
+        data_path = WB_RGB_DATA_PATH_CRI;
     } else if (GetColorTemperatureDataBySrcTimming(&rgbogo, src, CurTimming, colortemp_mode)) {
         LOGD("%s Get RGBGainOffset from ssm_data \n", __FUNCTION__);
+        data_path = WB_RGB_DATA_PATH_SSM;
     } else {
         LOGE("%s fail!\n", __FUNCTION__);
         return -1;
@@ -6961,9 +6976,16 @@ int CPQControl::FactorySetColorTemp_Ggain(int source_input, int colortemp_mode, 
 
     rgbogo.g_gain = ggain;
 
-    if (!SetColorTemperatureDataBySrcTimming(&rgbogo, src, CurTimming, colortemp_mode)) {
-        LOGE("%s SetColorTemperatureDataBySrcTimming fail!\n", __FUNCTION__);
-        return -1;
+    if (data_path == WB_RGB_DATA_PATH_CRI) {
+        if (!FactorySetWhitebalanceRGBGainOffsetData(&rgbogo, colortemp_mode)) {
+            LOGE("%s FactorySetWhitebalanceRGBGainOffsetData fail!\n", __FUNCTION__);
+            return -1;
+        }
+    } else if (data_path == WB_RGB_DATA_PATH_SSM) {
+        if (!SetColorTemperatureDataBySrcTimming(&rgbogo, src, CurTimming, colortemp_mode)) {
+            LOGE("%s SetColorTemperatureDataBySrcTimming fail!\n", __FUNCTION__);
+            return -1;
+        }
     }
 
     if (Cpq_SetRGBOGO(&rgbogo) != 0) {
@@ -7021,10 +7043,14 @@ int CPQControl::FactorySetColorTemp_Bgain(int source_input, int colortemp_mode, 
     tcon_rgb_ogo_t rgbogo;
     memset (&rgbogo, 0, sizeof (rgbogo));
     pq_source_input_t src = CheckPQSource((tv_source_input_t)source_input);
+    pq_wb_rgb_data_path_t data_path = WB_RGB_DATA_PATH_NULL;
+
     if (FactoryGetWhitebalanceRGBGainOffsetData(&rgbogo, colortemp_mode)) {
         LOGD("%s Get RGBGainOffset from cri_data \n", __FUNCTION__);
+        data_path = WB_RGB_DATA_PATH_CRI;
     } else if (GetColorTemperatureDataBySrcTimming(&rgbogo, src, CurTimming, colortemp_mode)) {
         LOGD("%s Get RGBGainOffset from ssm_data \n", __FUNCTION__);
+        data_path = WB_RGB_DATA_PATH_SSM;
     } else {
         LOGE("%s fail!\n", __FUNCTION__);
         return -1;
@@ -7032,9 +7058,16 @@ int CPQControl::FactorySetColorTemp_Bgain(int source_input, int colortemp_mode, 
 
     rgbogo.b_gain = bgain;
 
-    if (!SetColorTemperatureDataBySrcTimming(&rgbogo, src, CurTimming, colortemp_mode)) {
-        LOGE("%s SetColorTemperatureDataBySrcTimming fail!\n", __FUNCTION__);
-        return -1;
+    if (data_path == WB_RGB_DATA_PATH_CRI) {
+        if (!FactorySetWhitebalanceRGBGainOffsetData(&rgbogo, colortemp_mode)) {
+            LOGE("%s FactorySetWhitebalanceRGBGainOffsetData fail!\n", __FUNCTION__);
+            return -1;
+        }
+    } else if (data_path == WB_RGB_DATA_PATH_SSM) {
+        if (!SetColorTemperatureDataBySrcTimming(&rgbogo, src, CurTimming, colortemp_mode)) {
+            LOGE("%s SetColorTemperatureDataBySrcTimming fail!\n", __FUNCTION__);
+            return -1;
+        }
     }
 
     if (Cpq_SetRGBOGO(&rgbogo) != 0) {
@@ -7091,10 +7124,14 @@ int CPQControl::FactorySetColorTemp_Roffset(int source_input, int colortemp_mode
     tcon_rgb_ogo_t rgbogo;
     memset (&rgbogo, 0, sizeof (rgbogo));
     pq_source_input_t src = CheckPQSource((tv_source_input_t)source_input);
+    pq_wb_rgb_data_path_t data_path = WB_RGB_DATA_PATH_NULL;
+
     if (FactoryGetWhitebalanceRGBGainOffsetData(&rgbogo, colortemp_mode)) {
         LOGD("%s Get RGBGainOffset from cri_data \n", __FUNCTION__);
+        data_path = WB_RGB_DATA_PATH_CRI;
     } else if (GetColorTemperatureDataBySrcTimming(&rgbogo, src, CurTimming, colortemp_mode)) {
         LOGD("%s Get RGBGainOffset from ssm_data \n", __FUNCTION__);
+        data_path = WB_RGB_DATA_PATH_SSM;
     } else {
         LOGE("%s fail!\n", __FUNCTION__);
         return -1;
@@ -7102,9 +7139,16 @@ int CPQControl::FactorySetColorTemp_Roffset(int source_input, int colortemp_mode
 
     rgbogo.r_post_offset = roffset;
 
-    if (!SetColorTemperatureDataBySrcTimming(&rgbogo, src, CurTimming, colortemp_mode)) {
-        LOGE("%s SetColorTemperatureDataBySrcTimming fail!\n", __FUNCTION__);
-        return -1;
+    if (data_path == WB_RGB_DATA_PATH_CRI) {
+        if (!FactorySetWhitebalanceRGBGainOffsetData(&rgbogo, colortemp_mode)) {
+            LOGE("%s FactorySetWhitebalanceRGBGainOffsetData fail!\n", __FUNCTION__);
+            return -1;
+        }
+    } else if (data_path == WB_RGB_DATA_PATH_SSM) {
+        if (!SetColorTemperatureDataBySrcTimming(&rgbogo, src, CurTimming, colortemp_mode)) {
+            LOGE("%s SetColorTemperatureDataBySrcTimming fail!\n", __FUNCTION__);
+            return -1;
+        }
     }
 
     if (Cpq_SetRGBOGO(&rgbogo) != 0) {
@@ -7161,10 +7205,14 @@ int CPQControl::FactorySetColorTemp_Goffset(int source_input, int colortemp_mode
     tcon_rgb_ogo_t rgbogo;
     memset (&rgbogo, 0, sizeof (rgbogo));
     pq_source_input_t src = CheckPQSource((tv_source_input_t)source_input);
+    pq_wb_rgb_data_path_t data_path = WB_RGB_DATA_PATH_NULL;
+
     if (FactoryGetWhitebalanceRGBGainOffsetData(&rgbogo, colortemp_mode)) {
         LOGD("%s Get RGBGainOffset from cri_data \n", __FUNCTION__);
+        data_path = WB_RGB_DATA_PATH_CRI;
     } else if (GetColorTemperatureDataBySrcTimming(&rgbogo, src, CurTimming, colortemp_mode)) {
         LOGD("%s Get RGBGainOffset from ssm_data \n", __FUNCTION__);
+        data_path = WB_RGB_DATA_PATH_SSM;
     } else {
         LOGE("%s fail!\n", __FUNCTION__);
         return -1;
@@ -7172,9 +7220,16 @@ int CPQControl::FactorySetColorTemp_Goffset(int source_input, int colortemp_mode
 
     rgbogo.g_post_offset = goffset;
 
-    if (!SetColorTemperatureDataBySrcTimming(&rgbogo, src, CurTimming, colortemp_mode)) {
-        LOGE("%s SetColorTemperatureDataBySrcTimming fail!\n", __FUNCTION__);
-        return -1;
+    if (data_path == WB_RGB_DATA_PATH_CRI) {
+        if (!FactorySetWhitebalanceRGBGainOffsetData(&rgbogo, colortemp_mode)) {
+            LOGE("%s FactorySetWhitebalanceRGBGainOffsetData fail!\n", __FUNCTION__);
+            return -1;
+        }
+    } else if (data_path == WB_RGB_DATA_PATH_SSM) {
+        if (!SetColorTemperatureDataBySrcTimming(&rgbogo, src, CurTimming, colortemp_mode)) {
+            LOGE("%s SetColorTemperatureDataBySrcTimming fail!\n", __FUNCTION__);
+            return -1;
+        }
     }
 
     if (Cpq_SetRGBOGO(&rgbogo) != 0) {
@@ -7231,10 +7286,14 @@ int CPQControl::FactorySetColorTemp_Boffset(int source_input, int colortemp_mode
     tcon_rgb_ogo_t rgbogo;
     memset (&rgbogo, 0, sizeof (rgbogo));
     pq_source_input_t src = CheckPQSource((tv_source_input_t)source_input);
+    pq_wb_rgb_data_path_t data_path = WB_RGB_DATA_PATH_NULL;
+
     if (FactoryGetWhitebalanceRGBGainOffsetData(&rgbogo, colortemp_mode)) {
         LOGD("%s Get RGBGainOffset from cri_data \n", __FUNCTION__);
+        data_path = WB_RGB_DATA_PATH_CRI;
     } else if (GetColorTemperatureDataBySrcTimming(&rgbogo, src, CurTimming, colortemp_mode)) {
         LOGD("%s Get RGBGainOffset from ssm_data \n", __FUNCTION__);
+        data_path = WB_RGB_DATA_PATH_SSM;
     } else {
         LOGE("%s fail!\n", __FUNCTION__);
         return -1;
@@ -7242,9 +7301,16 @@ int CPQControl::FactorySetColorTemp_Boffset(int source_input, int colortemp_mode
 
     rgbogo.b_post_offset = boffset;
 
-    if (!SetColorTemperatureDataBySrcTimming(&rgbogo, src, CurTimming, colortemp_mode)) {
-        LOGE("%s SetColorTemperatureDataBySrcTimming fail!\n", __FUNCTION__);
-        return -1;
+    if (data_path == WB_RGB_DATA_PATH_CRI) {
+        if (!FactorySetWhitebalanceRGBGainOffsetData(&rgbogo, colortemp_mode)) {
+            LOGE("%s FactorySetWhitebalanceRGBGainOffsetData fail!\n", __FUNCTION__);
+            return -1;
+        }
+    } else if (data_path == WB_RGB_DATA_PATH_SSM) {
+        if (!SetColorTemperatureDataBySrcTimming(&rgbogo, src, CurTimming, colortemp_mode)) {
+            LOGE("%s SetColorTemperatureDataBySrcTimming fail!\n", __FUNCTION__);
+            return -1;
+        }
     }
 
     if (Cpq_SetRGBOGO(&rgbogo) != 0) {
