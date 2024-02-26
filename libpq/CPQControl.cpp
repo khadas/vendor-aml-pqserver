@@ -8248,17 +8248,17 @@ bool CPQControl::IsAllmVrrUiFuncCtrl(int *allm_func_ctrl, int *vrr_func_ctrl)
     char buf_allm[32] = {0};
     char buf_vrr[32] = {0};
 
+    //read UI HDMI_ALLM_EN status
     pqReadSys(HDMI_SET_ALLM_PARAM, buf_allm, sizeof(buf_allm));
+
+    //read UI VRR_EN status
     pqReadSys(HDMI_VRR_ENABLED, buf_vrr, sizeof(buf_vrr));
+
     LOGD("%s: buf_allm:%s buf_vrr:%s\n", __FUNCTION__, buf_allm, buf_vrr);
 
     sscanf(buf_allm, "%*[^:]:%d", allm_func_ctrl);
     sscanf(buf_vrr, "%*[^:]:%d", vrr_func_ctrl);
-    LOGD("%s: *allm_func_ctrl:%d *vrr_func_ctrl:%d\n", __FUNCTION__, allm_func_ctrl, vrr_func_ctrl);
-
-    //temp patch start
-    *allm_func_ctrl = 1;
-    //temp patch end
+    LOGD("%s: *allm_func_ctrl:%d *vrr_func_ctrl:%d\n", __FUNCTION__, *allm_func_ctrl, *vrr_func_ctrl);
 
     if (*allm_func_ctrl > 0 || *vrr_func_ctrl > 0) {
         return true;
@@ -8267,21 +8267,34 @@ bool CPQControl::IsAllmVrrUiFuncCtrl(int *allm_func_ctrl, int *vrr_func_ctrl)
     return false;
 }
 
-bool CPQControl::IsAllmVrrGameMode(int allm_func_ctrl, int vrr_func_ctrl)
+bool CPQControl::IsAllmVrrGameMode(void)
 {
-    int game_condition = 0;
+    int allm_func_ctrl = 0; //ui hdmi_allm_en status
+    int vrr_func_ctrl = 0;  //ui vrr_en status
+    int game_condition = 0; //bit0:hdmi allm game; bit1:vrr game; bit2:dlby allm game
 
+    if (IsAllmVrrUiFuncCtrl(&allm_func_ctrl, &vrr_func_ctrl) == false) {
+        LOGD("%s: allm and vrr ui all disable status\n", __FUNCTION__);
+    }
+
+    //when ui enable, check vdin allm_mode bit0(hdmi allm)
     if (allm_func_ctrl > 0) {
-        if ((mCurrentTvinInfo.allmInfo.allm_mode == true) ||
-            (mCurrentTvinInfo.allmInfo.it_content == true && mCurrentTvinInfo.allmInfo.cn_type == GAME)) {
+        if ((mCurrentTvinInfo.allmInfo.allm_mode & ALLM_MODE_HDMI) ||
+            (mCurrentTvinInfo.allmInfo.it_content && mCurrentTvinInfo.allmInfo.cn_type == GAME)) {
             game_condition = 1;
         }
     }
 
+    //when ui enable, check vdin vrr infor
     if (vrr_func_ctrl > 0) {
         if (mCurrentTvinInfo.vrrparm.cur_vrr_status != VDIN_VRR_OFF) {
             game_condition = (game_condition | 2);
         }
+    }
+
+    //no UI link, but need check vdin allm_mode bit1(dlby allm)
+    if (mCurrentTvinInfo.allmInfo.allm_mode & ALLM_MODE_DLBY) {
+        game_condition = (game_condition | 4);
     }
 
     LOGD("%s: game_condition:%d\n", __FUNCTION__, game_condition);
@@ -8291,26 +8304,13 @@ bool CPQControl::IsAllmVrrGameMode(int allm_func_ctrl, int vrr_func_ctrl)
 
 int CPQControl::SetPqModeToGame(pq_mode_to_game_t mode)
 {
-    int allm_func_ctrl = 0;
-    int vrr_func_ctrl = 0;
-
     LOGD("%s: mode:%d src:%d fmt:%d\n", __FUNCTION__, mode, CurSource, CurTimming);
 
     if (mCurrentSourceInputInfo.source_input < SOURCE_HDMI1 ||
         mCurrentSourceInputInfo.source_input > SOURCE_HDMI4)
         return 0;
 
-    if (IsAllmVrrUiFuncCtrl(&allm_func_ctrl, &vrr_func_ctrl) == false) {
-        if (GetPQMode() == (int)VPP_PICTURE_MODE_GAME &&
-            (mCurrentHdrType == HDRTYPE_DOVI || mCurrentHdrType == HDRTYPE_HDR10)) {
-            LOGD("%s: keep game mode\n", __FUNCTION__);
-        } else {
-            LOGD("%s: skip game mode\n", __FUNCTION__);
-            return 0;
-        }
-    }
-
-    if (IsAllmVrrGameMode(allm_func_ctrl, vrr_func_ctrl)) {
+    if (IsAllmVrrGameMode()) {
         LOGD("%s: set to game mode\n", __FUNCTION__);
 
         if (mode == TO_GAME_BY_SIG_CHG_DV_ALLM ||
@@ -9586,9 +9586,8 @@ int CPQControl::Cpq_SetAllmStatus(void)
 
     if (mCurrentSourceInputInfo.source_input >= SOURCE_HDMI1 &&
         mCurrentSourceInputInfo.source_input <= SOURCE_HDMI4) {
-        if ((mCurrentTvinInfo.allmInfo.allm_mode == true) ||
-            (mCurrentTvinInfo.allmInfo.it_content == true &&
-             mCurrentTvinInfo.allmInfo.cn_type == GAME) ||
+        if ((mCurrentTvinInfo.allmInfo.allm_mode & ALLM_MODE_HDMI_AND_DLBY) ||
+            (mCurrentTvinInfo.allmInfo.it_content  && mCurrentTvinInfo.allmInfo.cn_type == GAME) ||
             (mCurrentTvinInfo.vrrparm.cur_vrr_status != VDIN_VRR_OFF)) {
             mAllmGameMode = 1;
         }
@@ -9621,7 +9620,7 @@ int CPQControl::Cpq_SetFilmMakerMode(int value)
 
     if (mCurrentSourceInputInfo.source_input >= SOURCE_HDMI1 &&
         mCurrentSourceInputInfo.source_input <= SOURCE_HDMI4) {
-        if (mCurrentTvinInfo.allmInfo.it_content == true &&
+        if (mCurrentTvinInfo.allmInfo.it_content &&
             mCurrentTvinInfo.allmInfo.cn_type == CINEMA) {
             mFilmMakerMode = 1;
         }
