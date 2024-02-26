@@ -8857,10 +8857,10 @@ enum hdr_type_e CPQControl::Cpq_GetSourceHDRType(tv_source_input_t source_input)
     return newHdrType;
 }
 
-tvpq_databaseinfo_t CPQControl::GetDBVersionInfo(db_name_t name) {
+tvpq_databaseinfo_t CPQControl::GetDBVersionInfo(db_name_t name, db_version_type_t type) {
     bool val = false;
-    tvpq_databaseinfo_t pqdatabaseinfo_t;
-    memset(&pqdatabaseinfo_t, 0, sizeof(pqdatabaseinfo_t));
+    tvpq_databaseinfo_t ver_info;
+    memset(&ver_info, 0, sizeof(tvpq_databaseinfo_t));
     database_attribute_t dbAttribute;
 
     switch (name) {
@@ -8876,18 +8876,37 @@ tvpq_databaseinfo_t CPQControl::GetDBVersionInfo(db_name_t name) {
     }
 
     if (val) {
-        if (strlen(dbAttribute.ToolVersion.c_str()) <= sizeof(pqdatabaseinfo_t.ToolVersion)/sizeof(char)) {
-            strcpy(pqdatabaseinfo_t.ToolVersion, dbAttribute.ToolVersion.c_str());
-        }
-        if (strlen(dbAttribute.ProjectVersion.c_str()) <= sizeof(pqdatabaseinfo_t.ProjectVersion)/sizeof(char)) {
-            strcpy(pqdatabaseinfo_t.ProjectVersion, dbAttribute.ProjectVersion.c_str());
-        }
-        if (strlen(dbAttribute.GenerateTime.c_str()) <= sizeof(pqdatabaseinfo_t.GenerateTime)/sizeof(char)) {
-            strcpy(pqdatabaseinfo_t.GenerateTime, dbAttribute.GenerateTime.c_str());
+        if (type == DB_VER_TYPE_TOOL_VER) {
+            if (strlen(dbAttribute.ToolVersion.c_str()) <= sizeof(ver_info.version)/sizeof(char)) {
+                strcpy(ver_info.version, dbAttribute.ToolVersion.c_str());
+                LOGD("%s: ToolVersion:%s\n", __FUNCTION__, ver_info.version);
+            }
+        } else if (type == DB_VER_TYPE_PROJECT_VER) {
+            if (strlen(dbAttribute.ProjectVersion.c_str()) <= sizeof(ver_info.version)/sizeof(char)) {
+                strcpy(ver_info.version, dbAttribute.ProjectVersion.c_str());
+                LOGD("%s: ProjectVersion:%s\n", __FUNCTION__, ver_info.version);
+            }
+        } else if (type == DB_VER_TYPE_GENERATE_TIME) {
+            if (strlen(dbAttribute.GenerateTime.c_str()) <= sizeof(ver_info.version)/sizeof(char)) {
+                strcpy(ver_info.version, dbAttribute.GenerateTime.c_str());
+                LOGD("%s: GenerateTime:%s\n", __FUNCTION__, ver_info.version);
+            }
+        } else if (type == DB_VER_TYPE_CHIP_VER) {
+            if (strlen(dbAttribute.ChipVersion.c_str()) <= sizeof(ver_info.version)/sizeof(char)) {
+                strcpy(ver_info.version, dbAttribute.ChipVersion.c_str());
+                LOGD("%s: ChipVersion:%s\n", __FUNCTION__, ver_info.version);
+            }
+        } else if (type == DB_VER_TYPE_DB_VER) {
+            if (strlen(dbAttribute.dbversion.c_str()) <= sizeof(ver_info.version)/sizeof(char)) {
+                strcpy(ver_info.version, dbAttribute.dbversion.c_str());
+                LOGD("%s: DbVersion:%s\n", __FUNCTION__, ver_info.version);
+            }
+        } else {
+            LOGE("%s: db ver type is out range\n", __FUNCTION__);
         }
     }
 
-    return pqdatabaseinfo_t;
+    return ver_info;
 }
 
 int CPQControl::GetSourceHDRType()

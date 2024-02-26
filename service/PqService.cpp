@@ -389,12 +389,14 @@ char* PqService::GetCmd(pq_moudle_param_t param)
         tcon_rgb_ogo_t tcon_rgbogo;
         vpp_single_color_param_cm_t cms_cm;
         vpp_single_color_param_3dlut_t cms_3dlut;
+        tvpq_databaseinfo_t ver_info;
         memset(&source_input_param, 0, sizeof(source_input_param_t));
         memset(&overscanParam, 0, sizeof(tvin_cutwin_t));
         memset(&rgbogo, 0, sizeof(tvpq_rgb_ogo_t));
         memset(&tcon_rgbogo, 0, sizeof(tcon_rgb_ogo_t));
         memset(&cms_cm, 0, sizeof(vpp_single_color_param_cm_t));
         memset(&cms_3dlut, 0, sizeof(vpp_single_color_param_3dlut_t));
+        memset(&ver_info, 0, sizeof(tvpq_databaseinfo_t));
 
         for (i = 0; i < param.paramLength; i++) {
             paramData[i] = param.paramBuf[i];
@@ -532,6 +534,10 @@ char* PqService::GetCmd(pq_moudle_param_t param)
         case PQ_GET_COLOR_CUSTOMIZE_ENABLE:
             ret = mpPQcontrol->GetColorTuneEnable();
             break;
+        case PQ_GET_DB_VERSION_INFO:
+            ver_info = mpPQcontrol->GetDBVersionInfo((db_name_t)paramData[0], (db_version_type_t)paramData[1]);
+            sprintf(mRetBuf, "%s", ver_info.version);
+            break;
 
         //Factory cmd
         case PQ_FACTORY_GET_COLOR_TEMPERATURE_MODE:
@@ -665,7 +671,8 @@ char* PqService::GetCmd(pq_moudle_param_t param)
         && (moduleId != PQ_FACTORY_GET_OVERSCAN)
         && (moduleId != PQ_GET_COLORTEMP_USER_PARAM)
         && (moduleId != PQ_GET_COLOR_CUSTOMIZE)
-        && (moduleId != PQ_GET_COLOR_CUSTOMIZE_3DLUT)) {
+        && (moduleId != PQ_GET_COLOR_CUSTOMIZE_3DLUT)
+        && (moduleId != PQ_GET_DB_VERSION_INFO)) {
         sprintf(mRetBuf, "%d", ret);
     }
 

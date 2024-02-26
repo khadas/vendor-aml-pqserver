@@ -1617,6 +1617,24 @@ int PqClient::GetSuperResolution(void)
     return ret;
 }
 
+tvpq_databaseinfo_t PqClient::GetDbVersionInfo(int mode, int type)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+
+    sprintf(buf, "pq.get.%d.%d.%d", PQ_GET_DB_VERSION_INFO, mode, type);
+    SendMethodCall(buf);
+
+    tvpq_databaseinfo_t ver_info;
+    memset(&ver_info, 0, sizeof(tvpq_databaseinfo_t));
+
+    strcpy(ver_info.version, mRetBuf);
+    LOGD("%s ver_info.version:%s\n", __FUNCTION__, ver_info.version);
+
+    return ver_info;
+}
+
 //PQ Factory cmd
 int PqClient::FactoryResetPQMode(void)
 {

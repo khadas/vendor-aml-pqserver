@@ -519,11 +519,16 @@ typedef struct tvpq_nonlinear_s {
 } tvpq_nonlinear_t;
 
 typedef struct tvpq_databaseinfo_s {
-    char ToolVersion[32];
-    char ProjectVersion[32];
-    char GenerateTime[32];
-    char ChipVersion[32];
-}tvpq_databaseinfo_t;
+    char version[32];
+} tvpq_databaseinfo_t;
+
+typedef enum db_version_type_e {
+    DB_VER_TYPE_TOOL_VER = 0,
+    DB_VER_TYPE_PROJECT_VER,
+    DB_VER_TYPE_GENERATE_TIME,
+    DB_VER_TYPE_CHIP_VER,
+    DB_VER_TYPE_DB_VER,
+} db_version_type_t;
 
 typedef struct tvpq_rgb_ogo_s {
     unsigned int en;

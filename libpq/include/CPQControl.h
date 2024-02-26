@@ -482,7 +482,7 @@ public:
     int SetHDRMode(int mode);
     int GetHDRMode(void);
     int GetSourceHDRType();
-    tvpq_databaseinfo_t GetDBVersionInfo(db_name_t name);
+    tvpq_databaseinfo_t GetDBVersionInfo(db_name_t name, db_version_type_t type);
     int SetCurrentHdrInfo (int hdrInfo);
     int SetDtvKitSourceEnable(bool isEnable);
     //AI

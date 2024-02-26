@@ -340,6 +340,12 @@ public:
             ret = mpPqClient->GetSuperResolution();
             printf("%s: current Super Resolution is %d\n", __FUNCTION__, ret);
             break;
+        case PQ_GET_DB_VERSION_INFO:
+            tvpq_databaseinfo_t ver_info;
+            memset(&ver_info, 0, sizeof(tvpq_databaseinfo_t));
+            ver_info = mpPqClient->GetDbVersionInfo(setValue[0], setValue[1]);
+            printf("%s: ver_info.version:%s\n", __FUNCTION__, ver_info.version);
+            break;
 
         //factory API
         case PQ_FACTORY_RESET_PICTURE_MODE:
@@ -605,6 +611,7 @@ int main(int argc, char **argv) {
     printf("#### select 275 to set SuperResolution ####\n");
     printf("#### select 276 to get SuperResolution ####\n");
     printf("#### select 277 to get last pq mode ####\n");
+    printf("#### select 280 to get db version info ####\n");
 
     printf("#### below is factory cmd####\n");
     printf("#### select 301 to reset pq mode ####\n");
@@ -1259,6 +1266,20 @@ int main(int argc, char **argv) {
           case 277: {
               printf("PQ_GET_LAST_PICTURE_MODE\n");
               test->cmdID = PQ_GET_LAST_PICTURE_MODE;
+              break;
+          }
+          case 280: {
+              printf("PQ_GET_DB_VERSION_INFO\n");
+              printf("mode: pq.db(0), overscan.db(1)\n");
+              scanf_ret = scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              printf("type: tool_ver(0), project_ver(1), generate_time(2), chip_ver(3), db_ver(4)\n");
+              scanf_ret += scanf("%d", &type);
+              test->setValue[1] = type;
+              if (scanf_ret != 2) break;
+
+              test->cmdID = PQ_GET_DB_VERSION_INFO;
               break;
           }
 

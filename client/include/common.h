@@ -410,4 +410,11 @@ typedef struct vpp_single_color_param_3dlut_s {
     int blue;
 } vpp_single_color_param_3dlut_t;
 #endif
+
+#ifndef __PQ_DB_VERSION_INFO__
+#define __PQ_DB_VERSION_INFO__
+typedef struct tvpq_databaseinfo_s {
+    char version[32];
+}tvpq_databaseinfo_t;
+#endif
 #endif

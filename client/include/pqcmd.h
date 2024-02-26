@@ -91,6 +91,7 @@ typedef enum pqcmd_e {
     PQ_GET_LAST_PICTURE_MODE      = 277,
     PQ_SET_COLOR_CUSTOMIZE_ENABLE = 278,
     PQ_GET_COLOR_CUSTOMIZE_ENABLE = 279,
+    PQ_GET_DB_VERSION_INFO        = 280,
 
     PQ_MODULE_CMD_MAX             = 299,
     //PQ factory(300~399)
