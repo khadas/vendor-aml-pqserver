@@ -69,6 +69,7 @@
 #define SYS_VIDEO_FRAME_RATE             "/sys/class/display/frame_rate"
 #define HDMI_SET_ALLM_PARAM              "/sys/class/hdmirx/hdmirx0/allm_func_ctrl"
 #define HDMI_VRR_ENABLED                 "/sys/class/hdmirx/hdmirx0/vrr_func_ctrl"
+#define VPP_AFD_MODULE_ASPECT_MODE       "/sys/class/afd_module/aspect_mode"
 
 
 // screem mode index value
@@ -311,6 +312,7 @@ public:
     int Cpq_GetScreenModeValue(vpp_display_mode_t display_mode);
     int Cpq_SetVideoCrop(int Voffset0, int Hoffset0, int Voffset1, int Hoffset1);
     int Cpq_SetNonLinearFactor(int value);
+    int SetCurrentAspectRatioInfo(enum tvin_aspect_ratio_e aspectRatioInfo);
     //LCD HDR INFO
     int SetLCDhdrinfo(void);
     int Cpq_SetHdrInfo(const struct lcd_optical_info_s *plcd_hdrinfo);
@@ -729,6 +731,7 @@ private:
     struct tvin_parm_s mCurrentSignalInfo;
     tvin_inputparam_t mCurrentTvinInfo;
     game_pc_mode_t mGamemode = MODE_OFF;
+    enum tvin_aspect_ratio_e mCurrentAfdInfo = TVIN_ASPECT_NULL;
 
     bool mbDtvKitEnable;
     bool mbDatabaseMatchChipStatus;

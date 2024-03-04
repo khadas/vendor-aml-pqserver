@@ -855,24 +855,22 @@ void CPQControl::onUevent(uevent_data_t ueventData)
             break;
         case TVIN_SIG_CHG_AFD: {
             LOGD("%s: AFD info change!\n", __FUNCTION__);
-            /*
             if (source_type == SOURCE_TYPE_HDMI) {
-                tvin_info_t newSignalInfo;
-                memset(&newSignalInfo, 0, sizeof(tvin_info_t));
-                int ret = mpTvin->Tvin_GetSignalInfo(&newSignalInfo);
+                struct tvin_info_s newSignalInfo;
+                memset(&newSignalInfo, 0, sizeof(struct tvin_info_s));
+                int ret = mpVdin->Tvin_GetSignalInfo(&newSignalInfo);
                 if (ret < 0) {
                     LOGD("%s: Get Signal Info error!\n", __FUNCTION__);
                 } else {
-                    if ((newSignalInfo.status == TVIN_SIG_STATUS_STABLE)
-                        && (mCurrentSignalInfo.aspect_ratio != newSignalInfo.aspect_ratio)) {
-                        mCurrentSignalInfo.aspect_ratio = newSignalInfo.aspect_ratio;
-                        //tvSetCurrentAspectRatioInfo(newSignalInfo.aspect_ratio);
+                    if ((newSignalInfo.status == TVIN_SIG_STATUS_STABLE) &&
+                        (mCurrentSignalInfo.info.aspect_ratio != newSignalInfo.aspect_ratio)) {
+                        SetCurrentAspectRatioInfo(newSignalInfo.aspect_ratio);
+                        mCurrentSignalInfo.info.aspect_ratio = newSignalInfo.aspect_ratio;
                     } else {
                         LOGD("%s: signal not stable or same AFD info!\n", __FUNCTION__);
                     }
                 }
             }
-            */
             break;
         }
         case TVIN_SIG_CHG_DV_ALLM:
@@ -4107,11 +4105,21 @@ int CPQControl::SetDisplayMode(vpp_display_mode_t display_mode, int is_save)
     LOGD("%s, source: %d, value = %d\n", __FUNCTION__, mCurrentSourceInputInfo.source_input, display_mode);
     int ret = -1;
     if (mbCpqCfg_display_overscan_enable) {
+        if (display_mode == VPP_DISPLAY_MODE_NORMAL) {
+            //set ASPECT_MODE_AUTO to afd before pq display
+            pqWriteSys(VPP_AFD_MODULE_ASPECT_MODE, "0 0");
+        }
+
         if ((mCurrentSourceInputInfo.source_input == SOURCE_DTV) || (mCurrentSourceInputInfo.source_input == SOURCE_TV)) {
             ret = Cpq_SetDisplayModeAllTiming(mCurrentSourceInputInfo.source_input, display_mode);
         } else {
             ret = Cpq_SetDisplayModeAllTiming(mCurrentSourceInputInfo.source_input, display_mode);
             ret = Cpq_SetDisplayModeOneTiming(mCurrentSourceInputInfo.source_input, display_mode);
+        }
+
+        if (display_mode != VPP_DISPLAY_MODE_NORMAL) {
+            //set ASPECT_MODE_CUSTOM to afd after pq display
+            pqWriteSys(VPP_AFD_MODULE_ASPECT_MODE, "0 5");
         }
 
         if ((ret == 0) && (is_save == 1))
@@ -4174,12 +4182,25 @@ int CPQControl::Cpq_SetDisplayModeOneTiming(tv_source_input_t source_input, vpp_
                 cutwin.ve = 0;
                 cutwin.he = 0;
             }
-        } else if ((source_input >= SOURCE_HDMI1) && (source_input <= SOURCE_HDMI4) &&
-                   (GetPQMode() == VPP_PICTURE_MODE_MONITOR)) {//hdmi monitor mode
+        } else if ((source_input >= SOURCE_HDMI1) && (source_input <= SOURCE_HDMI4)) { //HDMI
+            if (GetPQMode() == VPP_PICTURE_MODE_MONITOR) {//monitor mode
                 cutwin.vs = 0;
                 cutwin.hs = 0;
                 cutwin.ve = 0;
                 cutwin.he = 0;
+            }
+
+            if (display_mode == VPP_DISPLAY_MODE_NORMAL) {//auto mode
+                if (mCurrentAfdInfo == TVIN_ASPECT_4x3_FULL) {
+                    ScreenModeValue = SCREEN_MODE_4_3;
+                } else if (mCurrentAfdInfo == TVIN_ASPECT_14x9_FULL) {
+                    ScreenModeValue = SCREEN_MODE_NORMAL;
+                } else if (mCurrentAfdInfo == TVIN_ASPECT_16x9_FULL) {
+                    ScreenModeValue = SCREEN_MODE_16_9;
+                } else {
+                    LOGE("%s: invalid AFD status.\n", __FUNCTION__);
+                }
+            }
         }
 
         LOGD("%s: screenmode:%d hs:%d he:%d vs:%d ve:%d\n", __FUNCTION__, ScreenModeValue, cutwin.hs, cutwin.he, cutwin.vs, cutwin.ve);
@@ -4194,7 +4215,7 @@ int CPQControl::Cpq_SetDisplayModeOneTiming(tv_source_input_t source_input, vpp_
 
 int CPQControl::Cpq_SetDisplayModeAllTiming(tv_source_input_t source_input, vpp_display_mode_t display_mode)
 {
-    int i = 0, ScreenModeValue = 0;
+    int i = 0, ScreenModeValue = 0, AFDFlag = 0;
     int ret = -1;
     struct ve_pq_load_s ve_pq_load_reg;
     memset(&ve_pq_load_reg, 0, sizeof(struct ve_pq_load_s));
@@ -4238,9 +4259,16 @@ int CPQControl::Cpq_SetDisplayModeAllTiming(tv_source_input_t source_input, vpp_
     source_input_param.source_input = source_input;
     source_input_param.trans_fmt = mCurrentSourceInputInfo.trans_fmt;
     ScreenModeValue = Cpq_GetScreenModeValue(display_mode);
+
+    if (display_mode == VPP_DISPLAY_MODE_NORMAL) { //auto mode
+        AFDFlag = 1;
+    } else {
+        AFDFlag = 0;
+    }
+
     if (source_input == SOURCE_DTV) {//DTV
         for (i=0;i<SIG_TIMING_TYPE_NTSC_M;i++) {
-            ve_pq_table[i].src_timing = (0x1<<31) | ((ScreenModeValue & 0x7f) << 24) | ((source_input & 0x7f) << 16 ) | (flag[i]);
+            ve_pq_table[i].src_timing = (0x1<<31) | (AFDFlag << 30) | ((ScreenModeValue & 0x7f) << 24) | ((source_input & 0x7f) << 16 ) | (flag[i]);
             source_input_param.sig_fmt = sig_fmt[i];
             if (mbCpqCfg_seperate_db_enable) {
                 ret = mpOverScandb->PQ_GetOverscanParams(source_input_param, display_mode, cutwin+i);
@@ -4257,7 +4285,7 @@ int CPQControl::Cpq_SetDisplayModeAllTiming(tv_source_input_t source_input, vpp_
         ve_pq_load_reg.param_ptr = &ve_pq_table;
     } else if (source_input == SOURCE_TV) {//ATV
         for (i=SIG_TIMING_TYPE_NTSC_M;i<SIG_TIMING_TYPE_MAX;i++) {
-            ve_pq_table[i].src_timing = (0x1<<31) | ((ScreenModeValue & 0x7f) << 24) | ((source_input & 0x7f) << 16 ) | (flag[i]);
+            ve_pq_table[i].src_timing = (0x1<<31) | (AFDFlag << 30) | ((ScreenModeValue & 0x7f) << 24) | ((source_input & 0x7f) << 16 ) | (flag[i]);
             source_input_param.sig_fmt = sig_fmt[i];
             if (mbCpqCfg_seperate_db_enable) {
                 ret = mpOverScandb->PQ_GetOverscanParams(source_input_param, display_mode, cutwin+i);
@@ -4273,7 +4301,7 @@ int CPQControl::Cpq_SetDisplayModeAllTiming(tv_source_input_t source_input, vpp_
         }
         ve_pq_load_reg.param_ptr = &ve_pq_table;
     } else {//HDMI && MPEG
-        ve_pq_table[0].src_timing = (0x0<<31) | ((ScreenModeValue & 0x7f) << 24) | ((source_input & 0x7f) << 16 ) | (0x0);
+        ve_pq_table[0].src_timing = (0x0<<31) | (AFDFlag << 30) | ((ScreenModeValue & 0x7f) << 24) | ((source_input & 0x7f) << 16 ) | (0x0);
         ve_pq_table[0].value1 = 0;
         ve_pq_table[0].value2 = 0;
         ve_pq_load_reg.param_ptr = &ve_pq_table;
@@ -4332,7 +4360,7 @@ int CPQControl::Cpq_GetScreenModeValue(vpp_display_mode_t display_mode)
 
 int CPQControl::Cpq_SetVideoScreenMode(int value)
 {
-    LOGD("Cpq_SetVideoScreenMode, value = %d\n" , value);
+    LOGD("%s, value = %d\n", __FUNCTION__, value);
     char val[64] = {0};
     sprintf(val, "%d", value);
     pqWriteSys(SCREEN_MODE_PATH, val);
@@ -4376,6 +4404,21 @@ int CPQControl::Cpq_SetNonLinearFactor(int value)
     fclose(fp);
     fp = NULL;
     return 0;
+}
+
+int CPQControl::SetCurrentAspectRatioInfo(enum tvin_aspect_ratio_e aspectRatioInfo)
+{
+    int ret = 0;
+    if (mCurrentAfdInfo != aspectRatioInfo) {
+        mCurrentAfdInfo = aspectRatioInfo;
+        LOGD("%s mCurrentAfdInfo:%d\n", __FUNCTION__, mCurrentAfdInfo);
+        vpp_display_mode_t display_mode = (vpp_display_mode_t)GetDisplayMode();
+        ret = SetDisplayMode(display_mode, 1);
+    } else {
+        LOGE("%s: same AFD info\n", __FUNCTION__);
+    }
+
+    return ret;
 }
 
 //lcd hdr info
