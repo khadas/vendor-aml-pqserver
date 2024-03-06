@@ -197,6 +197,12 @@ public:
     int SSMSaveLocalDimming(int offset, int rw_val);
     int SSMReadLocalDimming(int offset, int *rw_val);
 
+    int SSMSaveColortuneEnable(int offset, int *rw_val);
+    int SSMReadColortuneEnable(int offset, int *rw_val);
+
+    int SSMSaveWhitebalanceGammaMode(int offset, int rw_val);
+    int SSMReadWhitebalanceGammaMode(int offset, int *rw_val);
+
     bool SetPictureMode(int PictureMode, int src, int timming);
     bool GetPictureMode(int *PictureMode, int src, int timming);
 
@@ -217,9 +223,6 @@ public:
 
     int SSMSaveColorCustomizeParamsBy3DLut(int offset, int size, int *rw_val);
     int SSMReadColorCustomizeParamsBy3DLut(int offset, int size, int *rw_val);
-
-    int SSMSaveColortuneEnable(int offset, int *rw_val);
-    int SSMReadColortuneEnable(int offset, int *rw_val);
 
     // CRI DATA
     bool CriDataSetWhitebalanceRGBGainOffsetData(tcon_rgb_ogo_t *pData, int level);

@@ -108,4 +108,25 @@ typedef struct aad_param_s {
     int aad_param_xy_lut[CAAD_XY_LUT_MAX];
 } aad_param_t;
 
+typedef struct color_primary_t {
+    unsigned int src[8];
+    unsigned int dest[8];
+} color_primary_t;
+
+typedef struct _PANLE_INFO {
+    unsigned int hdr_support;
+    unsigned int features;
+    unsigned int primaries_r_x;
+    unsigned int primaries_r_y;
+    unsigned int primaries_g_x;
+    unsigned int primaries_g_y;
+    unsigned int primaries_b_x;
+    unsigned int primaries_b_y;
+    unsigned int white_point_x;
+    unsigned int white_point_y;
+    unsigned int luma_max;
+    unsigned int luma_min;
+    unsigned int luma_avg;
+} PANLE_INFO;
+
 #endif  // _VE_H

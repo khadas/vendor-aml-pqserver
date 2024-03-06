@@ -30,12 +30,12 @@
 #define MAX_PICTUREMODE_INDEX             (14) //(VPP_PICTURE_MODE_MAX)
 #define MAX_COLORTEMP_INDEX               (6)  //(VPP_COLOR_TEMPERATURE_MODE_MAX)
 
-#define MAX_WB_GAMMA_POINT                (11)
+#define MAX_WB_GAMMA_POINT                (21)
 
 #define MAX_PICTUREMODE_SIZE              ((1  * 4) + 4) // > sizeof(vpp_picture_mode_t) + sizeof(int)
 #define MAX_PICTUREMODE_PARAM_SIZE        ((30 * 4) + 4) // > sizeof(vpp_pictur_mode_para_t) + sizeof(int)
 #define MAX_COLORTEMP_PARAM_SIZE          ((10 * 4) + 4) // > sizeof(tcon_rgb_ogo_s) + sizeof(int)
-#define MAX_WB_GAMMA_PARAM_SIZE           ((MAX_WB_GAMMA_POINT * 3 * 4) + 4) // > (sizeof(WB_GAMMA_TABLE) + sizeof(int))
+#define MAX_WB_GAMMA_PARAM_SIZE           ((((MAX_WB_GAMMA_POINT * 3) + 1) * 4) + 4) // > (sizeof(WB_GAMMA_TABLE) + sizeof(int))
 
 
 #define MAX_LVDS_SSC_PARAM_SIZE              20
@@ -218,6 +218,8 @@ typedef struct vpp_pictur_mode_para_s {
     int ChromaCoring;
     int SuperResolution;
     int GammaMidLuminance;
+    int CmLevel;
+    int HdrTmo;
     int DolbyMode;
     int DolbyDarkDetail;
 } vpp_pictur_mode_para_t;
@@ -306,6 +308,7 @@ typedef enum vpp_picture_mode_e {
     VPP_PICTURE_MODE_SHARP,
     VPP_PICTURE_MODE_DOLVI_DARK,
     VPP_PICTURE_MODE_DOLVI_BRIGHT,
+    VPP_PICTURE_MODE_AMDOLBY_IQ,
     VPP_PICTURE_MODE_MAX,
 } vpp_picture_mode_t;
 
@@ -390,9 +393,11 @@ typedef enum vpp_color_basemode_e {
 } vpp_color_basemode_t;
 
 typedef enum vpp_colorgamut_mode_e {
-    VPP_COLORGAMUT_MODE_SRC,
     VPP_COLORGAMUT_MODE_AUTO,
-    VPP_COLORGAMUT_MODE_NATIVE,
+    VPP_COLORGAMUT_MODE_REC_709,
+    VPP_COLORGAMUT_MODE_ADOBE_RGB,
+    VPP_COLORGAMUT_MODE_DCI_P3,
+    VPP_COLORGAMUT_MODE_BT2020,
     VPP_COLORGAMUT_MODE_MAX,
 } vpp_colorgamut_mode_t;
 
@@ -666,7 +671,42 @@ typedef enum vpp_cms_method_e {
     VPP_CMS_METHOD_MAX,
 } vpp_cms_method_t;
 
+typedef enum _WB_GAMMA_DIAGRAM {
+    PERCENT_0   = 0,
+    PERCENT_5   = 13,
+    PERCENT_10  = 26,
+    PERCENT_15  = 38,
+    PERCENT_20  = 51,
+    PERCENT_25  = 64,
+    PERCENT_30  = 76,
+    PERCENT_35  = 90,
+    PERCENT_40  = 102,
+    PERCENT_45  = 115,
+    PERCENT_50  = 128,
+    PERCENT_55  = 141,
+    PERCENT_60  = 154,
+    PERCENT_65  = 166,
+    PERCENT_70  = 179,
+    PERCENT_75  = 192,
+    PERCENT_80  = 204,
+    PERCENT_85  = 218,
+    PERCENT_90  = 230,
+    PERCENT_95  = 243,
+    PERCENT_100 = 255,
+    PERCENT_100_257 = 256,
+    PERCENT_MAX,
+} WB_GAMMA_DIAGRAM;
+
+typedef enum _WB_GAMMA_MODE {
+    WB_GAMMA_MODE_2POINT,
+    WB_GAMMA_MODE_10POINT,
+    WB_GAMMA_MODE_11POINT,
+    WB_GAMMA_MODE_20POINT,
+    WB_GAMMA_MODE_MAX,
+} WB_GAMMA_MODE;
+
 typedef struct _WB_GAMMA_TABLE {
+    int ENABLE;
     int R_OFFSET[MAX_WB_GAMMA_POINT];
     int G_OFFSET[MAX_WB_GAMMA_POINT];
     int B_OFFSET[MAX_WB_GAMMA_POINT];
@@ -698,4 +738,5 @@ typedef enum pq_wb_rgb_data_path_e {
     WB_RGB_DATA_PATH_CRI,
     WB_RGB_DATA_PATH_SSM,
 } pq_wb_rgb_data_path_t;
+
 #endif

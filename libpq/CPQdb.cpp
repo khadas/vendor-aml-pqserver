@@ -788,9 +788,11 @@ int CPQdb::PQ_GetHDRTMOParams(source_input_param_t source_input_param, hdr_tmo_t
     char *aa_save[100];
     unsigned int index = 0;
 
-    if (CheckHdrStatus("GeneralHDRNodeTable"))
+    if (CheckNewHdrSigFmt("GeneralHDRNodeTable")) {
+        source_input_param.sig_fmt = mSigFmt;
+    } else if (CheckHdrStatus("GeneralHDRNodeTable")) {
         source_input_param.sig_fmt = TVIN_SIG_FMT_HDMI_HDR;
-
+    }
     std::string TableName = GetTableName("GeneralHDRNodeTable", source_input_param);
     if ((TableName.c_str() == NULL) || (TableName.length() == 0) ) {
         LOGD("%s, GeneralHDRNodeTable don't have this table!\n", __FUNCTION__);
@@ -2648,8 +2650,12 @@ int CPQdb::PQ_GetPictureModeParams(pq_source_input_t src, pq_sig_fmt_t timming, 
                     params->DolbyDarkDetail = c.getInt(1);
                 } else if (!strcmp(type, "Super_Resolution")) {
                     params->SuperResolution = c.getInt(1);
-                }else if (!strcmp(type, "GammaMidLuminance")) {
+                } else if (!strcmp(type, "GammaMidLuminance")) {
                     params->GammaMidLuminance = c.getInt(1);
+                } else if (!strcmp(type, "HDRTMO")) {
+                    params->HdrTmo = c.getInt(1);
+                } else if (!strcmp(type, "CmLevel")) {
+                    params->CmLevel = c.getInt(1);
                 }
             } while (c.moveToNext());
         } else {
@@ -2664,8 +2670,7 @@ int CPQdb::PQ_GetPictureModeParams(pq_source_input_t src, pq_sig_fmt_t timming, 
     return rval;
 }
 
-int CPQdb::PQ_GetGammaSpecialTable(vpp_gamma_curve_t gamma_curve, const char *f_name,
-                                     tcon_gamma_table_t *gamma_value)
+int CPQdb::PQ_GetGammaSpecialTable(vpp_gamma_curve_t gamma_curve, const char *f_name, tcon_gamma_table_t *gamma_value)
 {
     CSqlite::Cursor c;
     char sqlmaster[256];
@@ -2685,7 +2690,7 @@ int CPQdb::PQ_GetGammaSpecialTable(vpp_gamma_curve_t gamma_curve, const char *f_
             index++;
         } while (c.moveToNext());
 
-        Gamma_nodes = (index < 256) ? 256 : index;
+        Gamma_nodes = (index <= 256) ? 256 : 257;
     } else {
         LOGE("%s, select %s error\n", __FUNCTION__, f_name);
         rval = -1;
@@ -2721,7 +2726,7 @@ int CPQdb::PQ_GetGammaWhiteBalanceSpecialTable(vpp_color_temperature_mode_t mode
             index++;
         } while (c.moveToNext());
 
-        Gamma_nodes = (index < 256) ? 256 : index;
+        Gamma_nodes = (index <= 256) ? 256 : 257;
     } else {
         LOGE("%s, select %s error\n", __FUNCTION__, f_name);
         rval = -1;
@@ -2745,7 +2750,7 @@ int CPQdb::PQ_GetGammaModeSpecialTable(int mode, const char *f_name, gamma_power
             index++;
         } while (c.moveToNext());
 
-        Gamma_nodes = (index < 256) ? 256 : index;
+        Gamma_nodes = (index <= 256) ? 256 : 257;
     } else {
         LOGE("%s, select %s error\n", __FUNCTION__, f_name);
         rval = -1;
@@ -3570,6 +3575,38 @@ int CPQdb::PQ_GetLocalDimmingParams(int level, source_input_param_t source_input
     return rval;
 }
 
+int CPQdb::PQ_GetColorGamutDestParams(int level, PANLE_INFO *Table)
+{
+    CSqlite::Cursor c;
+    char sqlmaster[256];
+    int rval = -1;
+
+    getSqlParams(__FUNCTION__, sqlmaster, "select Value from Panel where Level = %d", level);
+
+    rval = this->select(sqlmaster, c);
+
+    if (c.moveToFirst()) {
+        Table->hdr_support   = c.getInt(0);
+        Table->features      = c.getInt(1);
+        Table->primaries_r_x = c.getInt(2);
+        Table->primaries_r_y = c.getInt(3);
+        Table->primaries_g_x = c.getInt(4);
+        Table->primaries_g_y = c.getInt(5);
+        Table->primaries_b_x = c.getInt(6);
+        Table->primaries_b_y = c.getInt(7);
+        Table->white_point_x = c.getInt(8);
+        Table->white_point_y = c.getInt(9);
+        Table->luma_max      = c.getInt(10);
+        Table->luma_min      = c.getInt(11);
+        Table->luma_avg      = c.getInt(12);
+    } else {
+        LOGE("%s, select %s error!\n", __FUNCTION__,"Panel");
+        rval = -1;
+    }
+
+    return rval;
+}
+
 bool CPQdb::CheckHdrStatus(const char *tableName)
 {
     bool ret = false;
@@ -3585,6 +3622,33 @@ bool CPQdb::CheckHdrStatus(const char *tableName)
         if (tempCursor.getCount() > 0) {
             ret = true;
         }
+    }
+
+    return ret;
+}
+
+bool CPQdb::CheckNewHdrSigFmt(const char *tableName)
+{
+    bool ret = false;
+    if (mHdrType == HDRTYPE_HDR10) {
+        mSigFmt = TVIN_SIG_FMT_HDMI_HDR10;
+    } else if (mHdrType == HDRTYPE_HLG) {
+        mSigFmt = TVIN_SIG_FMT_HDMI_HLG;
+    } else if (mHdrType == HDRTYPE_HDR10PLUS) {
+        mSigFmt = TVIN_SIG_FMT_HDMI_HDR10PLUS;
+    } else if (mHdrType == HDRTYPE_DOVI) {
+        mSigFmt = TVIN_SIG_FMT_HDMI_DOLBY;
+    } else {
+        return false;
+    }
+
+    char sqlmaster[256] = {0};
+    CSqlite::Cursor tempCursor;
+    getSqlParams(__FUNCTION__, sqlmaster, "select TableName from %s where TVIN_SIG_FMT = %d;", tableName, mSigFmt);
+
+    this->select(sqlmaster, tempCursor);
+    if (tempCursor.getCount() > 0) {
+        ret =  true;
     }
 
     return ret;

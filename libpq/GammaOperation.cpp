@@ -23,7 +23,7 @@ GammaOperation::~GammaOperation()
 }
 
 //============================gamma Power Convert Start=======================================
-int GammaOperation::GammaOperation_BaseGammaConvert(unsigned short *gamma_value, double basePower , double targetPower)
+int GammaOperation::GammaOperation_BaseGammaConvert(unsigned short *gamma_value, double basePower , double targetPower, int NodeNum)
 {
     int ret = -1;
     std::vector<double> xData, yData;
@@ -36,9 +36,9 @@ int GammaOperation::GammaOperation_BaseGammaConvert(unsigned short *gamma_value,
         return -1;
     }
 
-    for (int j = 0; j < 256; ++j)
+    for (int j = 0; j < NodeNum; ++j)
     {
-        xData.push_back(((double)j)/255.0);
+        xData.push_back(((double)j)/(double)(NodeNum - 1));
         yData.push_back((double)gamma_value[j]);
     }
 
@@ -46,9 +46,9 @@ int GammaOperation::GammaOperation_BaseGammaConvert(unsigned short *gamma_value,
     continuousLine.set_points(xData, yData);
     std::vector<int> returnCurve;
 
-    for (int j = 0; j < 256; ++j)
+    for (int j = 0; j < NodeNum; ++j)
     {
-        returnCurve.push_back(continuousLine(pow(((double)j) / 255.0 , targetPower / basePower  )));
+        returnCurve.push_back(continuousLine(pow(((double)j) / (double)(NodeNum - 1) , targetPower / basePower  )));
         gamma_value[j] = returnCurve[j];
     }
 

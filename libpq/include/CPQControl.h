@@ -70,7 +70,7 @@
 #define HDMI_SET_ALLM_PARAM              "/sys/class/hdmirx/hdmirx0/allm_func_ctrl"
 #define HDMI_VRR_ENABLED                 "/sys/class/hdmirx/hdmirx0/vrr_func_ctrl"
 #define VPP_AFD_MODULE_ASPECT_MODE       "/sys/class/afd_module/aspect_mode"
-
+#define GAMUT_CONV_ENABLE                "/sys/module/aml_media/parameters/gamut_conv_enable"
 
 // screem mode index value
 #define  SCREEN_MODE_NORMAL           0
@@ -373,6 +373,11 @@ public:
     int SetColorTuneEnable(int enable);
     int GetColorTuneEnable(void);
 
+    int SetWbGammaEnable(int enable);
+    int GetWbGammaEnable(void);
+    int SetWbGammaMode(int mode);
+    int GetWbGammaMode(void);
+
     //BlackExtension
     int SetBlackExtensionParam(source_input_param_t source_input_param);
     int Cpq_SetCABC(const struct db_cabc_param_s *pCABC);
@@ -500,10 +505,11 @@ public:
     int SaveAiSrEnable(bool enable);
     int Cpq_SetAiSrEnable(bool enable);
     //color gamut
-    int SetColorGamutMode(vpp_colorgamut_mode_t value, int is_save);
+    int SetColorGamutMode(int value, int is_save);
     int GetColorGamutMode(void);
     int SaveColorGamutMode(vpp_colorgamut_mode_t value);
     int Cpq_SetColorGamutMode(vpp_colorgamut_mode_t value, source_input_param_t source_input_param);
+    int Cpq_SetColorGamutEnable(bool enable);
 
     //HDR tone mapping
     int SetHDRTMData(int *reGain);
@@ -657,87 +663,89 @@ private:
 
     int GetDriverValueMap(vpp_cms_type_t type, int value);
 
-    bool mInitialized;
+    bool mInitialized                                   = false;
     //cfg
-    bool mbCpqCfg_seperate_db_enable;
-    bool mbCpqCfg_pq_enable;
-    bool mbCpqCfg_amvecm_basic_enable;
-    bool mbCpqCfg_amvecm_basic_withOSD_enable;
-    bool mbCpqCfg_contrast_rgb_enable;
-    bool mbCpqCfg_contrast_rgb_withOSD_enable;
-    bool mbCpqCfg_blackextension_enable;
-    bool mbCpqCfg_sharpness0_enable;
-    bool mbCpqCfg_sharpness1_enable;
-    bool mbCpqCfg_di_enable;
-    bool mbCpqCfg_mcdi_enable;
-    bool mbCpqCfg_deblock_enable;
-    bool mbCpqCfg_nr_enable;
-    bool mbCpqCfg_demoSquito_enable;
-    bool mbCpqCfg_gamma_enable;
-    bool mbCpqCfg_cm2_enable;
-    bool mbCpqCfg_whitebalance_enable;
-    bool mbCpqCfg_dnlp_enable;
-    bool mbCpqCfg_xvycc_enable;
-    bool mbCpqCfg_display_overscan_enable;
-    bool mbCpqCfg_cvd2_enable;
-    bool mbCpqCfg_local_contrast_enable;
-    bool mbCpqCfg_hdmi_out_with_fbc_enable;
-    bool mbCpqCfg_pq_mode_check_source_enable;
-    bool mbCpqCfg_pq_mode_check_hdr_enable;
-    bool mbCpqCfg_pq_param_check_source_enable;
-    bool mbCpqCfg_pq_param_check_hdr_enable;
-    bool mbCpqCfg_ldim_enable;
-    bool mbCpqCfg_lcd_hdrinfo_enable;
-    bool mbAllmModeCfg_enable;
-    bool mbItcontentModeCfg_enable;
-    bool mbDviModeCfg_enable;
-    bool mbCpqCfg_ai_enable;
-    bool mbCpqCfg_aad_enable;
-    bool mbCpqCfg_cabc_enable;
-    bool mbCpqCfg_smoothplus_enable;
-    bool mbCpqCfg_hdrtmo_enable;
-    bool mbCpqCfg_memc_enable;
-    bool mbCpqCfg_seperate_black_blue_chorma_db_enable;
-    bool mbCpqCfg_bluestretch_enable;
-    bool mbCpqCfg_chromacoring_enable;
-    bool mbCpqCfg_LocalDimming_enable;
-    bool mbCpqCfg_aisr_enable;
-    bool mbCpqCfg_new_picture_mode_enable;
+    bool mbCpqCfg_separate_db_enable                    = false;
+    bool mbCpqCfg_pq_enable                             = false;
+    bool mbCpqCfg_amvecm_basic_enable                   = false;
+    bool mbCpqCfg_amvecm_basic_withOSD_enable           = false;
+    bool mbCpqCfg_contrast_rgb_enable                   = false;
+    bool mbCpqCfg_contrast_rgb_withOSD_enable           = false;
+    bool mbCpqCfg_blackextension_enable                 = false;
+    bool mbCpqCfg_sharpness0_enable                     = false;
+    bool mbCpqCfg_sharpness1_enable                     = false;
+    bool mbCpqCfg_di_enable                             = false;
+    bool mbCpqCfg_mcdi_enable                           = false;
+    bool mbCpqCfg_deblock_enable                        = false;
+    bool mbCpqCfg_nr_enable                             = false;
+    bool mbCpqCfg_demoSquito_enable                     = false;
+    bool mbCpqCfg_gamma_enable                          = false;
+    bool mbCpqCfg_cm2_enable                            = false;
+    bool mbCpqCfg_whitebalance_enable                   = false;
+    bool mbCpqCfg_dnlp_enable                           = false;
+    bool mbCpqCfg_xvycc_enable                          = false;
+    bool mbCpqCfg_display_overscan_enable               = false;
+    bool mbCpqCfg_cvd2_enable                           = false;
+    bool mbCpqCfg_local_contrast_enable                 = false;
+    bool mbCpqCfg_hdmi_out_with_fbc_enable              = false;
+    bool mbCpqCfg_pq_mode_check_source_enable           = false;
+    bool mbCpqCfg_pq_mode_check_hdr_enable              = false;
+    bool mbCpqCfg_pq_param_check_source_enable          = false;
+    bool mbCpqCfg_pq_param_check_hdr_enable             = false;
+    bool mbCpqCfg_ldim_enable                           = false;
+    bool mbCpqCfg_lcd_hdrinfo_enable                    = false;
+    bool mbAllmModeCfg_enable                           = false;
+    bool mbItcontentModeCfg_enable                      = false;
+    bool mbDviModeCfg_enable                            = false;
+    bool mbCpqCfg_ai_enable                             = false;
+    bool mbCpqCfg_aad_enable                            = false;
+    bool mbCpqCfg_cabc_enable                           = false;
+    bool mbCpqCfg_smoothplus_enable                     = false;
+    bool mbCpqCfg_hdrtmo_enable                         = false;
+    bool mbCpqCfg_memc_enable                           = false;
+    bool mbCpqCfg_separate_black_blue_chorma_db_enable  = false;
+    bool mbCpqCfg_bluestretch_enable                    = false;
+    bool mbCpqCfg_chromacoring_enable                   = false;
+    bool mbCpqCfg_LocalDimming_enable                   = false;
+    bool mbCpqCfg_aisr_enable                           = false;
+    bool mbCpqCfg_new_picture_mode_enable               = false;
 
-    CPQdb *mPQdb;
-    COverScandb *mpOverScandb;
-    SSMAction *mSSMAction;
+    bool mbDtvKitEnable                                 = false;
+    bool mbDatabaseMatchChipStatus                      = false;
+    bool mbVideoIsPlaying                               = false;//video don't playing
+    bool mbResetPicture                                 = false;
+
+    CPQdb *mPQdb                                        = NULL;
+    COverScandb *mpOverScandb                           = NULL;
+    SSMAction *mSSMAction                               = NULL;
+    CConfigFile *mPQConfigFile                          = NULL;
+    CVdin *mpVdin                                       = NULL;
+    CDolbyVision *mDolbyVision                          = NULL;
+
+    int mAmvideoFd                                      = -1;
+    int mDiFd                                           = -1;
+    int mLdFd                                           = -1;
+    int mMemcFd                                         = -1;
+    int mLcdFd                                          = -1;
+
     static CPQControl *mInstance;
     CDevicePollCheckThread mCDevicePollCheckThread;
-    UEventObserver         mUEventObserver;
+    UEventObserver mUEventObserver;
     CDynamicBackLight mDynamicBackLight;
-    CConfigFile *mPQConfigFile;
-
-    int mAmvideoFd;
-    int mDiFd;
-    int mLdFd;
-    int mMemcFd;
-    int mLcdFd;
-
-    CVdin *mpVdin;
-    CDolbyVision *mDolbyVision;
 
     tcon_rgb_ogo_t rgbfrompq[3];
     source_input_param_t mCurrentSourceInputInfo;
-    tv_source_input_t mSourceInputForSaveParam;
-    pq_source_input_t CurSource = PQ_SRC_DEFAULT;
-    pq_sig_fmt_t CurTimming = PQ_FMT_DEFAULT;
-    enum hdr_type_e mCurrentHdrType = HDRTYPE_NONE;
     struct tvin_parm_s mCurrentSignalInfo;
     tvin_inputparam_t mCurrentTvinInfo;
-    game_pc_mode_t mGamemode = MODE_OFF;
-    enum tvin_aspect_ratio_e mCurrentAfdInfo = TVIN_ASPECT_NULL;
 
-    bool mbDtvKitEnable;
-    bool mbDatabaseMatchChipStatus;
-    bool mbVideoIsPlaying = false;//video don't playing
-    bool mbResetPicture = false;
-    int mColorTuneEnable = 1;
+    game_pc_mode_t mGamemode                            = MODE_OFF;
+    enum tvin_aspect_ratio_e mCurrentAfdInfo            = TVIN_ASPECT_NULL;
+    tv_source_input_t mSourceInputForSaveParam          = SOURCE_MPEG;
+    pq_source_input_t CurSource                         = PQ_SRC_MPEG;
+    pq_sig_fmt_t CurTimming                             = PQ_FMT_SDR;
+    enum hdr_type_e mCurrentHdrType                     = HDRTYPE_NONE;
+
+    int mColorTuneEnable                                = 1;
 
     bool aAllmSrcFmtFlag[PQ_SRC_MAX][PQ_FMT_MAX];
 

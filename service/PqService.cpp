@@ -163,7 +163,7 @@ int PqService::SetCmd(pq_moudle_param_t param)
             ret = mpPQcontrol->SetCurrentSource((tv_source_input_t)paramData[0]);
             break;
         case PQ_SET_COLORGAMUT:
-            ret = mpPQcontrol->SetColorGamutMode((vpp_colorgamut_mode_t)paramData[0], paramData[1]);
+            ret = mpPQcontrol->SetColorGamutMode(paramData[0], paramData[1]);
             break;
         case PQ_SET_DYNAMICCONTRAST:
             ret = mpPQcontrol->SetDnlpMode((Dynamic_contrast_mode_t)paramData[0], paramData[1]);
@@ -228,6 +228,12 @@ int PqService::SetCmd(pq_moudle_param_t param)
             break;
         case PQ_SET_COLOR_CUSTOMIZE_ENABLE:
             ret = mpPQcontrol->SetColorTuneEnable(paramData[0]);
+            break;
+        case PQ_SET_WB_GAMMA_ENABLE:
+            ret = mpPQcontrol->SetWbGammaEnable(paramData[0]);
+            break;
+        case PQ_SET_WB_GAMMA_MODE:
+            ret = mpPQcontrol->SetWbGammaMode(paramData[0]);
             break;
 
         //Factory cmd
@@ -537,6 +543,12 @@ char* PqService::GetCmd(pq_moudle_param_t param)
         case PQ_GET_DB_VERSION_INFO:
             ver_info = mpPQcontrol->GetDBVersionInfo((db_name_t)paramData[0], (db_version_type_t)paramData[1]);
             sprintf(mRetBuf, "%s", ver_info.version);
+            break;
+        case PQ_GET_WB_GAMMA_ENABLE:
+            ret = mpPQcontrol->GetWbGammaEnable();
+            break;
+        case PQ_GET_WB_GAMMA_MODE:
+            ret = mpPQcontrol->GetWbGammaMode();
             break;
 
         //Factory cmd

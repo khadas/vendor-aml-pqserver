@@ -1555,6 +1555,68 @@ int PqClient::ResetColorCustomize(int mode)
     return ret;
 }
 
+int PqClient::SetWhitebalanceGammaEnable(int enable)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d", PQ_SET_WB_GAMMA_ENABLE, enable);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::GetWhitebalanceGammaEnable(void)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d", PQ_GET_WB_GAMMA_ENABLE);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+
+    return ret;
+}
+
+int PqClient::SetWhitebalanceGammaMode(int mode)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d", PQ_SET_WB_GAMMA_MODE, mode);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::GetWhitebalanceGammaMode(void)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.get.%d", PQ_SET_WB_GAMMA_MODE);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+
+    return ret;
+}
+
 int PqClient::SetWhitebalanceGamma(int channel, int point, int offset)
 {
     LOGD("%s\n", __FUNCTION__);

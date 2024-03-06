@@ -130,6 +130,7 @@ public:
     bool PQ_GetLDIM_Regs(vpu_ldim_param_s *vpu_ldim_param);
     int GetFileAttrIntValue(const char *fp, int flag);
     bool CheckHdrStatus(const char *tableName);
+    bool CheckNewHdrSigFmt(const char *tableName);
     bool CheckPQModeTableInDb(void);
     bool CheckIdExistInDb(const char *Id, const char *TableName);
     int PQ_GetBlackStretchParams(int level, source_input_param_t source_input_param, am_regs_t *regs);
@@ -140,6 +141,7 @@ public:
     int getSharpnessRegValues(const char *table_name, source_input_param_t source_input_param,
                                          am_regs_t *regs, int reg_addr, int isHd);
     int PQ_SetSharpnessAdvancedParams(source_input_param_t source_input_param, int reg_addr, int value, int isHd);
+    int PQ_GetColorGamutDestParams(int level, PANLE_INFO *Table);
 
 private:
     std::string GetTableName(const char *GeneralTableName, source_input_param_t source_input_param);
@@ -175,5 +177,6 @@ public:
     colortemperature_type_t mColorTemperatureMode = LVDS_STD;
     unsigned int mDbVersion;
     int Gamma_nodes = 256;
+    enum tvin_sig_fmt_e mSigFmt = TVIN_SIG_FMT_NULL;
 };
 #endif

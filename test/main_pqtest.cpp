@@ -340,11 +340,32 @@ public:
             ret = mpPqClient->GetSuperResolution();
             printf("%s: current Super Resolution is %d\n", __FUNCTION__, ret);
             break;
+        case PQ_SET_COLOR_CUSTOMIZE_ENABLE:
+            ret = mpPqClient->SetColorCustomizeEnable(setValue[0]);
+            break;
+        case PQ_GET_COLOR_CUSTOMIZE_ENABLE:
+            ret = mpPqClient->GetColorCustomizeEnable();
+            printf("%s: current cms enable is %d\n", __FUNCTION__, ret);
+            break;
         case PQ_GET_DB_VERSION_INFO:
             tvpq_databaseinfo_t ver_info;
             memset(&ver_info, 0, sizeof(tvpq_databaseinfo_t));
             ver_info = mpPqClient->GetDbVersionInfo(setValue[0], setValue[1]);
             printf("%s: ver_info.version:%s\n", __FUNCTION__, ver_info.version);
+            break;
+        case PQ_SET_WB_GAMMA_ENABLE:
+            ret = mpPqClient->SetWhitebalanceGammaEnable(setValue[0]);
+            break;
+        case PQ_GET_WB_GAMMA_ENABLE:
+            ret = mpPqClient->GetWhitebalanceGammaEnable();
+            printf("%s: current Whitebalance Gamma Enableis %d\n", __FUNCTION__, ret);
+            break;
+        case PQ_SET_WB_GAMMA_MODE:
+            ret = mpPqClient->SetWhitebalanceGammaMode(setValue[0]);
+            break;
+        case PQ_GET_WB_GAMMA_MODE:
+            ret = mpPqClient->GetWhitebalanceGammaMode();
+            printf("%s: current Whitebalance Gamma Mode is %d\n", __FUNCTION__, ret);
             break;
 
         //factory API
@@ -611,7 +632,13 @@ int main(int argc, char **argv) {
     printf("#### select 275 to set SuperResolution ####\n");
     printf("#### select 276 to get SuperResolution ####\n");
     printf("#### select 277 to get last pq mode ####\n");
+    printf("#### select 278 to set cms enable ####\n");
+    printf("#### select 279 to get cms enable ####\n");
     printf("#### select 280 to get db version info ####\n");
+    printf("#### select 281 to set wb gamma enable ####\n");
+    printf("#### select 282 to get wb gamma enable ####\n");
+    printf("#### select 283 to set wb gamma mode ####\n");
+    printf("#### select 284 to get wb gamma mode ####\n");
 
     printf("#### below is factory cmd####\n");
     printf("#### select 301 to reset pq mode ####\n");
@@ -1057,6 +1084,64 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_GET_MEMCMODE;
               break;
           }
+          case 242: {
+              printf("PQ_SET_MEMC_DEBLUR\n");
+              printf("DeBlur mode: OFF(0), LOW(1), MID(2), HIGH(3)\n");
+              scanf_ret = scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              printf("is save:(0 ~ 1)\n");
+              scanf_ret += scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+              if (scanf_ret != 2) break;
+
+              test->cmdID = PQ_SET_MEMC_DEBLUR;
+              break;
+          }
+          case 243: {
+              printf("PQ_GET_MEMC_DEBLUR\n");
+              test->cmdID = PQ_GET_MEMC_DEBLUR;
+              break;
+          }
+          case 244: {
+              printf("PQ_SET_MEMC_DEJUDDER\n");
+              printf("DeJudder mode: OFF(0), LOW(1), MID(2), HIGH(3)\n");
+              scanf_ret = scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              printf("is save:(0 ~ 1)\n");
+              scanf_ret += scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+              if (scanf_ret != 2) break;
+
+              test->cmdID = PQ_SET_MEMC_DEJUDDER;
+              break;
+          }
+          case 245: {
+              printf("PQ_GET_MEMC_DEJUDDER\n");
+              test->cmdID = PQ_GET_MEMC_DEJUDDER;
+              break;
+          }
+          case 246: {
+              printf("PQ_SET_DECONTOUR\n");
+              printf("DeContour mode: OFF(0), LOW(1), MID(2), HIGH(3) AUTO(4)\n");
+              scanf_ret = scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              printf("is save:(0 ~ 1)\n");
+              scanf_ret += scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+              if (scanf_ret != 2) break;
+
+              test->cmdID = PQ_SET_DECONTOUR;
+              break;
+          }
+          case 247: {
+              printf("PQ_GET_DECONTOUR\n");
+              test->cmdID = PQ_GET_DECONTOUR;
+              break;
+          }
+
           case 248: {
               printf("PQ_SET_DEBLOCK\n");
               printf("DeBlock: OFF(0), LOW(1), MID(2), HIGH(3), AUTO(4)\n");
@@ -1133,6 +1218,54 @@ int main(int argc, char **argv) {
           case 261: {
               printf("PQ_GET_AISR\n");
               test->cmdID = PQ_GET_AISR;
+              break;
+          }
+          case 262: {
+              printf("PQ_SET_LDIM\n");
+              printf("Ldim mode: OFF(0), LOW(1), MID(2), HIGH(3)\n");
+              scanf_ret = scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              printf("is save:(0 ~ 1)\n");
+              scanf_ret += scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+              if (scanf_ret != 2) break;
+
+              test->cmdID = PQ_SET_LDIM;
+              break;
+          }
+          case 263: {
+              printf("PQ_GET_LDIM\n");
+              test->cmdID = PQ_GET_LDIM;
+              break;
+          }
+          case 264: {
+              printf("PQ_SET_MPEGNR\n");
+              printf("mpeg nr mode: OFF(0), LOW(1), MID(2), HIGH(3)\n");
+              scanf_ret = scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              printf("is save:(0 ~ 1)\n");
+              scanf_ret += scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+              if (scanf_ret != 2) break;
+
+              test->cmdID = PQ_SET_MPEGNR;
+              break;
+          }
+          case 265: {
+              printf("PQ_GET_MPEGNR\n");
+              test->cmdID = PQ_GET_MPEGNR;
+              break;
+          }
+          case 266: {
+              printf("PQ_GET_COLORTEMP_USER_PARAM\n");
+              test->cmdID = PQ_GET_COLORTEMP_USER_PARAM;
+              break;
+          }
+          case 267: {
+              printf("PQ_SET_PICTURE_UI_CLEAR\n");
+              test->cmdID = PQ_SET_PICTURE_UI_CLEAR;
               break;
           }
           case 268: {
@@ -1268,6 +1401,22 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_GET_LAST_PICTURE_MODE;
               break;
           }
+          case 278: {
+              printf("PQ_SET_COLOR_CUSTOMIZE_ENABLE\n");
+              printf("Enable: OFF(0), ON(1)\n");
+              scanf_ret = scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              if (scanf_ret != 1) break;
+
+              test->cmdID = PQ_SET_COLOR_CUSTOMIZE_ENABLE;
+              break;
+          }
+          case 279: {
+              printf("PQ_GET_COLOR_CUSTOMIZE_ENABLE\n");
+              test->cmdID = PQ_GET_COLOR_CUSTOMIZE_ENABLE;
+            break;
+          }
           case 280: {
               printf("PQ_GET_DB_VERSION_INFO\n");
               printf("mode: pq.db(0), overscan.db(1)\n");
@@ -1280,6 +1429,38 @@ int main(int argc, char **argv) {
               if (scanf_ret != 2) break;
 
               test->cmdID = PQ_GET_DB_VERSION_INFO;
+              break;
+          }
+          case 281: {
+              printf("PQ_SET_WB_GAMMA_ENABLE\n");
+              printf("Enable: OFF(0), ON(1)\n");
+              scanf_ret = scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              if (scanf_ret != 1) break;
+
+              test->cmdID = PQ_SET_WB_GAMMA_ENABLE;
+              break;
+          }
+          case 282: {
+              printf("PQ_GET_WB_GAMMA_ENABLE\n");
+              test->cmdID = PQ_GET_WB_GAMMA_ENABLE;
+              break;
+          }
+          case 283: {
+              printf("PQ_SET_WB_GAMMA_MODE\n");
+              printf("Mode: 2POINT(0), 10POINT(1), 11POINT(2), 21POINT(3)\n");
+              scanf_ret = scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              if (scanf_ret != 1) break;
+
+              test->cmdID = PQ_SET_WB_GAMMA_MODE;
+              break;
+          }
+          case 284: {
+              printf("PQ_GET_WB_GAMMA_MODE\n");
+              test->cmdID = PQ_GET_WB_GAMMA_MODE;
               break;
           }
 
