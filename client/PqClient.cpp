@@ -1609,7 +1609,7 @@ int PqClient::GetWhitebalanceGammaMode(void)
     char buf[32] = {0};
     int  ret     = -1;
 
-    sprintf(buf, "pq.get.%d", PQ_SET_WB_GAMMA_MODE);
+    sprintf(buf, "pq.get.%d", PQ_GET_WB_GAMMA_MODE);
     SendMethodCall(buf);
 
     ret = atoi(mRetBuf);
