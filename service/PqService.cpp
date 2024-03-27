@@ -235,6 +235,9 @@ int PqService::SetCmd(pq_moudle_param_t param)
         case PQ_SET_WB_GAMMA_MODE:
             ret = mpPQcontrol->SetWbGammaMode(paramData[0]);
             break;
+        case PQ_SET_HDR_TONE_MAPPING_MODE:
+            ret = mpPQcontrol->SetHDRTMOMode((hdr_tmo_t)paramData[0], paramData[1]);
+            break;
 
         //Factory cmd
         case PQ_FACTORY_RESET_PICTURE_MODE:
@@ -549,6 +552,9 @@ char* PqService::GetCmd(pq_moudle_param_t param)
             break;
         case PQ_GET_WB_GAMMA_MODE:
             ret = mpPQcontrol->GetWbGammaMode();
+            break;
+        case PQ_GET_HDR_TONE_MAPPING_MODE:
+            ret = mpPQcontrol->GetHDRTMOMode();
             break;
 
         //Factory cmd

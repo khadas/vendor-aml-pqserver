@@ -146,6 +146,8 @@ public:
     int GetWhitebalanceGamma(int channel, int point);
     int SetSuperResolution(int mode, int isSave);
     int GetSuperResolution(void);
+    int SetHdrToneMappingMode(int mode, int isSave);
+    int GetHdrToneMappingMode(void);
     tvpq_databaseinfo_t GetDbVersionInfo(int mode, int type);
 
     int FactoryResetPQMode(void);

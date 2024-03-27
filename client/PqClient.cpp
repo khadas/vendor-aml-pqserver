@@ -1679,6 +1679,37 @@ int PqClient::GetSuperResolution(void)
     return ret;
 }
 
+int PqClient::SetHdrToneMappingMode(int mode, int isSave)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d", PQ_SET_HDR_TONE_MAPPING_MODE, mode, isSave);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::GetHdrToneMappingMode(void)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+
+    sprintf(buf, "pq.get.%d", PQ_GET_HDR_TONE_MAPPING_MODE);
+    SendMethodCall(buf);
+
+    int ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    return ret;
+}
+
 tvpq_databaseinfo_t PqClient::GetDbVersionInfo(int mode, int type)
 {
     LOGD("%s\n", __FUNCTION__);

@@ -367,6 +367,13 @@ public:
             ret = mpPqClient->GetWhitebalanceGammaMode();
             printf("%s: current Whitebalance Gamma Mode is %d\n", __FUNCTION__, ret);
             break;
+        case PQ_SET_HDR_TONE_MAPPING_MODE:
+            ret = mpPqClient->SetHdrToneMappingMode(setValue[0], setValue[1]);
+            break;
+        case PQ_GET_HDR_TONE_MAPPING_MODE:
+            ret = mpPqClient->GetHdrToneMappingMode();
+            printf("%s: current HDR ToneMapping Mode is %d\n", __FUNCTION__, ret);
+            break;
 
         //factory API
         case PQ_FACTORY_RESET_PICTURE_MODE:
@@ -639,6 +646,8 @@ int main(int argc, char **argv) {
     printf("#### select 282 to get wb gamma enable ####\n");
     printf("#### select 283 to set wb gamma mode ####\n");
     printf("#### select 284 to get wb gamma mode ####\n");
+    printf("#### select 285 to set hdr ToneMapping mode ####\n");
+    printf("#### select 286 to get hdr ToneMapping mode ####\n");
 
     printf("#### below is factory cmd####\n");
     printf("#### select 301 to reset pq mode ####\n");
@@ -1461,6 +1470,25 @@ int main(int argc, char **argv) {
           case 284: {
               printf("PQ_GET_WB_GAMMA_MODE\n");
               test->cmdID = PQ_GET_WB_GAMMA_MODE;
+              break;
+          }
+          case 285: {
+              printf("PQ_SET_HDR_TONE_MAPPING_MODE\n");
+              printf("Mode: OFF(0), DYNAMIC(1), STATIC(2)\n");
+              scanf_ret = scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              printf("is save:(0~1)\n");
+              scanf_ret += scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              if (scanf_ret != 2) break;
+              test->cmdID = PQ_SET_HDR_TONE_MAPPING_MODE;
+              break;
+          }
+          case 286: {
+              printf("PQ_GET_HDR_TONE_MAPPING_MODE\n");
+              test->cmdID = PQ_GET_HDR_TONE_MAPPING_MODE;
               break;
           }
 

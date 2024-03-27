@@ -96,6 +96,8 @@ typedef enum pqcmd_e {
     PQ_GET_WB_GAMMA_ENABLE        = 282,
     PQ_SET_WB_GAMMA_MODE          = 283,
     PQ_GET_WB_GAMMA_MODE          = 284,
+    PQ_SET_HDR_TONE_MAPPING_MODE  = 285,
+    PQ_GET_HDR_TONE_MAPPING_MODE  = 286,
 
     PQ_MODULE_CMD_MAX             = 299,
     //PQ factory(300~399)
