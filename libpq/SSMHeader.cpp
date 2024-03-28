@@ -322,9 +322,10 @@ struct SSMHeader_section2_t gSSMHeader_section2[] = {
     {.addr = 0, .size = 1, .valid = 0, .rsv = {0}},
     {.addr = 0, .size = MAX_PQ_SRC_INDEX * MAX_PQ_TIMMING_INDEX * 8, .valid = 0, .rsv = {0}},
     {.addr = 0, .size = 1, .valid = 0, .rsv = {0}},
+    {.addr = 0, .size = 1, .valid = 0, .rsv = {0}},
 };
 
 struct SSMHeader_section1_t gSSMHeader_section1 =
 {
-    .magic = 0x8f8f8f8f, .version = 3449175161, .count = 319, .rsv = {0}
+    .magic = 0x8f8f8f8f, .version = 3449175161, .count = 320, .rsv = {0}
 };

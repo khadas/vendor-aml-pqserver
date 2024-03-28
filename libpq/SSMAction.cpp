@@ -1654,3 +1654,17 @@ int SSMAction::SSMReadWhitebalanceGammaMode(int offset, int *rw_val) {
     return SSMReadNTypes(VPP_DATA_POS_WB_GAMMA_MODE_START, 1, rw_val, offset);
 }
 
+int SSMAction::SSMSaveFilmMakerMode(int rw_val)
+{
+    return SSMWriteNTypes(VPP_DATA_POS_FMM_MODE_START, 1, &rw_val);
+}
+
+int SSMAction::SSMReadFilmMakerMode(int *rw_val)
+{
+    int ret = 0;
+    int tmp_val = 0;
+    ret = SSMReadNTypes(VPP_DATA_POS_FMM_MODE_START, 1, &tmp_val);
+    *rw_val = tmp_val;
+
+    return ret;
+}

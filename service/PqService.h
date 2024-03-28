@@ -71,6 +71,8 @@ private:
 private:
     //used to send client binder proxy object pointer to pqserver, to realize service <--> client two-way communication
     int SetClientProxyToServer(sp<IBinder> callBack);
+    //remove callback
+    int RemovePqServiceCallBack(int callBackId);
     //used to libpq callback data to pqserver
     virtual void GetCbDataFromLibpq(CPQControlCb &cb_data);
 

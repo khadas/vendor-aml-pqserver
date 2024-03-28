@@ -238,6 +238,9 @@ int PqService::SetCmd(pq_moudle_param_t param)
         case PQ_SET_HDR_TONE_MAPPING_MODE:
             ret = mpPQcontrol->SetHDRTMOMode((hdr_tmo_t)paramData[0], paramData[1]);
             break;
+        case PQ_SET_FILM_MAKER_MODE:
+            ret = mpPQcontrol->SetFilmMakerMode((pq_film_maker_mode_t)paramData[0], paramData[1]);
+            break;
 
         //Factory cmd
         case PQ_FACTORY_RESET_PICTURE_MODE:
@@ -556,6 +559,9 @@ char* PqService::GetCmd(pq_moudle_param_t param)
         case PQ_GET_HDR_TONE_MAPPING_MODE:
             ret = mpPQcontrol->GetHDRTMOMode();
             break;
+        case PQ_GET_FILM_MAKER_MODE:
+            ret = mpPQcontrol->GetFilmMakerMode();
+            break;
 
         //Factory cmd
         case PQ_FACTORY_GET_COLOR_TEMPERATURE_MODE:
@@ -796,6 +802,11 @@ status_t PqService::onTransact(uint32_t code,
             LOGD("%s %s pqServiceCallBackID %d\n", __FUNCTION__, "CMD_SET_PQ_CB", pqServiceCallBackID);
             break;
         }
+        case CMD_CLR_PQ_CB: {
+            RemovePqServiceCallBack(data.readInt32());
+            LOGD("%s %s pqServiceCallBackID %d\n", __FUNCTION__, "CMD_CLR_PQ_CB", data.readInt32());
+            break;
+        }
         case CMD_PQ_SET_COLORTEMPERATURE_USER_PARAM: {
             int ret = -1;
             tcon_rgb_ogo_t Params;
@@ -880,6 +891,23 @@ int PqService::SetClientProxyToServer(sp<IBinder> callBack)
     }
 
     return ret;
+}
+
+int PqService::RemovePqServiceCallBack(int callBackId)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    int clientSize = mPqServiceCallBack.size();
+    if (callBackId < 0) {
+        LOGE("%s: invalid callBackId.\n", __FUNCTION__);
+    } else {
+        mPqServiceCallBack.erase(callBackId);
+    }
+
+    clientSize = mPqServiceCallBack.size();
+    LOGD("%s: now has %d pqclient after remove.\n", __FUNCTION__, clientSize);
+
+    return 0;
 }
 
 void PqService::GetCbDataFromLibpq(CPQControlCb &cb_data)

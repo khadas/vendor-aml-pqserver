@@ -391,6 +391,10 @@ public:
     int Cpq_SetDnlpMode(Dynamic_contrast_mode_t level, source_input_param_t source_input_param);
     int Cpq_SetDNLPStatus(enum dnlp_state_e status);
 
+    //FilmMaker mode
+    int SetFilmMakerMode(pq_film_maker_mode_t mode, int is_save);
+    int GetFilmMakerMode(void);
+
     //Factory
     int FactoryResetPQMode(void);
     int FactoryResetColorTemp(void);
@@ -609,7 +613,8 @@ private:
     int Cpq_SetVadjEnableStatus(int isvadj1Enable, int isvadj2Enable);
     bool IsAllmVrrUiFuncCtrl(int *allm_func_ctrl, int *vrr_func_ctrl);
     bool IsAllmVrrGameMode(void);
-    int SetPqModeToGame(pq_mode_to_game_t mode);
+    int Cpq_SetPqModeToGame(pq_mode_to_game_t mode);
+    int Cpq_SetPqModeToMonitor(int ui_fmm, int drv_fmm);
 
     int GetBaseGammaData(int level, GAMMA_TABLE *pData);
     int GetWBGammaData(int level, GAMMA_TABLE *pData);
@@ -663,6 +668,9 @@ private:
 
     int GetDriverValueMap(vpp_cms_type_t type, int value);
 
+    //FilmMaker mode
+    int SaveFilmMakerMode(pq_film_maker_mode_t mode);
+
     bool mInitialized                                   = false;
     //cfg
     bool mbCpqCfg_separate_db_enable                    = false;
@@ -714,6 +722,7 @@ private:
     bool mbDatabaseMatchChipStatus                      = false;
     bool mbVideoIsPlaying                               = false;//video don't playing
     bool mbResetPicture                                 = false;
+    bool mbFilmmakerModeFlag                            = false;
 
     CPQdb *mPQdb                                        = NULL;
     COverScandb *mpOverScandb                           = NULL;
@@ -746,8 +755,11 @@ private:
     enum hdr_type_e mCurrentHdrType                     = HDRTYPE_NONE;
 
     int mColorTuneEnable                                = 1;
+    int _unused                                         = -1;
 
     bool aAllmSrcFmtFlag[PQ_SRC_MAX][PQ_FMT_MAX];
+    bool aFmmSrcFmtFlag[PQ_SRC_MAX][PQ_FMT_MAX];
+
 
 //for callback to upper client
 public:
@@ -766,12 +778,12 @@ private:
     ICPQControlObserver *mpObserver; //to get upper pqserver object
 
     int mPreAllmGameMode = 0;
-    int mPreFilmMakerMode = 0;
+    int mPreFilmMakerMode[PQ_SRC_MAX][PQ_FMT_MAX];
     int mPreRefreshRate = 0;
 
     int Cpq_SetHdrType(int data);
     int Cpq_SetAllmStatus(void);
-    int Cpq_SetFilmMakerMode(int value);
+    int Cpq_SetFilmMakerMode(void);
     int Cpq_SetRefreshRate(void);
 };
 #endif

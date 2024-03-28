@@ -203,6 +203,10 @@ public:
     int SSMSaveWhitebalanceGammaMode(int offset, int rw_val);
     int SSMReadWhitebalanceGammaMode(int offset, int *rw_val);
 
+    //FilmMaker Mode UI status
+    int SSMSaveFilmMakerMode(int rw_val);
+    int SSMReadFilmMakerMode(int *rw_val);
+
     bool SetPictureMode(int PictureMode, int src, int timming);
     bool GetPictureMode(int *PictureMode, int src, int timming);
 

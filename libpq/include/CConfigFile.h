@@ -99,6 +99,7 @@
 #define CFG_CHMROMACORING_DEF                   "pq.ChromaCoring.def"
 #define CFG_LOCALDIMMING_DEF                    "pq.LocalDimming.def"
 #define CFG_DYNAMICBACKLIGHT_DEF                "pq.DynamicBacklight.def"
+#define CFG_FMM_MODE_DEF                        "pq.FilmMakerMode.def"
 
 //for backlight
 #define CFG_SECTION_BACKLIGHT                   "BACKLIGHT"

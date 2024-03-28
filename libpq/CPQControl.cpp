@@ -498,9 +498,16 @@ void CPQControl::onVframeSizeChange()
         int videoPlayStartEventFlag = (eventFlagValue & 0x4) >> 2;
         int videoPlayStopEventFlag  = (eventFlagValue & 0x8) >> 3;
         //int videoPlayAxisEventFlag = (eventFlagValue & 0x10) >> 4;
-        /*LOGD("%s: frameszieEventFlag = %d,hdrTypeEventFlag = %d,videoPlayStartEventFlag = %d,videoPlayStopEventFlag = %d,videoPlayAxisEventFlag = %d!\n",
-                 __FUNCTION__, frameszieEventFlag, hdrTypeEventFlag, videoPlayStartEventFlag, videoPlayStopEventFlag,
-                 videoPlayAxisEventFlag);*/
+        int FilmmakerModeFlag        = (eventFlagValue & 0x20) >> 5;
+        int FilmmakerModeDisableFlag = (eventFlagValue & 0x40) >> 6;
+        /*
+        LOGD("%s: frameszieEventFlag = %d, hdrTypeEventFlag = %d, videoPlayStartEventFlag = %d,"
+             "videoPlayStopEventFlag = %d, videoPlayAxisEventFlag = %d, FilmmakerModeFlag = %d,"
+             "FilmmakerModeDisableFlag = %d!\n", __FUNCTION__,
+             frameszieEventFlag, hdrTypeEventFlag, videoPlayStartEventFlag, videoPlayStopEventFlag,
+             videoPlayAxisEventFlag, FilmmakerModeFlag, FilmmakerModeDisableFlag);
+        */
+
         if ((videoPlayStartEventFlag == 1) && (videoPlayStopEventFlag == 0)) {
             mbVideoIsPlaying = true;
         } else if ((videoPlayStartEventFlag == 0) && (videoPlayStopEventFlag == 1)) {
@@ -543,6 +550,16 @@ void CPQControl::onVframeSizeChange()
             }
         } else {
             LOGD("%s: not hdrInfo event\n", __FUNCTION__);
+        }
+
+        if (FilmmakerModeFlag == 1) {
+            LOGD("%s: VIDEO_PROP_CHANGE_FMM trigger amlvideo_poll event wake_up\n", __FUNCTION__);
+            mbFilmmakerModeFlag = true;
+            Cpq_SetFilmMakerMode();
+        } else if (FilmmakerModeDisableFlag == 1) {
+            LOGD("%s: VIDEO_PROP_CHANGE_FMM_DISABLE trigger amlvideo_poll event wake_up\n", __FUNCTION__);
+            mbFilmmakerModeFlag = false;
+            Cpq_SetFilmMakerMode();
         }
     } else {
         LOGE("%s: read video event failed!\n", __FUNCTION__);
@@ -695,6 +712,8 @@ int CPQControl::SetCurrenSourceInfo(struct tvin_parm_s sig_info)
             source_input_param.sig_fmt      = mCurrentSignalInfo.info.fmt;
             source_input_param.trans_fmt    = mCurrentSignalInfo.info.trans_fmt;
             SetCurrentSourceInputInfo(source_input_param);
+
+            Cpq_SetFilmMakerMode();
         }
     }
 
@@ -726,7 +745,8 @@ void CPQControl::onAllmOrVrrStatusChange(void)
     if (ret < 0) {
         LOGD("%s Get vrr or allm status error\n", __FUNCTION__);
     } else {
-        SetPqModeToGame(TO_GAME_BY_SIG_CHG_DV_ALLM);
+        Cpq_SetPqModeToGame(TO_GAME_BY_SIG_CHG_DV_ALLM);
+        Cpq_SetFilmMakerMode();
     }
 }
 
@@ -957,6 +977,12 @@ void CPQControl::resetPQUiSetting(void)
     mSSMAction->SetPictureMode(VPP_PICTURE_MODE_DOLVI_BRIGHT, PQ_SRC_DTV, PQ_FMT_DOLVI);
 
     mSSMAction->SetLastPictureMode(VPP_PICTURE_MODE_STANDARD, PQ_SRC_DEFAULT, PQ_FMT_DEFAULT);
+    mSSMAction->SetLastPictureMode(VPP_PICTURE_MODE_DOLVI_BRIGHT, PQ_SRC_HDMI1, PQ_FMT_DOLVI);
+    mSSMAction->SetLastPictureMode(VPP_PICTURE_MODE_DOLVI_BRIGHT, PQ_SRC_HDMI2, PQ_FMT_DOLVI);
+    mSSMAction->SetLastPictureMode(VPP_PICTURE_MODE_DOLVI_BRIGHT, PQ_SRC_HDMI3, PQ_FMT_DOLVI);
+    mSSMAction->SetLastPictureMode(VPP_PICTURE_MODE_DOLVI_BRIGHT, PQ_SRC_HDMI4, PQ_FMT_DOLVI);
+    mSSMAction->SetLastPictureMode(VPP_PICTURE_MODE_DOLVI_BRIGHT, PQ_SRC_MPEG, PQ_FMT_DOLVI);
+    mSSMAction->SetLastPictureMode(VPP_PICTURE_MODE_DOLVI_BRIGHT, PQ_SRC_DTV, PQ_FMT_DOLVI);
 
     for (i = PQ_SRC_DEFAULT; i < PQ_SRC_MAX; i++) {
         for (j = PQ_FMT_DEFAULT; j < PQ_FMT_MAX; j++) {
@@ -1095,6 +1121,9 @@ void CPQControl::resetPQTableSetting(void)
     }
 
     mSSMAction->SSMSaveWhitebalanceGammaMode(0, WB_GAMMA_MODE_11POINT);
+
+    config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_FMM_MODE_DEF, FILM_MAKER_MODE_DISABLE);
+    mSSMAction->SSMSaveFilmMakerMode(config_val);
 
     return;
 }
@@ -1732,9 +1761,9 @@ int CPQControl::SavePQMode(int pq_mode)
 int CPQControl::GetLastPQMode(void)
 {
     int mode = VPP_PICTURE_MODE_STANDARD;
-    if ( mbCpqCfg_new_picture_mode_enable) {
+    if (mbCpqCfg_new_picture_mode_enable) {
         if (GetLastPictureMode((vpp_picture_mode_t *)&mode) != true) {
-            LOGE("%s GetPictureMode failed!\n", __FUNCTION__);
+            LOGE("%s GetLastPictureMode failed!\n", __FUNCTION__);
             return mode;
         }
     } else {
@@ -1753,9 +1782,9 @@ int CPQControl::SaveLastPQMode(int pq_mode)
 {
     int ret = -1;
     LOGD("%s, source: %d, timing: %d, mode: %d\n", __FUNCTION__, CurSource, CurTimming, pq_mode);
-    if ( mbCpqCfg_new_picture_mode_enable) {
+    if (mbCpqCfg_new_picture_mode_enable) {
         if (SetLastPictureMode((vpp_picture_mode_t)pq_mode) != true) {
-            LOGE("%s: SetPictureMode fail\n", __FUNCTION__);
+            LOGE("%s: SetLastPictureMode fail\n", __FUNCTION__);
             return -1;
         }
         return 0;
@@ -8401,7 +8430,7 @@ int CPQControl::SetCurrentSourceInputInfo(source_input_param_t source_input_para
         SetDisplayMode(display_mode, 1);
 
         //judge&triger to set game or not, when switch vdin different signal
-        SetPqModeToGame(TO_GAME_BY_SIG_CHG_STS_DIFF_SIG);
+        Cpq_SetPqModeToGame(TO_GAME_BY_SIG_CHG_STS_DIFF_SIG);
 
         //load pq setting
         if (source_input_param.sig_fmt == TVIN_SIG_FMT_NULL) {//exit source
@@ -8446,7 +8475,7 @@ int CPQControl::SetCurrentSourceInputInfo(source_input_param_t source_input_para
         LOGD("%s: same signal, no need set\n", __FUNCTION__);
 
         //judge&triger to set game or not, when switch vdin same signal, patch for vdin
-        SetPqModeToGame(TO_GAME_BY_SIG_CHG_STS_SAME_SIG);
+        Cpq_SetPqModeToGame(TO_GAME_BY_SIG_CHG_STS_SAME_SIG);
     }
 
     if (mCurrentSignalInfo.info.status == TVIN_SIG_STATUS_STABLE) {
@@ -8522,7 +8551,7 @@ bool CPQControl::IsAllmVrrGameMode(void)
     return (game_condition > 0) ? true : false;
 }
 
-int CPQControl::SetPqModeToGame(pq_mode_to_game_t mode)
+int CPQControl::Cpq_SetPqModeToGame(pq_mode_to_game_t mode)
 {
     LOGD("%s: mode:%d src:%d fmt:%d\n", __FUNCTION__, mode, CurSource, CurTimming);
 
@@ -8561,6 +8590,45 @@ int CPQControl::SetPqModeToGame(pq_mode_to_game_t mode)
             }
 
             aAllmSrcFmtFlag[CurSource][CurTimming] = false;
+        } else {
+            LOGD("%s: no need recovery\n", __FUNCTION__);
+        }
+    }
+
+    return 0;
+}
+
+int CPQControl::Cpq_SetPqModeToMonitor(int ui_fmm, int drv_fmm)
+{
+    LOGD("%s: ui_fmm:%d drv_fmm:%d\n", __FUNCTION__, ui_fmm, drv_fmm);
+
+    if (ui_fmm == (int)FILM_MAKER_MODE_AUTO) {
+        if (drv_fmm == 1) {
+            LOGD("%s: set to monitor\n", __FUNCTION__);
+            SetPQMode((int)VPP_PICTURE_MODE_MONITOR, 1);
+
+            //remember which src + which timming done FMM setting, for next time to recovery
+            aFmmSrcFmtFlag[CurSource][CurTimming] = true;
+        } else {
+            if (aFmmSrcFmtFlag[CurSource][CurTimming] == true) {
+                int last_pq_mode = GetLastPQMode();
+                LOGD("%s: recovery to last pq mode:%d\n", __FUNCTION__, last_pq_mode);
+
+                SetPQMode(last_pq_mode, 1);
+
+                aFmmSrcFmtFlag[CurSource][CurTimming] = false;
+            } else {
+                LOGD("%s: no need recovery\n", __FUNCTION__);
+            }
+        }
+    } else {
+        if (aFmmSrcFmtFlag[CurSource][CurTimming] == true) {
+            int last_pq_mode = GetLastPQMode();
+            LOGD("%s: recovery to last pq mode:%d\n", __FUNCTION__, last_pq_mode);
+
+            SetPQMode(last_pq_mode, 1);
+
+            aFmmSrcFmtFlag[CurSource][CurTimming] = false;
         } else {
             LOGD("%s: no need recovery\n", __FUNCTION__);
         }
@@ -9368,6 +9436,54 @@ int CPQControl::Cpq_SetLocalDimming(vpp_pq_level_t level)
     return 0;
 }
 
+int CPQControl::SetFilmMakerMode(pq_film_maker_mode_t mode, int is_save)
+{
+    LOGD("%s, mode = %d\n", __FUNCTION__, mode);
+    int ret = -1;
+
+    if (is_save == 1) {
+        ret = SaveFilmMakerMode(mode);
+    }
+
+    ret = Cpq_SetFilmMakerMode();
+
+    if (ret < 0) {
+        LOGE("%s failed\n",__FUNCTION__);
+    } else {
+        LOGD("%s success\n",__FUNCTION__);
+    }
+
+    return ret;
+}
+
+int CPQControl::GetFilmMakerMode(void)
+{
+    int mode = FILM_MAKER_MODE_DISABLE;
+
+    if (mSSMAction->SSMReadFilmMakerMode(&mode) < 0) {
+        LOGE("%s, SSMReadFilmMakerMode ERROR!!!\n", __FUNCTION__);
+        return FILM_MAKER_MODE_DISABLE;
+    }
+
+    if (mode < FILM_MAKER_MODE_DISABLE || mode >= FILM_MAKER_MODE_MAX) {
+        mode = FILM_MAKER_MODE_DISABLE;
+    }
+
+    LOGD("%s, mode = %d\n", __FUNCTION__, mode);
+    return mode;
+}
+
+int CPQControl::SaveFilmMakerMode(pq_film_maker_mode_t mode)
+{
+    int ret = mSSMAction->SSMSaveFilmMakerMode((int)mode);
+
+    if (ret < 0) {
+        LOGE("%s failed\n",__FUNCTION__);
+    }
+
+    return ret;
+}
+
 void CPQControl::resetAllUserSettingParam()
 {
     int i = 0, config_val = 0;
@@ -9560,6 +9676,9 @@ void CPQControl::resetAllUserSettingParam()
             mSSMAction->SetWhitebalanceGammaData(&WBGamm, PQ_SRC_DEFAULT, PQ_FMT_DEFAULT, i, j);
         }
     }
+
+    config_val = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_FMM_MODE_DEF, FILM_MAKER_MODE_DISABLE);
+    mSSMAction->SSMSaveFilmMakerMode(config_val);
 
     return;
 }
@@ -9865,9 +9984,13 @@ int CPQControl::Cpq_SetAllmStatus(void)
     return 0;
 }
 
-int CPQControl::Cpq_SetFilmMakerMode(int value)
+int CPQControl::Cpq_SetFilmMakerMode(void)
 {
     int mFilmMakerMode = 0;
+    int ui_fmm = (int)FILM_MAKER_MODE_DISABLE;
+
+    LOGD("%s: mCurrentSourceInputInfo.source_input:%d, CurSource:%d, CurTimming:%d\n", __FUNCTION__,
+         mCurrentSourceInputInfo.source_input, CurSource, CurTimming);
 
     if (mCurrentSourceInputInfo.source_input >= SOURCE_HDMI1 &&
         mCurrentSourceInputInfo.source_input <= SOURCE_HDMI4) {
@@ -9876,17 +9999,26 @@ int CPQControl::Cpq_SetFilmMakerMode(int value)
             mFilmMakerMode = 1;
         }
     } else if (mCurrentSourceInputInfo.source_input == SOURCE_MPEG) {
-        if (value == 1) {
+        if (mbFilmmakerModeFlag == true) {
             mFilmMakerMode = 1;
         }
     } else {
-        LOGD("%s: reset mPreFilmMakerMode\n", __FUNCTION__);
-        mPreFilmMakerMode = 0;
+        //nothing
     }
 
-    LOGD("%s: mFilmMakerMode:%d mPreFilmMakerMode:%d\n", __FUNCTION__, mFilmMakerMode, mPreFilmMakerMode);
+    ui_fmm = GetFilmMakerMode();
+    if (ui_fmm == (int)FILM_MAKER_MODE_DISABLE) {
+        //when ui func is disable, no need care driver fmm infor is on or off
+        mFilmMakerMode = 0;
+        LOGD("%s: fix mFilmMakerMode to 0 when ui is disable\n", __FUNCTION__);
+    }
 
-    if (mPreFilmMakerMode != mFilmMakerMode) {
+    LOGD("%s: mFilmMakerMode:%d, mPreFilmMakerMode[%d][%d]:%d\n", __FUNCTION__,
+         mFilmMakerMode, CurSource, CurTimming, mPreFilmMakerMode[CurSource][CurTimming]);
+
+    if (mPreFilmMakerMode[CurSource][CurTimming] != mFilmMakerMode) {
+        Cpq_SetPqModeToMonitor(ui_fmm, mFilmMakerMode);
+
         if (mpObserver != NULL) {
             PQControlCb::FilmMakerModeCb cb_data;
             cb_data.mFilmMakerMode = mFilmMakerMode;
@@ -9896,7 +10028,7 @@ int CPQControl::Cpq_SetFilmMakerMode(int value)
             return -1;
         }
 
-        mPreFilmMakerMode = mFilmMakerMode;
+        mPreFilmMakerMode[CurSource][CurTimming] = mFilmMakerMode;
     }
 
     return 0;
@@ -10464,6 +10596,9 @@ bool CPQControl::ResetPictureMode(void)
         if (!mSSMAction->SetPictureMode((int)pqmode, (int)CurSource, (int)CurTimming)) {
             LOGE("%s SetPictureMode fail\n", __FUNCTION__);
         }
+        if (!mSSMAction->SetLastPictureMode((int)pqmode, (int)CurSource, (int)CurTimming)) {
+            LOGE("%s SetLastPictureMode fail\n", __FUNCTION__);
+        }
     }
 
     return true;
@@ -10486,8 +10621,17 @@ bool CPQControl::ResetPictureModeBySrc(void)
             if (!mSSMAction->SetPictureMode((int)pqmode, (int)CurSource, j)) {
                 LOGE("%s SetPictureMode fail\n", __FUNCTION__);
             }
+        }
 
-            mSSMAction->SSMSaveLastPictureMode((int)CurSource * PQ_FMT_MAX + j, (int)pqmode);
+        if (mSSMAction->GetLastPictureMode((int *)&pqmode, (int)CurSource, j)) {
+            if (j == PQ_FMT_DOLVI) {
+                pqmode = VPP_PICTURE_MODE_DOLVI_BRIGHT;
+            } else {
+                pqmode = VPP_PICTURE_MODE_STANDARD;
+            }
+            if (!mSSMAction->SetLastPictureMode((int)pqmode, (int)CurSource, j)) {
+                LOGE("%s SetLastPictureMode fail\n", __FUNCTION__);
+            }
         }
     }
 
@@ -10513,8 +10657,9 @@ bool CPQControl::ResetPictureModeAll(void)
                 if (!mSSMAction->SetPictureMode((int)pqmode, i, j)) {
                     LOGE("%s SetPictureMode fail\n", __FUNCTION__);
                 }
-
-                mSSMAction->SSMSaveLastPictureMode(i * PQ_FMT_MAX + j, (int)pqmode);
+                if (!mSSMAction->SetLastPictureMode((int)pqmode, i, j)) {
+                    LOGE("%s SetLastPictureMode fail\n", __FUNCTION__);
+                }
             }
         }
     }

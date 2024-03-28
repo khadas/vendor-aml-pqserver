@@ -98,6 +98,8 @@ typedef enum pqcmd_e {
     PQ_GET_WB_GAMMA_MODE          = 284,
     PQ_SET_HDR_TONE_MAPPING_MODE  = 285,
     PQ_GET_HDR_TONE_MAPPING_MODE  = 286,
+    PQ_SET_FILM_MAKER_MODE        = 287,
+    PQ_GET_FILM_MAKER_MODE        = 288,
 
     PQ_MODULE_CMD_MAX             = 299,
     //PQ factory(300~399)

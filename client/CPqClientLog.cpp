@@ -22,7 +22,7 @@ constexpr int LOG_LEVEL_INFO = 3;
 constexpr int LOG_LEVEL_DEBUG = 4;
 constexpr int LOG_LEVEL_DEFAULT = 5;
 
-static int pq_log_level = LOG_LEVEL_INFO;
+static int pq_log_level = LOG_LEVEL_DEFAULT;
 
 static int __level_tag_to_int(const char *level_tag)
 {

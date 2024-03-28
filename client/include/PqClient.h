@@ -127,13 +127,10 @@ public:
     vpp_single_color_param_cm_t GetColorCustomize(int color);
     int SetColorCustomizeEnable(int enable);
     int GetColorCustomizeEnable(void);
-
     int SetWhitebalanceGammaEnable(int enable);
     int GetWhitebalanceGammaEnable(void);
-
     int SetWhitebalanceGammaMode(int mode);
     int GetWhitebalanceGammaMode(void);
-
     int SetColorCustomizeBy3DLut(int color, int type, int value, int isSave);
     vpp_single_color_param_3dlut_t GetColorCustomizeBy3DLut(int color);
     int ResetColorCustomize(int mode);
@@ -149,6 +146,8 @@ public:
     int SetHdrToneMappingMode(int mode, int isSave);
     int GetHdrToneMappingMode(void);
     tvpq_databaseinfo_t GetDbVersionInfo(int mode, int type);
+    int SetFilmMakerMode(int mode, int isSave);
+    int GetFilmMakerMode(void);
 
     int FactoryResetPQMode(void);
     int FactoryResetColorTemp(void);

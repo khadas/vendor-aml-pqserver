@@ -739,4 +739,10 @@ typedef enum pq_wb_rgb_data_path_e {
     WB_RGB_DATA_PATH_SSM,
 } pq_wb_rgb_data_path_t;
 
+typedef enum pq_film_maker_mode_e {
+    FILM_MAKER_MODE_DISABLE = 0,
+    FILM_MAKER_MODE_AUTO,
+    FILM_MAKER_MODE_MAX,
+} pq_film_maker_mode_t;
+
 #endif

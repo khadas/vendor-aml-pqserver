@@ -374,6 +374,13 @@ public:
             ret = mpPqClient->GetHdrToneMappingMode();
             printf("%s: current HDR ToneMapping Mode is %d\n", __FUNCTION__, ret);
             break;
+        case PQ_SET_FILM_MAKER_MODE:
+            ret = mpPqClient->SetFilmMakerMode(setValue[0], setValue[1]);
+            break;
+        case PQ_GET_FILM_MAKER_MODE:
+            ret = mpPqClient->GetFilmMakerMode();
+            printf("%s: current Film Maker Mode is %d\n", __FUNCTION__, ret);
+            break;
 
         //factory API
         case PQ_FACTORY_RESET_PICTURE_MODE:
@@ -648,6 +655,8 @@ int main(int argc, char **argv) {
     printf("#### select 284 to get wb gamma mode ####\n");
     printf("#### select 285 to set hdr ToneMapping mode ####\n");
     printf("#### select 286 to get hdr ToneMapping mode ####\n");
+    printf("#### select 287 to set film maker mode ####\n");
+    printf("#### select 288 to get film maker mode ####\n");
 
     printf("#### below is factory cmd####\n");
     printf("#### select 301 to reset pq mode ####\n");
@@ -1489,6 +1498,25 @@ int main(int argc, char **argv) {
           case 286: {
               printf("PQ_GET_HDR_TONE_MAPPING_MODE\n");
               test->cmdID = PQ_GET_HDR_TONE_MAPPING_MODE;
+              break;
+          }
+          case 287: {
+              printf("PQ_SET_FILM_MAKER_MODE\n");
+              printf("Mode: Disable(0), Auto(1)\n");
+              scanf_ret = scanf("%d", &mode);
+              test->setValue[0] = mode;
+
+              printf("is save:(0~1)\n");
+              scanf_ret += scanf("%d", &is_save);
+              test->setValue[1] = is_save;
+
+              if (scanf_ret != 2) break;
+              test->cmdID = PQ_SET_FILM_MAKER_MODE;
+              break;
+          }
+          case 288: {
+              printf("PQ_GET_FILM_MAKER_MODE\n");
+              test->cmdID = PQ_GET_FILM_MAKER_MODE;
               break;
           }
 

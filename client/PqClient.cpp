@@ -59,9 +59,13 @@ PqClient::PqClient() {
 
 PqClient::~PqClient() {
     mInstance = NULL;
-    Parcel send, reply;
-    mpqServicebinder->transact(CMD_CLR_PQ_CB, send, &reply);
-    mpqServicebinder = NULL;
+    if (mpqServicebinder != NULL) {
+        Parcel send, reply;
+        send.writeInt32(mpqServicebinderId);
+        mpqServicebinder->transact(CMD_CLR_PQ_CB, send, &reply);
+        mpqServicebinder = NULL;
+    }
+    LOGD("%s\n", __FUNCTION__);
 }
 
 void PqClient::SendMethodCall(char *CmdString)
@@ -1728,6 +1732,45 @@ tvpq_databaseinfo_t PqClient::GetDbVersionInfo(int mode, int type)
     return ver_info;
 }
 
+int PqClient::SetFilmMakerMode(int mode, int isSave)
+{
+    /*
+     * int mode: 0(Disable), 1(Auto)
+     */
+
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+    int  ret     = -1;
+
+    sprintf(buf, "pq.set.%d.%d.%d", PQ_SET_FILM_MAKER_MODE, mode, isSave);
+    SendMethodCall(buf);
+
+    ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d\n", ret);
+
+    return ret;
+}
+
+int PqClient::GetFilmMakerMode(void)
+{
+    LOGD("%s\n", __FUNCTION__);
+
+    char buf[32] = {0};
+
+    sprintf(buf, "pq.get.%d", PQ_GET_FILM_MAKER_MODE);
+    SendMethodCall(buf);
+
+    int ret = atoi(mRetBuf);
+    LOGE("PqClient: ret %d.\n", ret);
+
+    /*
+     * return: 0(Disable), 1(Auto)
+     */
+
+    return ret;
+}
+
 //PQ Factory cmd
 int PqClient::FactoryResetPQMode(void)
 {
@@ -2574,8 +2617,6 @@ int PqClient::GetFilmMakerFromPqserver(const void* param)
 
     return 0;
 }
-
-
 
 int PqClient::GetRefreshRateFromPqserver(const void* param)
 {

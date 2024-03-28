@@ -26,7 +26,7 @@ public:
 
     ~PqCbTest()
     {
-
+      delete mpPqClient;
     }
 
     void GetPqCbData(CPqClientCb &cb_data) {
@@ -69,6 +69,8 @@ public:
 };
 
 
+PqCbTest *cbtest = NULL;
+
 int main(int argc, char **argv) {
     int run = -1;
 
@@ -92,8 +94,23 @@ int main(int argc, char **argv) {
             printf("%s register client to pqserver\n", __FUNCTION__);
             sp<ProcessState> proc(ProcessState::self());
             proc->startThreadPool();
-            PqCbTest *cbtest = new PqCbTest();
-            printf("%s cbtest %p\n", __FUNCTION__, cbtest);
+            //PqCbTest *cbtest = new PqCbTest();
+            cbtest = new PqCbTest();
+            if (cbtest == NULL) {
+              printf("%s cbtest is NULL\n", __FUNCTION__);
+            } else {
+              printf("%s cbtest %p\n", __FUNCTION__, cbtest);
+            }
+            break;
+          }
+          case 'q': {
+            printf("%s quit client\n", __FUNCTION__);
+            if (cbtest == NULL) {
+              printf("%s cbtest is NULL\n", __FUNCTION__);
+            } else {
+              delete cbtest;
+              printf("%s delete cbtest\n", __FUNCTION__);
+            }
             break;
           }
           case '0': {
