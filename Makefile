@@ -43,6 +43,8 @@ pq_SRCS = \
   $(LOCAL_PATH)/libpq/CVdin.cpp \
   $(LOCAL_PATH)/libpq/CAmdolbyVision.cpp \
   $(LOCAL_PATH)/libpq/GammaOperation.cpp \
+  $(LOCAL_PATH)/libpq/miniz.cpp \
+  $(LOCAL_PATH)/libpq/Minizip.cpp \
   $(NULL)
 
 pq_HEADERS = \

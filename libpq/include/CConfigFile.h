@@ -179,6 +179,7 @@ public:
     static CConfigFile *GetInstance();
     bool isFileExist(const char *file_name);
     void GetDvFilePath(char *bin_file_path, char *cfg_file_path);
+    void GePqDbFilePath(char *db_file_path);
     int LoadFromFile(const char *filename);
     int SaveToFile(const char *filename = NULL);
     int SetString(const char *section, const char *key, const char *value);
