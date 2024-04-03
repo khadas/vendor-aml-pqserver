@@ -3,6 +3,7 @@
 # aml_pqserver
 #
 ################################################################################
+OUT_DIR ?= .
 LOCAL_PATH = $(shell pwd)
 LDFLAGS += -Wl,--no-as-needed -lstdc++ -lpthread -lz -ldl -lrt -L$(STAGING_DIR)/usr/lib
 CFLAGS += -Wall -Werror -Wno-unknown-pragmas -Wno-format -Wno-format-security -Wno-error=unused-result \
@@ -18,6 +19,7 @@ endif
 LIBBINDER_LDFLAGS = -lbinder -llog
 
 LDFLAGS += $(LIBBINDER_LDFLAGS)
+CFLAGS += -L $(OUT_DIR)/
 
 ################################################################################
 # libpq.so - src files
@@ -81,41 +83,41 @@ pqcbtest_SRCS  = \
 
 # ---------------------------------------------------------------------
 #  Build rules
-BUILD_TARGETS = libpqclient.so libpq.so pqservice pqtest pqcbtest
+BUILD_TARGETS = $(OUT_DIR)/libpqclient.so $(OUT_DIR)/libpq.so $(OUT_DIR)/pqservice $(OUT_DIR)/pqtest $(OUT_DIR)/pqcbtest
 
 .PHONY: all install uninstall clean
 
-libpqclient.so: $(pqclient_SRCS)
+$(OUT_DIR)/libpqclient.so: $(pqclient_SRCS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -shared -fPIC -I$(pqclient_HEADERS) \
 	-o $@ $^ $(LDLIBS)
 
-libpq.so: $(pq_SRCS)
+$(OUT_DIR)/libpq.so: $(pq_SRCS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -shared -fPIC -lsqlite3 -I$(pq_HEADERS) \
 	-o $@ $^ $(LDLIBS)
 
-pqservice: $(pqservice_SRCS) libpq.so
+$(OUT_DIR)/pqservice: $(pqservice_SRCS) $(OUT_DIR)/libpq.so
 	$(CC) $(CFLAGS) $(LDFLAGS) -I$(pq_HEADERS) \
 	-L$(LOCAL_PATH) -lpq -o $@ $^ $(LDLIBS)
 
-pqtest: $(pqtest_SRCS) libpqclient.so
+$(OUT_DIR)/pqtest: $(pqtest_SRCS) $(OUT_DIR)/libpqclient.so
 	$(CC) $(CFLAGS) -I$(pqclient_HEADERS) -L$(LOCAL_PATH) \
 	-lpqclient $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
-pqcbtest: $(pqcbtest_SRCS) libpqclient.so
+$(OUT_DIR)/pqcbtest: $(pqcbtest_SRCS) $(OUT_DIR)/libpqclient.so
 	$(CC) $(CFLAGS) -I$(pqclient_HEADERS) -L$(LOCAL_PATH) \
 	-lpqclient $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 all: $(BUILD_TARGETS)
 
 clean:
-	rm -f *.o $(BUILD_TARGETS)
+	rm -f $(OUT_DIR)/*.o $(BUILD_TARGETS)
 
 install:
-	install -m 0644 libpqclient.so $(TARGET_DIR)/usr/lib
-	install -m 0644 libpq.so $(TARGET_DIR)/usr/lib/
-	install -m 755 pqservice $(TARGET_DIR)/usr/bin/
-	install -m 755 pqtest $(TARGET_DIR)/usr/bin/
-	install -m 755 pqcbtest $(TARGET_DIR)/usr/bin/
+	install -m 0644 $(OUT_DIR)/libpqclient.so $(TARGET_DIR)/usr/lib
+	install -m 0644 $(OUT_DIR)/libpq.so $(TARGET_DIR)/usr/lib/
+	install -m 755 $(OUT_DIR)/pqservice $(TARGET_DIR)/usr/bin/
+	install -m 755 $(OUT_DIR)/pqtest $(TARGET_DIR)/usr/bin/
+	install -m 755 $(OUT_DIR)/pqcbtest $(TARGET_DIR)/usr/bin/
 
 uninstall:
 	rm -f $(TARGET_DIR)/usr/lib/libpqclient.so
