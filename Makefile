@@ -19,7 +19,7 @@ endif
 LIBBINDER_LDFLAGS = -lbinder -llog
 
 LDFLAGS += $(LIBBINDER_LDFLAGS)
-CFLAGS += -L $(OUT_DIR)/
+LDFLAGS += -L $(OUT_DIR)/
 
 ################################################################################
 # libpq.so - src files
@@ -83,34 +83,36 @@ pqcbtest_SRCS  = \
 
 # ---------------------------------------------------------------------
 #  Build rules
-BUILD_TARGETS = $(OUT_DIR)/libpqclient.so $(OUT_DIR)/libpq.so $(OUT_DIR)/pqservice $(OUT_DIR)/pqtest $(OUT_DIR)/pqcbtest
+BUILD_TARGETS = libpqclient.so libpq.so pqservice pqtest pqcbtest
+BUILD_TARGETS_FULLPATH := $(patsubst %, $(OUT_DIR)/%, $(BUILD_TARGETS))
+$(info LOCAL_TARGETS_FULLPATH = $(BUILD_TARGETS_FULLPATH))
 
 .PHONY: all install uninstall clean
 
-$(OUT_DIR)/libpqclient.so: $(pqclient_SRCS)
+libpqclient.so: $(pqclient_SRCS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -shared -fPIC -I$(pqclient_HEADERS) \
-	-o $@ $^ $(LDLIBS)
+	-o $(OUT_DIR)/$@ $^ $(LDLIBS)
 
-$(OUT_DIR)/libpq.so: $(pq_SRCS)
+libpq.so: $(pq_SRCS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -shared -fPIC -lsqlite3 -I$(pq_HEADERS) \
-	-o $@ $^ $(LDLIBS)
+	-o $(OUT_DIR)/$@ $^ $(LDLIBS)
 
-$(OUT_DIR)/pqservice: $(pqservice_SRCS) $(OUT_DIR)/libpq.so
+pqservice: $(pqservice_SRCS) libpq.so
 	$(CC) $(CFLAGS) $(LDFLAGS) -I$(pq_HEADERS) \
-	-L$(LOCAL_PATH) -lpq -o $@ $^ $(LDLIBS)
+	-L$(LOCAL_PATH) -lpq -o $(OUT_DIR)/$@ $(patsubst %.so, $(OUT_DIR)/%.so, $^) $(LDLIBS)
 
-$(OUT_DIR)/pqtest: $(pqtest_SRCS) $(OUT_DIR)/libpqclient.so
+pqtest: $(pqtest_SRCS) libpqclient.so
 	$(CC) $(CFLAGS) -I$(pqclient_HEADERS) -L$(LOCAL_PATH) \
-	-lpqclient $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	-lpqclient $(LDFLAGS) -o $(OUT_DIR)/$@ $(patsubst %.so, $(OUT_DIR)/%.so, $^) $(LDLIBS)
 
-$(OUT_DIR)/pqcbtest: $(pqcbtest_SRCS) $(OUT_DIR)/libpqclient.so
+pqcbtest: $(pqcbtest_SRCS) libpqclient.so
 	$(CC) $(CFLAGS) -I$(pqclient_HEADERS) -L$(LOCAL_PATH) \
-	-lpqclient $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	-lpqclient $(LDFLAGS) -o $(OUT_DIR)/$@ $(patsubst %.so, $(OUT_DIR)/%.so, $^) $(LDLIBS)
 
 all: $(BUILD_TARGETS)
 
 clean:
-	rm -f $(OUT_DIR)/*.o $(BUILD_TARGETS)
+	rm -f $(OUT_DIR)/*.o $(BUILD_TARGETS_FULLPATH)
 
 install:
 	install -m 0644 $(OUT_DIR)/libpqclient.so $(TARGET_DIR)/usr/lib
