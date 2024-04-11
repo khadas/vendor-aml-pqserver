@@ -980,16 +980,6 @@ void CPQControl::resetPQUiSetting(void)
         }
     }
 
-    //wb gamma
-    WB_GAMMA_TABLE WbGamma;
-    memset(&WbGamma, 0, sizeof(WB_GAMMA_TABLE));
-    WbGamma.ENABLE = 1;
-    for (k = VPP_COLOR_TEMPERATURE_MODE_STANDARD; k < VPP_COLOR_TEMPERATURE_MODE_MAX; k++) {
-        if (!mSSMAction->SetWhitebalanceGammaData(&WbGamma, PQ_SRC_DEFAULT, PQ_FMT_DEFAULT, k)) {
-            LOGE("%s mSSMAction->SetWhitebalanceGammaData fail\n", __FUNCTION__);
-        }
-    }
-
     return;
 }
 
@@ -1098,8 +1088,10 @@ void CPQControl::resetPQTableSetting(void)
     WB_GAMMA_TABLE WBGamm;
     memset(&WBGamm, 0, sizeof(WB_GAMMA_TABLE));
     WBGamm.ENABLE = 1;
-    for (int i = VPP_COLOR_TEMPERATURE_MODE_STANDARD; i < VPP_COLOR_TEMPERATURE_MODE_MAX; i++) {
-        mSSMAction->SetWhitebalanceGammaData(&WBGamm, PQ_SRC_DEFAULT, PQ_FMT_DEFAULT, i);
+    for (i = VPP_COLOR_TEMPERATURE_MODE_STANDARD; i < VPP_COLOR_TEMPERATURE_MODE_MAX; i++) {
+        for (j = WB_GAMMA_MODE_2POINT; j < WB_GAMMA_MODE_MAX; j++) {
+            mSSMAction->SetWhitebalanceGammaData(&WBGamm, PQ_SRC_DEFAULT, PQ_FMT_DEFAULT, i, j);
+        }
     }
 
     mSSMAction->SSMSaveWhitebalanceGammaMode(0, WB_GAMMA_MODE_11POINT);
@@ -3704,7 +3696,7 @@ int CPQControl::SetWbGammaMode(int mode)
         return 0;
     }
 
-    ResetWhitebalanceGammaDataAll();
+    //ResetWhitebalanceGammaDataAll();
     if (Cpq_LoadGamma((vpp_gamma_curve_t)GetGammaValue(), (vpp_color_temperature_mode_t)colortemp) < 0) {
         LOGE("%s, Cpq_LoadGammafail\n", __FUNCTION__);
         return -1;
@@ -9564,7 +9556,9 @@ void CPQControl::resetAllUserSettingParam()
     memset(&WBGamm, 0, sizeof(WB_GAMMA_TABLE));
     WBGamm.ENABLE = 1;
     for (int i = VPP_COLOR_TEMPERATURE_MODE_STANDARD; i < VPP_COLOR_TEMPERATURE_MODE_MAX; i++) {
-        mSSMAction->SetWhitebalanceGammaData(&WBGamm, PQ_SRC_DEFAULT, PQ_FMT_DEFAULT, i);
+        for (int j = WB_GAMMA_MODE_2POINT; j < WB_GAMMA_MODE_MAX; j++) {
+            mSSMAction->SetWhitebalanceGammaData(&WBGamm, PQ_SRC_DEFAULT, PQ_FMT_DEFAULT, i, j);
+        }
     }
 
     return;
@@ -10883,7 +10877,7 @@ bool CPQControl::SetWhitebalanceGammaData(WB_GAMMA_TABLE *params, int level)
         return false;
     }
 
-    return mSSMAction->SetWhitebalanceGammaData(params, (int)CurSource, (int)CurTimming, level);
+    return mSSMAction->SetWhitebalanceGammaData(params, (int)CurSource, (int)CurTimming, level, GetWbGammaMode());
 }
 
 bool CPQControl::GetWhitebalanceGammaData(WB_GAMMA_TABLE *params, int level)
@@ -10892,11 +10886,11 @@ bool CPQControl::GetWhitebalanceGammaData(WB_GAMMA_TABLE *params, int level)
         return false;
     }
 
-    if (mSSMAction->GetWhitebalanceGammaData(params, (int)CurSource, (int)CurTimming, level)) {
+    if (mSSMAction->GetWhitebalanceGammaData(params, (int)CurSource, (int)CurTimming, level, GetWbGammaMode())) {
         return true;
     }
 
-    if (mSSMAction->GetWhitebalanceGammaData(params, PQ_SRC_DEFAULT, PQ_FMT_DEFAULT, level)) {
+    if (mSSMAction->GetWhitebalanceGammaData(params, PQ_SRC_DEFAULT, PQ_FMT_DEFAULT, level, GetWbGammaMode())) {
         return true;
     }
 
@@ -10910,11 +10904,12 @@ bool CPQControl::ResetWhitebalanceGammaData(void)
     }
 
     WB_GAMMA_TABLE params;
+    int mode = GetWbGammaMode();
     for (int k = VPP_COLOR_TEMPERATURE_MODE_STANDARD; k < VPP_COLOR_TEMPERATURE_MODE_MAX; k++) {
-        if (mSSMAction->GetWhitebalanceGammaData(&params, (int)CurSource, (int)CurTimming, k)) {
+        if (mSSMAction->GetWhitebalanceGammaData(&params, (int)CurSource, (int)CurTimming, k, mode)) {
             memset(&params, 0, sizeof(WB_GAMMA_TABLE));
             params.ENABLE = 1;
-            if (!mSSMAction->SetWhitebalanceGammaData(&params, (int)CurSource, (int)CurTimming, k)) {
+            if (!mSSMAction->SetWhitebalanceGammaData(&params, (int)CurSource, (int)CurTimming, k, mode)) {
                  LOGE("[%s] mDataBase->SetWhitebalanceGammaData src:%d, timing:%d  mode %d failed", __FUNCTION__, CurSource, CurTimming, k);
             }
         }
@@ -10930,12 +10925,13 @@ bool CPQControl::ResetWhitebalanceGammaDataBySrc(void)
     }
 
     WB_GAMMA_TABLE params;
+    int mode = GetWbGammaMode();
     for (int j = PQ_FMT_DEFAULT; j < PQ_FMT_MAX; j++) {
         for (int k = VPP_COLOR_TEMPERATURE_MODE_STANDARD; k < VPP_COLOR_TEMPERATURE_MODE_MAX; k++) {
-            if (mSSMAction->GetWhitebalanceGammaData(&params, (int)CurSource, j, k)) {
+            if (mSSMAction->GetWhitebalanceGammaData(&params, (int)CurSource, j, k, mode)) {
                 memset(&params, 0, sizeof(WB_GAMMA_TABLE));
                 params.ENABLE = 1;
-                if (!mSSMAction->SetWhitebalanceGammaData(&params, (int)CurSource, j, k)) {
+                if (!mSSMAction->SetWhitebalanceGammaData(&params, (int)CurSource, j, k, mode)) {
                      LOGE("[%s] mDataBase->SetWhitebalanceGammaData src:%d, timing:%d  mode %d failed", __FUNCTION__, CurSource, j, k);
                 }
             }
@@ -10952,13 +10948,14 @@ bool CPQControl::ResetWhitebalanceGammaDataAll(void)
     }
 
     WB_GAMMA_TABLE params;
+    int mode = GetWbGammaMode();
     for (int i = PQ_SRC_DEFAULT; i < PQ_SRC_MAX; i++) {
         for (int j = PQ_FMT_DEFAULT; j < PQ_FMT_MAX; j++) {
             for (int k = VPP_COLOR_TEMPERATURE_MODE_STANDARD; k < VPP_COLOR_TEMPERATURE_MODE_MAX; k++) {
-                if (mSSMAction->GetWhitebalanceGammaData(&params, i, j, k)) {
+                if (mSSMAction->GetWhitebalanceGammaData(&params, i, j, k, mode)) {
                     memset(&params, 0, sizeof(WB_GAMMA_TABLE));
                     params.ENABLE = 1;
-                    if (!mSSMAction->SetWhitebalanceGammaData(&params, i, j, k)) {
+                    if (!mSSMAction->SetWhitebalanceGammaData(&params, i, j, k, mode)) {
                          LOGE("[%s] mDataBase->SetWhitebalanceGammaData src: %d, timing: %d  mode %d failed\n", __FUNCTION__, i, j, k);
                     }
                 }
@@ -10972,21 +10969,22 @@ bool CPQControl::ResetWhitebalanceGammaDataAll(void)
 
 bool CPQControl::FactoryGetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level)
 {
-    return mSSMAction->CriDataGetWhitebalanceGammaData(pData, level);
+    return mSSMAction->CriDataGetWhitebalanceGammaData(pData, level, GetWbGammaMode());
 }
 
 bool CPQControl::FactorySetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level)
 {
-    return mSSMAction->CriDataSetWhitebalanceGammaData(pData, level);
+    return mSSMAction->CriDataSetWhitebalanceGammaData(pData, level, GetWbGammaMode());
 }
 
 bool CPQControl::CheckCriDataWhitebalanceGammaData(void)
 {
     WB_GAMMA_TABLE pData;
-    if (!mSSMAction->CriDataGetWhitebalanceGammaData(&pData, GetColorTemperature())) {
+    int mode = GetWbGammaMode();
+    if (!mSSMAction->CriDataGetWhitebalanceGammaData(&pData, GetColorTemperature(), mode)) {
         for (int i = VPP_COLOR_TEMPERATURE_MODE_STANDARD; i < VPP_COLOR_TEMPERATURE_MODE_MAX; i++) {
             if (GetWhitebalanceGammaData(&pData, i)) {
-                if (!mSSMAction->CriDataSetWhitebalanceGammaData(&pData, i)) {
+                if (!mSSMAction->CriDataSetWhitebalanceGammaData(&pData, i, mode)) {
                     LOGD("%s: CriDataSetWhitebalanceGammaData fail level = %d\n", __FUNCTION__, i);
                 }
             }

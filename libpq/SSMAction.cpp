@@ -1482,13 +1482,14 @@ bool SSMAction::GetColorTemperatureData(tcon_rgb_ogo_t *pData, int src, int timm
     return true;
 }
 
-bool SSMAction::SetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int src, int timming, int level)
+bool SSMAction::SetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int src, int timming, int level, int mode)
 {
     if (MAX_WB_GAMMA_PARAM_SIZE < (sizeof(WB_GAMMA_TABLE) + sizeof(int))) {
         return false;
     }
 
-    int offset = (src * MAX_PQ_TIMMING_INDEX * MAX_COLORTEMP_INDEX + timming * MAX_COLORTEMP_INDEX + level) * MAX_WB_GAMMA_PARAM_SIZE;
+    int offset = (src * MAX_PQ_TIMMING_INDEX * MAX_COLORTEMP_INDEX * WB_GAMMA_MODE_MAX +
+                timming * MAX_COLORTEMP_INDEX * WB_GAMMA_MODE_MAX + level * WB_GAMMA_MODE_MAX + mode) * MAX_WB_GAMMA_PARAM_SIZE;
     int flag_offset = offset + sizeof(WB_GAMMA_TABLE);
 
     if (SSMWriteNTypes(VPP_DATA_POS_WB_GAMMA_PARAM_START, sizeof(WB_GAMMA_TABLE), (int *)pData, offset) < 0) {
@@ -1503,13 +1504,14 @@ bool SSMAction::SetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int src, int tim
     return true;
 }
 
-bool SSMAction::GetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int src, int timming, int level)
+bool SSMAction::GetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int src, int timming, int level, int mode)
 {
     if (MAX_WB_GAMMA_PARAM_SIZE < (sizeof(WB_GAMMA_TABLE) + sizeof(int))) {
         return false;
     }
 
-    int offset = (src * MAX_PQ_TIMMING_INDEX * MAX_COLORTEMP_INDEX + timming * MAX_COLORTEMP_INDEX + level) * MAX_WB_GAMMA_PARAM_SIZE;
+    int offset = (src * MAX_PQ_TIMMING_INDEX * MAX_COLORTEMP_INDEX * WB_GAMMA_MODE_MAX +
+                timming * MAX_COLORTEMP_INDEX * WB_GAMMA_MODE_MAX + level * WB_GAMMA_MODE_MAX + mode) * MAX_WB_GAMMA_PARAM_SIZE;
     int flag_offset = offset + sizeof(WB_GAMMA_TABLE);
 
     int Flag = 0;
@@ -1574,7 +1576,7 @@ bool SSMAction::CriDataSetWhitebalanceRGBGainOffsetData(tcon_rgb_ogo_t *pData, i
     return true;
 }
 
-bool SSMAction::CriDataGetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level)
+bool SSMAction::CriDataGetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level, int mode)
 {
     USUC usuc;
     USUC ret;
@@ -1582,7 +1584,7 @@ bool SSMAction::CriDataGetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level
     usuc.c[0] = 0x55;
     usuc.c[1] = 0xAA;
 
-    int tmp_off =  (CRI_DATA_WB_GAMMA_OFFSET + (CRI_DATE_WB_GAMMA_LEN * level));
+    int tmp_off =  CRI_DATA_WB_GAMMA_OFFSET + (CRI_DATE_WB_GAMMA_LEN * (level * WB_GAMMA_MODE_MAX + mode));
     int Label_offset = tmp_off + CRI_DATE_WB_GAMMA_LEN - 2;
 
     if (ReadDataFromFile(mWhiteBalanceFilePath, Label_offset, 2, ret.c) < 0) {
@@ -1600,13 +1602,13 @@ bool SSMAction::CriDataGetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level
     return true;
 }
 
-bool SSMAction::CriDataSetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level)
+bool SSMAction::CriDataSetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level, int mode)
 {
     USUC ret;
     ret.c[0] = 0x55;
     ret.c[1] = 0xAA;
 
-    int tmp_off =  (CRI_DATA_WB_GAMMA_OFFSET + (CRI_DATE_WB_GAMMA_LEN * level));
+    int tmp_off =  CRI_DATA_WB_GAMMA_OFFSET + (CRI_DATE_WB_GAMMA_LEN * (level * WB_GAMMA_MODE_MAX + mode));
     int Label_offset = tmp_off + CRI_DATE_WB_GAMMA_LEN - 2;
 
     if (SaveDataToFile(mWhiteBalanceFilePath, tmp_off, sizeof(WB_GAMMA_TABLE), (unsigned char *)pData) < 0) {

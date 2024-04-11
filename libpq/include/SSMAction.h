@@ -23,10 +23,10 @@
 #define DEFAULT_BACKLIGHT_BRIGHTNESS                (10)
 
 #define CRI_DATA_WB_GAMMA_OFFSET                    (SSM_RGBOGO_FILE_OFFSET + (CRI_DATE_RGBOGO_LEN * CRI_DATE_RGBOGO_INDEX_MAX))
-#define CRI_DATE_WB_GAMMA_LEN                       ((MAX_WB_GAMMA_POINT * 3 * 4) + 2) //sizeof(WB_GAMMA_TABLE) + 2
+#define CRI_DATE_WB_GAMMA_LEN                       (((MAX_WB_GAMMA_POINT * 3 + 1) * 4) + 2) //sizeof(WB_GAMMA_TABLE) + 2
 #define CRI_DATE_WB_GAMMA_INDEX_MAX                 (8)
 
-#define CRI_DATA_GAMMA_OFFSET                       (CRI_DATA_WB_GAMMA_OFFSET + (CRI_DATE_WB_GAMMA_LEN * CRI_DATE_WB_GAMMA_INDEX_MAX))
+#define CRI_DATA_GAMMA_OFFSET                       (CRI_DATA_WB_GAMMA_OFFSET + (CRI_DATE_WB_GAMMA_LEN * CRI_DATE_WB_GAMMA_INDEX_MAX * WB_GAMMA_MODE_MAX))
 #define CRI_DATE_GAMMA_LEN                          (1544) //sizeof(GAMMA_TABLE) + 2
 #define CRI_DATE_GAMMA_INDEX_MAX                    (8)
 
@@ -215,8 +215,8 @@ public:
     bool SetColorTemperatureData(tcon_rgb_ogo_t *pData, int src, int timming, int level);
     bool GetColorTemperatureData(tcon_rgb_ogo_t *pData, int src, int timming, int level);
 
-    bool SetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int src, int timming, int level);
-    bool GetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int src, int timming, int level);
+    bool SetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int src, int timming, int level, int mode);
+    bool GetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int src, int timming, int level, int mode);
 
     int SSMSaveColorCustomizeParams(int offset, int size, int *rw_val);
     int SSMReadColorCustomizeParams(int offset, int size, int *rw_val);
@@ -228,8 +228,8 @@ public:
     bool CriDataSetWhitebalanceRGBGainOffsetData(tcon_rgb_ogo_t *pData, int level);
     bool CriDataGetWhitebalanceRGBGainOffsetData(tcon_rgb_ogo_t *pData, int level);
 
-    bool CriDataGetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level);
-    bool CriDataSetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level);
+    bool CriDataGetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level, int mode);
+    bool CriDataSetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level, int mode);
 
     int m_dev_fd;
     static SSMAction *mInstance;

@@ -318,7 +318,7 @@ struct SSMHeader_section2_t gSSMHeader_section2[] = {
     {.addr = 0, .size = MAX_COLORCUSTOMIZE_CM_PARAM_SIZE, .valid = 0, .rsv = {0}},
     {.addr = 0, .size = MAX_COLORCUSTOMIZE_3DLUT_PARAM_SIZE, .valid = 0, .rsv = {0}},
     {.addr = 0, .size = MAX_PQ_SRC_INDEX * MAX_PQ_TIMMING_INDEX * 8, .valid = 0, .rsv = {0}},
-    {.addr = 0, .size = MAX_PQ_SRC_INDEX * MAX_PQ_TIMMING_INDEX * MAX_COLORTEMP_INDEX * MAX_WB_GAMMA_PARAM_SIZE, .valid = 0, .rsv = {0}},
+    {.addr = 0, .size = MAX_PQ_SRC_INDEX * MAX_PQ_TIMMING_INDEX * MAX_COLORTEMP_INDEX * WB_GAMMA_MODE_MAX * MAX_WB_GAMMA_PARAM_SIZE, .valid = 0, .rsv = {0}},
     {.addr = 0, .size = 1, .valid = 0, .rsv = {0}},
     {.addr = 0, .size = MAX_PQ_SRC_INDEX * MAX_PQ_TIMMING_INDEX * 8, .valid = 0, .rsv = {0}},
     {.addr = 0, .size = 1, .valid = 0, .rsv = {0}},
