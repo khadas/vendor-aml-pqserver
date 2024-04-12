@@ -85,7 +85,6 @@ pqcbtest_SRCS  = \
 #  Build rules
 BUILD_TARGETS = libpqclient.so libpq.so pqservice pqtest pqcbtest
 BUILD_TARGETS_FULLPATH := $(patsubst %, $(OUT_DIR)/%, $(BUILD_TARGETS))
-$(info LOCAL_TARGETS_FULLPATH = $(BUILD_TARGETS_FULLPATH))
 
 .PHONY: all install uninstall clean
 
@@ -99,15 +98,15 @@ libpq.so: $(pq_SRCS)
 
 pqservice: $(pqservice_SRCS) libpq.so
 	$(CC) $(CFLAGS) $(LDFLAGS) -I$(pq_HEADERS) \
-	-L$(LOCAL_PATH) -lpq -o $(OUT_DIR)/$@ $(patsubst %.so, $(OUT_DIR)/%.so, $^) $(LDLIBS)
+	-L$(LOCAL_PATH) -lpq -o $(OUT_DIR)/$@ $(filter-out %.so,$^) $(LDLIBS)
 
 pqtest: $(pqtest_SRCS) libpqclient.so
 	$(CC) $(CFLAGS) -I$(pqclient_HEADERS) -L$(LOCAL_PATH) \
-	-lpqclient $(LDFLAGS) -o $(OUT_DIR)/$@ $(patsubst %.so, $(OUT_DIR)/%.so, $^) $(LDLIBS)
+	-lpqclient $(LDFLAGS) -o $(OUT_DIR)/$@ $(filter-out %.so,$^) $(LDLIBS)
 
 pqcbtest: $(pqcbtest_SRCS) libpqclient.so
 	$(CC) $(CFLAGS) -I$(pqclient_HEADERS) -L$(LOCAL_PATH) \
-	-lpqclient $(LDFLAGS) -o $(OUT_DIR)/$@ $(patsubst %.so, $(OUT_DIR)/%.so, $^) $(LDLIBS)
+	-lpqclient $(LDFLAGS) -o $(OUT_DIR)/$@ $(filter-out %.so,$^) $(LDLIBS)
 
 all: $(BUILD_TARGETS)
 
