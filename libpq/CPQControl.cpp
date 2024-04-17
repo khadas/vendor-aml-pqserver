@@ -3434,16 +3434,21 @@ int CPQControl::GetWBGammaData(int level, GAMMA_TABLE *pData)
     }
 
     WB_GAMMA_TABLE Param;
-    if (FactoryGetWhitebalanceGammaData(&Param, level)) {
-        LOGD("%s, get Data fro CRI DATA\n", __FUNCTION__);
-    } else if (GetWhitebalanceGammaData(&Param, level)) {
-        LOGD("%s, get Data fro SSM DATA\n", __FUNCTION__);
-    } else {
-        LOGE("%s, Have no %d point Whitebalance Gamma\n", __FUNCTION__);
-        return 0;
+
+    if (!GetWhitebalanceGammaData(&Param, level)) {
+         LOGE("%s, ssm_data Have no data\n", __FUNCTION__);
+         return -1;
     }
+
     if (Param.ENABLE == 0) {
         LOGD("%s, WBGamma disable\n", __FUNCTION__);
+        return 0;
+    }
+
+    if (FactoryGetWhitebalanceGammaData(&Param.WB_GAMMA_DATA, level)) {
+        LOGD("%s, get Data fro CRI DATA\n", __FUNCTION__);
+    } else {
+        LOGE("%s, Have no %d point Whitebalance Gamma\n", __FUNCTION__);
         return 0;
     }
 
@@ -3486,15 +3491,15 @@ int CPQControl::GetWBGammaData(int level, GAMMA_TABLE *pData)
 
     for (int i = 0; i < PointNum; i++) {
         int index = x[i];
-        y_r[i] = (float)(pData->R.data[index] + Param.R_OFFSET[i]);
+        y_r[i] = (float)(pData->R.data[index] + Param.WB_GAMMA_DATA.R_OFFSET[i]);
         if (y_r[i] < 0.0) y_r[i] = 0.0;
         if (y_r[i] > 1023.0) y_r[i] = 1023.0;
 
-        y_g[i] = (float)(pData->G.data[index] + Param.G_OFFSET[i]);
+        y_g[i] = (float)(pData->G.data[index] + Param.WB_GAMMA_DATA.G_OFFSET[i]);
         if (y_g[i] < 0.0) y_g[i] = 0.0;
         if (y_g[i] > 1023.0) y_g[i] = 1023.0;
 
-        y_b[i] = (float)(pData->B.data[index] + Param.B_OFFSET[i]);
+        y_b[i] = (float)(pData->B.data[index] + Param.WB_GAMMA_DATA.B_OFFSET[i]);
         if (y_b[i] < 0.0) y_b[i] = 0.0;
         if (y_b[i] > 1023.0) y_b[i] = 1023.0;
     }
@@ -3653,9 +3658,7 @@ int CPQControl::SetWbGammaEnable(int enable)
 {
     int colortemp = GetColorTemperature();
     WB_GAMMA_TABLE pData;
-    if (FactoryGetWhitebalanceGammaData(&pData, colortemp)) {
-        LOGD("%s, Get Whitebalance Gamma Data from cridata\n", __FUNCTION__);
-    } else if (GetWhitebalanceGammaData(&pData, colortemp)) {
+    if (GetWhitebalanceGammaData(&pData, colortemp)) {
         LOGD("%s, Get Whitebalance Gamma Data from ssmdata\n", __FUNCTION__);
     } else {
         LOGE("%s, Have no data\n", __FUNCTION__);
@@ -3681,9 +3684,7 @@ int CPQControl::SetWbGammaEnable(int enable)
 int CPQControl::GetWbGammaEnable(void)
 {
     WB_GAMMA_TABLE pData;
-    if (FactoryGetWhitebalanceGammaData(&pData, GetColorTemperature())) {
-        LOGD("%s, Get Whitebalance Gamma Data from cridata\n", __FUNCTION__);
-    } else if (GetWhitebalanceGammaData(&pData, GetColorTemperature())) {
+    if (GetWhitebalanceGammaData(&pData, GetColorTemperature())) {
         LOGD("%s, Get Whitebalance Gamma Data from ssmdata\n", __FUNCTION__);
     } else {
         LOGE("%s, Have no data\n", __FUNCTION__);
@@ -3703,11 +3704,6 @@ int CPQControl::GetWbGammaEnable(void)
 int CPQControl::SetWbGammaMode(int mode)
 {
     int colortemp = GetColorTemperature();
-    WB_GAMMA_TABLE pData;
-    if (FactoryGetWhitebalanceGammaData(&pData, colortemp)) {
-        LOGD("%s, cridata Have data! can not change WbGamma mode\n", __FUNCTION__);
-        return 0;
-    }
 
     int PointNum = WB_GAMMA_MODE_11POINT;
     if (mSSMAction->SSMReadWhitebalanceGammaMode(0, &PointNum) < 0) {
@@ -3761,9 +3757,7 @@ int CPQControl::SetWhitebalanceGamma(int channel, int point, int offset)
 
     int colortemp = GetColorTemperature();
     WB_GAMMA_TABLE pData;
-    if (FactoryGetWhitebalanceGammaData(&pData, colortemp)) {
-        LOGD("%s, Get Whitebalance Gamma Data from cridata\n", __FUNCTION__);
-    } else if (GetWhitebalanceGammaData(&pData, colortemp)) {
+    if (GetWhitebalanceGammaData(&pData, colortemp)) {
         LOGD("%s, Get Whitebalance Gamma Data from ssmdata\n", __FUNCTION__);
     } else {
         LOGE("%s, Have no data\n", __FUNCTION__);
@@ -3771,11 +3765,11 @@ int CPQControl::SetWhitebalanceGamma(int channel, int point, int offset)
     }
 
     if (channel == RED_CH)
-        pData.R_OFFSET[point] = offset;
+        pData.WB_GAMMA_DATA.R_OFFSET[point] = offset;
     else if (channel == GREEN_CH)
-        pData.G_OFFSET[point] = offset;
+        pData.WB_GAMMA_DATA.G_OFFSET[point] = offset;
     else if (channel == BLUE_CH)
-        pData.B_OFFSET[point] = offset;
+        pData.WB_GAMMA_DATA.B_OFFSET[point] = offset;
     else
         return -1;
 
@@ -3807,9 +3801,7 @@ int CPQControl::GetWhitebalanceGamma(int channel, int point)
 
     int colortemp = GetColorTemperature();
     WB_GAMMA_TABLE pData;
-    if (FactoryGetWhitebalanceGammaData(&pData, colortemp)) {
-        LOGD("%s, Get Whitebalance Gamma Data from cridata\n", __FUNCTION__);
-    } else if (GetWhitebalanceGammaData(&pData, colortemp)) {
+    if (GetWhitebalanceGammaData(&pData, colortemp)) {
         LOGD("%s, Get Whitebalance Gamma Data from ssmdata\n", __FUNCTION__);
     } else {
         LOGE("%s, Have no data\n", __FUNCTION__);
@@ -3817,11 +3809,11 @@ int CPQControl::GetWhitebalanceGamma(int channel, int point)
     }
 
     if (channel == RED_CH)
-        offset = pData.R_OFFSET[point];
+        offset = pData.WB_GAMMA_DATA.R_OFFSET[point];
     else if (channel == GREEN_CH)
-        offset =  pData.G_OFFSET[point];
+        offset =  pData.WB_GAMMA_DATA.G_OFFSET[point];
     else if (channel == BLUE_CH)
-        offset =  pData.B_OFFSET[point];
+        offset =  pData.WB_GAMMA_DATA.B_OFFSET[point];
     else
         offset =  0;
 
@@ -3842,7 +3834,7 @@ int CPQControl::FactorySetWhitebalanceGamma(int colortemp, int channel, int poin
 
     CheckCriDataWhitebalanceGammaData();
 
-    WB_GAMMA_TABLE pData;
+    WB_GAMMA_TABLE_DATA pData;
     if (!FactoryGetWhitebalanceGammaData(&pData, colortemp)) {
         LOGE("%s, FactoryGetWhitebalanceGammaData fail\n", __FUNCTION__);
         return -1;
@@ -3885,7 +3877,7 @@ int CPQControl::FactoryGetWhitebalanceGamma(int colortemp, int channel, int poin
 
     CheckCriDataWhitebalanceGammaData();
 
-    WB_GAMMA_TABLE pData;
+    WB_GAMMA_TABLE_DATA pData;
     if (!FactoryGetWhitebalanceGammaData(&pData, colortemp)) {
         LOGE("%s, GetWhitebalanceGammaData fail\n", __FUNCTION__);
         return offset;
@@ -11112,12 +11104,12 @@ bool CPQControl::ResetWhitebalanceGammaDataAll(void)
     return true;
 }
 
-bool CPQControl::FactoryGetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level)
+bool CPQControl::FactoryGetWhitebalanceGammaData(WB_GAMMA_TABLE_DATA *pData, int level)
 {
     return mSSMAction->CriDataGetWhitebalanceGammaData(pData, level, GetWbGammaMode());
 }
 
-bool CPQControl::FactorySetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level)
+bool CPQControl::FactorySetWhitebalanceGammaData(WB_GAMMA_TABLE_DATA *pData, int level)
 {
     return mSSMAction->CriDataSetWhitebalanceGammaData(pData, level, GetWbGammaMode());
 }
@@ -11126,10 +11118,10 @@ bool CPQControl::CheckCriDataWhitebalanceGammaData(void)
 {
     WB_GAMMA_TABLE pData;
     int mode = GetWbGammaMode();
-    if (!mSSMAction->CriDataGetWhitebalanceGammaData(&pData, GetColorTemperature(), mode)) {
+    if (!mSSMAction->CriDataGetWhitebalanceGammaData(&pData.WB_GAMMA_DATA, GetColorTemperature(), mode)) {
         for (int i = VPP_COLOR_TEMPERATURE_MODE_STANDARD; i < VPP_COLOR_TEMPERATURE_MODE_MAX; i++) {
             if (GetWhitebalanceGammaData(&pData, i)) {
-                if (!mSSMAction->CriDataSetWhitebalanceGammaData(&pData, i, mode)) {
+                if (!mSSMAction->CriDataSetWhitebalanceGammaData(&pData.WB_GAMMA_DATA, i, mode)) {
                     LOGD("%s: CriDataSetWhitebalanceGammaData fail level = %d\n", __FUNCTION__, i);
                 }
             }

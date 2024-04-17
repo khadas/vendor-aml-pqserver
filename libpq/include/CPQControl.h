@@ -652,8 +652,8 @@ private:
     bool ResetWhitebalanceGammaDataBySrc(void);
     bool ResetWhitebalanceGammaDataAll(void);
 
-    bool FactorySetWhitebalanceGammaData(WB_GAMMA_TABLE *params, int level);
-    bool FactoryGetWhitebalanceGammaData(WB_GAMMA_TABLE *params, int level);
+    bool FactorySetWhitebalanceGammaData(WB_GAMMA_TABLE_DATA *params, int level);
+    bool FactoryGetWhitebalanceGammaData(WB_GAMMA_TABLE_DATA *params, int level);
     bool CheckCriDataWhitebalanceGammaData(void);
 
     //color customize

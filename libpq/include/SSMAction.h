@@ -23,7 +23,7 @@
 #define DEFAULT_BACKLIGHT_BRIGHTNESS                (10)
 
 #define CRI_DATA_WB_GAMMA_OFFSET                    (SSM_RGBOGO_FILE_OFFSET + (CRI_DATE_RGBOGO_LEN * CRI_DATE_RGBOGO_INDEX_MAX))
-#define CRI_DATE_WB_GAMMA_LEN                       (((MAX_WB_GAMMA_POINT * 3 + 1) * 4) + 2) //sizeof(WB_GAMMA_TABLE) + 2
+#define CRI_DATE_WB_GAMMA_LEN                       (((MAX_WB_GAMMA_POINT * 3) * 4) + 2) //sizeof(WB_GAMMA_TABLE_DATA) + 2
 #define CRI_DATE_WB_GAMMA_INDEX_MAX                 (8)
 
 #define CRI_DATA_GAMMA_OFFSET                       (CRI_DATA_WB_GAMMA_OFFSET + (CRI_DATE_WB_GAMMA_LEN * CRI_DATE_WB_GAMMA_INDEX_MAX * WB_GAMMA_MODE_MAX))
@@ -232,8 +232,8 @@ public:
     bool CriDataSetWhitebalanceRGBGainOffsetData(tcon_rgb_ogo_t *pData, int level);
     bool CriDataGetWhitebalanceRGBGainOffsetData(tcon_rgb_ogo_t *pData, int level);
 
-    bool CriDataGetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level, int mode);
-    bool CriDataSetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level, int mode);
+    bool CriDataGetWhitebalanceGammaData(WB_GAMMA_TABLE_DATA *pData, int level, int mode);
+    bool CriDataSetWhitebalanceGammaData(WB_GAMMA_TABLE_DATA *pData, int level, int mode);
 
     int m_dev_fd;
     static SSMAction *mInstance;

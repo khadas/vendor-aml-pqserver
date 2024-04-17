@@ -705,11 +705,15 @@ typedef enum _WB_GAMMA_MODE {
     WB_GAMMA_MODE_MAX,
 } WB_GAMMA_MODE;
 
-typedef struct _WB_GAMMA_TABLE {
-    int ENABLE;
+typedef struct _WB_GAMMA_TABLE_DATA {
     int R_OFFSET[MAX_WB_GAMMA_POINT];
     int G_OFFSET[MAX_WB_GAMMA_POINT];
     int B_OFFSET[MAX_WB_GAMMA_POINT];
+} WB_GAMMA_TABLE_DATA;
+
+typedef struct _WB_GAMMA_TABLE {
+    int ENABLE;
+    WB_GAMMA_TABLE_DATA WB_GAMMA_DATA;
 } WB_GAMMA_TABLE;
 
 typedef enum _CHANNEL_TYPE {

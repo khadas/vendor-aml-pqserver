@@ -1576,7 +1576,7 @@ bool SSMAction::CriDataSetWhitebalanceRGBGainOffsetData(tcon_rgb_ogo_t *pData, i
     return true;
 }
 
-bool SSMAction::CriDataGetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level, int mode)
+bool SSMAction::CriDataGetWhitebalanceGammaData(WB_GAMMA_TABLE_DATA *pData, int level, int mode)
 {
     USUC usuc;
     USUC ret;
@@ -1595,14 +1595,14 @@ bool SSMAction::CriDataGetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level
         return false;
     }
 
-    if (ReadDataFromFile(mWhiteBalanceFilePath, tmp_off, sizeof(WB_GAMMA_TABLE), (unsigned char *)pData) < 0) {
+    if (ReadDataFromFile(mWhiteBalanceFilePath, tmp_off, sizeof(WB_GAMMA_TABLE_DATA), (unsigned char *)pData) < 0) {
         return false;
     }
 
     return true;
 }
 
-bool SSMAction::CriDataSetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level, int mode)
+bool SSMAction::CriDataSetWhitebalanceGammaData(WB_GAMMA_TABLE_DATA *pData, int level, int mode)
 {
     USUC ret;
     ret.c[0] = 0x55;
@@ -1611,7 +1611,7 @@ bool SSMAction::CriDataSetWhitebalanceGammaData(WB_GAMMA_TABLE *pData, int level
     int tmp_off =  CRI_DATA_WB_GAMMA_OFFSET + (CRI_DATE_WB_GAMMA_LEN * (level * WB_GAMMA_MODE_MAX + mode));
     int Label_offset = tmp_off + CRI_DATE_WB_GAMMA_LEN - 2;
 
-    if (SaveDataToFile(mWhiteBalanceFilePath, tmp_off, sizeof(WB_GAMMA_TABLE), (unsigned char *)pData) < 0) {
+    if (SaveDataToFile(mWhiteBalanceFilePath, tmp_off, sizeof(WB_GAMMA_TABLE_DATA), (unsigned char *)pData) < 0) {
         return false;
     }
 
