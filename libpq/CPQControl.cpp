@@ -537,19 +537,30 @@ void CPQControl::onVframeSizeChange()
             SetCurrentSourceInputInfo(new_source_input_param);
         }
 
+        if (FilmmakerModeFlag == 1) {
+            LOGD("%s: VIDEO_PROP_CHANGE_FMM trigger amlvideo_poll event wake_up\n", __FUNCTION__);
+            mbFilmmakerModeFlag = true;
+            Cpq_SetFilmMakerMode();
+        } else if (FilmmakerModeDisableFlag == 1) {
+            LOGD("%s: VIDEO_PROP_CHANGE_FMM_DISABLE trigger amlvideo_poll event wake_up\n", __FUNCTION__);
+            mbFilmmakerModeFlag = false;
+            Cpq_SetFilmMakerMode();
+        }
+
         if (hdrTypeEventFlag == 0x1) {
             //get hdr type
             enum hdr_type_e newHdrType = HDRTYPE_NONE;
             newHdrType = Cpq_GetSourceHDRType(mCurrentSourceInputInfo.source_input);
+            LOGD("%s: newHdrType = %d, mCurrentHdrType = %d\n", __FUNCTION__, newHdrType, mCurrentHdrType);
 
             if (mCurrentHdrType != newHdrType) {
                 mCurrentHdrType = newHdrType;
 
                 //pq timming update
                 CurTimming = CheckPQTimming(newHdrType);
+                LOGD("%s: CurTimming = %d\n", __FUNCTION__, CurTimming);
 
                 //call back hdr typr update
-                LOGD("%s: callback hdr type to client %d %d\n", __FUNCTION__, newHdrType, mCurrentHdrType);
                 Cpq_SetHdrType(newHdrType);
 
                 //db logic hdrtype update
@@ -562,16 +573,6 @@ void CPQControl::onVframeSizeChange()
             }
         } else {
             LOGD("%s: not hdrInfo event\n", __FUNCTION__);
-        }
-
-        if (FilmmakerModeFlag == 1) {
-            LOGD("%s: VIDEO_PROP_CHANGE_FMM trigger amlvideo_poll event wake_up\n", __FUNCTION__);
-            mbFilmmakerModeFlag = true;
-            Cpq_SetFilmMakerMode();
-        } else if (FilmmakerModeDisableFlag == 1) {
-            LOGD("%s: VIDEO_PROP_CHANGE_FMM_DISABLE trigger amlvideo_poll event wake_up\n", __FUNCTION__);
-            mbFilmmakerModeFlag = false;
-            Cpq_SetFilmMakerMode();
         }
     } else {
         LOGE("%s: read video event failed!\n", __FUNCTION__);
@@ -8602,14 +8603,14 @@ int CPQControl::Cpq_SetPqModeToGame(pq_mode_to_game_t mode)
     return 0;
 }
 
-int CPQControl::Cpq_SetPqModeToMonitor(int ui_fmm, int drv_fmm)
+int CPQControl::Cpq_SetPqModeToFilmMaker(int ui_fmm, int drv_fmm)
 {
     LOGD("%s: ui_fmm:%d drv_fmm:%d\n", __FUNCTION__, ui_fmm, drv_fmm);
 
     if (ui_fmm == (int)FILM_MAKER_MODE_AUTO) {
         if (drv_fmm == 1) {
-            LOGD("%s: set to monitor\n", __FUNCTION__);
-            SetPQMode((int)VPP_PICTURE_MODE_MONITOR, 1);
+            LOGD("%s: set to filmmaker\n", __FUNCTION__);
+            SetPQMode((int)VPP_PICTURE_MODE_FILM_MAKER, 1);
 
             //remember which src + which timming done FMM setting, for next time to recovery
             aFmmSrcFmtFlag[CurSource][CurTimming] = true;
@@ -10021,7 +10022,7 @@ int CPQControl::Cpq_SetFilmMakerMode(void)
          mFilmMakerMode, CurSource, CurTimming, mPreFilmMakerMode[CurSource][CurTimming]);
 
     if (mPreFilmMakerMode[CurSource][CurTimming] != mFilmMakerMode) {
-        Cpq_SetPqModeToMonitor(ui_fmm, mFilmMakerMode);
+        Cpq_SetPqModeToFilmMaker(ui_fmm, mFilmMakerMode);
 
         if (mpObserver != NULL) {
             PQControlCb::FilmMakerModeCb cb_data;

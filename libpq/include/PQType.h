@@ -309,6 +309,7 @@ typedef enum vpp_picture_mode_e {
     VPP_PICTURE_MODE_DOLVI_DARK,
     VPP_PICTURE_MODE_DOLVI_BRIGHT,
     VPP_PICTURE_MODE_AMDOLBY_IQ,
+    VPP_PICTURE_MODE_FILM_MAKER,
     VPP_PICTURE_MODE_MAX,
 } vpp_picture_mode_t;
 

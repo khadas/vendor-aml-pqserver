@@ -621,7 +621,7 @@ private:
     bool IsAllmVrrUiFuncCtrl(int *allm_func_ctrl, int *vrr_func_ctrl);
     bool IsAllmVrrGameMode(void);
     int Cpq_SetPqModeToGame(pq_mode_to_game_t mode);
-    int Cpq_SetPqModeToMonitor(int ui_fmm, int drv_fmm);
+    int Cpq_SetPqModeToFilmMaker(int ui_fmm, int drv_fmm);
 
     int GetBaseGammaData(int level, GAMMA_TABLE *pData);
     int GetWBGammaData(int level, GAMMA_TABLE *pData);
