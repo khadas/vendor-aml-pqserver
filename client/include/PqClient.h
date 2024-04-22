@@ -25,7 +25,6 @@ using namespace android;
 extern "C" {
 #endif
 
-
 class PqClient : public BBinder {
 public:
     enum {
@@ -49,6 +48,13 @@ public:
         CMD_PQ_GET_LVDS_SSC_MODE,
         CMD_PQ_SET_COLORTEMPERATURE_USER_PARAM,
         CMD_PQ_GET_COLORTEMPERATURE_USER_PARAM,
+        CMD_PQ_RESET_PICTURE_MODE,
+        CMD_PQ_RESET_ALL_PICTURE_MODE,
+        CMD_PQ_GET_PICTURE_MODE_PARAM,
+        CMD_PQ_GET_DEFAULT_PICTURE_MODE_PARAM,
+        CMD_PQ_GET_DEFAULT_ALL_PQ_PARAM,
+        CMD_PQ_COPY_VALUES_FROM_PICTURE_MODE,
+        CMD_PQ_COPY_PICTURE_MODE_PARAM_TO_ALL_SOURCE,
     };
 
     PqClient();
@@ -222,6 +228,34 @@ public:
     /*offset:  -1023 ~ 1023*/
     int FactorySetWhitebalanceGamma(int level, int channel, int point, int offset);
     int FactoryGetWhitebalanceGamma(int level, int channel, int point);
+
+    // This method will copy the current values of
+    // parameters from the given pq mode to the currently
+    // active mode.
+    int CopyValuesFromPqMode(int pq_mode);
+
+    // This method will reset the current picture mode
+    // to the values set during PQ tuning process
+    // Only affects the currently active source/format
+    int ResetCurrentPictureMode(void);
+
+    // This method will restore all the settings to the
+    // values set during PQ tuning process
+    // Affects all pq modes, all sources, all formats
+    int ResetAllPictureSettings(void);
+
+    pq_mode_parameters GetDefaultParameterValues(int pq_mode);
+
+    pq_mode_parameters GetCurrentParameterValues(int pq_mode);
+
+    all_pq_parameters GetALLDefaultPQParameterValues(void);
+
+    // This method will apply the current values of
+    // parameters from the currently active mode
+    // to all the sources
+    int ApplyUserSettingsToAllSources(void);
+
+    int GetWBGammaPointNum(int mode);
 
 private:
     void SendMethodCall(char *CmdString);

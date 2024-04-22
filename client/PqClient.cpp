@@ -217,6 +217,7 @@ int PqClient::SetColorTemperatureUserParam(tvpq_rgb_ogo_t *pData)
         return -1;
     }
 
+    int ret = -1;
     Parcel send, reply;
     send.writeInt32(pData->en);
 
@@ -237,7 +238,10 @@ int PqClient::SetColorTemperatureUserParam(tvpq_rgb_ogo_t *pData)
         return -1;
     }
 
-    return reply.readInt32();
+    ret = reply.readInt32();
+
+    LOGE("PqClient: ret %d.\n", ret);
+    return ret;
 }
 
 tvpq_rgb_ogo_t PqClient::GetColorTemperatureUserParam(void)
@@ -2482,6 +2486,234 @@ int PqClient::FactoryGetWhitebalanceGamma(int level, int channel, int point)
     LOGE("PqClient: ret %d.\n", ret);
 
     return ret;
+}
+
+int PqClient::ResetCurrentPictureMode(void)
+{
+    int ret = -1;
+    Parcel send, reply;
+    if (mpqServicebinder->transact(CMD_PQ_RESET_PICTURE_MODE, send, &reply) != 0) {
+        LOGD("%s CMD_PQ_RESET_PICTURE_MODE fail\n", __FUNCTION__);
+        return -1;
+    }
+
+    ret  = reply.readInt32();
+
+    LOGE("PqClient: ret %d.\n", ret);
+    return ret;
+}
+
+int PqClient::ResetAllPictureSettings(void)
+{
+    int ret = -1;
+    Parcel send, reply;
+    if (mpqServicebinder->transact(CMD_PQ_RESET_ALL_PICTURE_MODE, send, &reply) != 0) {
+        LOGD("%s CMD_PQ_RESET_ALL_PICTURE_MODE fail\n", __FUNCTION__);
+        return -1;
+    }
+
+    ret  = reply.readInt32();
+
+    LOGE("PqClient: ret %d.\n", ret);
+    return ret;
+}
+
+pq_mode_parameters PqClient::GetCurrentParameterValues(int pq_mode)
+{
+    pq_mode_parameters Data;
+    memset(&Data, 0, sizeof(pq_mode_parameters));
+
+    if (mpqServicebinder == NULL) {
+        return Data;
+    }
+
+    Parcel send, reply;
+    send.writeInt32(pq_mode);
+    if (mpqServicebinder->transact(CMD_PQ_GET_PICTURE_MODE_PARAM, send, &reply) != 0) {
+        LOGD("%s CMD_PQ_RESET_ALL_PICTURE_MODE fail\n", __FUNCTION__);
+        return Data;
+    }
+
+    Data.backlight            = reply.readInt32();
+    Data.brightness           = reply.readInt32();
+    Data.contrast             = reply.readInt32();
+    Data.saturation           = reply.readInt32();
+    Data.sharpness            = reply.readInt32();
+    Data.gamma                = reply.readInt32();
+    Data.dynamic_backlight    = reply.readInt32();
+    Data.local_contrast       = reply.readInt32();
+    Data.dynamic_contrast     = reply.readInt32();
+    Data.super_resolution     = reply.readInt32();
+    Data.color_temperature    = reply.readInt32();
+    Data.hue                  = reply.readInt32();
+    Data.eye_protection       = reply.readInt32();
+    Data.hdr_tone_mapping     = reply.readInt32();
+    Data.color_gamut          = reply.readInt32();
+    Data.display_mode         = reply.readInt32();
+    Data.noise_reduction      = reply.readInt32();
+    Data.MPEG_noise_reduction = reply.readInt32();
+    Data.smooth_plus          = reply.readInt32();
+
+    return Data;
+}
+
+pq_mode_parameters PqClient::GetDefaultParameterValues(int pq_mode)
+{
+    pq_mode_parameters Data;
+    memset(&Data, 0, sizeof(pq_mode_parameters));
+
+    if (mpqServicebinder == NULL) {
+        return Data;
+    }
+
+    Parcel send, reply;
+    send.writeInt32(pq_mode);
+    if (mpqServicebinder->transact(CMD_PQ_GET_DEFAULT_PICTURE_MODE_PARAM, send, &reply) != 0) {
+        LOGD("%s CMD_PQ_GET_DEFAULT_PICTURE_MODE_PARAM fail\n", __FUNCTION__);
+        return Data;
+    }
+
+    Data.backlight            = reply.readInt32();
+    Data.brightness           = reply.readInt32();
+    Data.contrast             = reply.readInt32();
+    Data.saturation           = reply.readInt32();
+    Data.sharpness            = reply.readInt32();
+    Data.gamma                = reply.readInt32();
+    Data.dynamic_backlight    = reply.readInt32();
+    Data.local_contrast       = reply.readInt32();
+    Data.dynamic_contrast     = reply.readInt32();
+    Data.super_resolution     = reply.readInt32();
+    Data.color_temperature    = reply.readInt32();
+    Data.hue                  = reply.readInt32();
+    Data.eye_protection       = reply.readInt32();
+    Data.hdr_tone_mapping     = reply.readInt32();
+    Data.color_gamut          = reply.readInt32();
+    Data.display_mode         = reply.readInt32();
+    Data.noise_reduction      = reply.readInt32();
+    Data.MPEG_noise_reduction = reply.readInt32();
+    Data.smooth_plus          = reply.readInt32();
+
+    return Data;
+}
+
+all_pq_parameters PqClient::GetALLDefaultPQParameterValues(void)
+{
+    all_pq_parameters Data;
+    memset(&Data, 0, sizeof(all_pq_parameters));
+
+    if (mpqServicebinder == NULL) {
+        return Data;
+    }
+
+    int GammaMode = GetWhitebalanceGammaMode();
+
+    Parcel send, reply;
+    if (mpqServicebinder->transact(CMD_PQ_GET_DEFAULT_ALL_PQ_PARAM, send, &reply) != 0) {
+        LOGD("%s CMD_PQ_GET_DEFAULT_ALL_PQ_PARAM fail\n", __FUNCTION__);
+        return Data;
+    }
+
+    //pqmode params
+    Data.PictureModeData.backlight            = reply.readInt32();
+    Data.PictureModeData.brightness           = reply.readInt32();
+    Data.PictureModeData.contrast             = reply.readInt32();
+    Data.PictureModeData.saturation           = reply.readInt32();
+    Data.PictureModeData.sharpness            = reply.readInt32();
+    Data.PictureModeData.gamma                = reply.readInt32();
+    Data.PictureModeData.dynamic_backlight    = reply.readInt32();
+    Data.PictureModeData.local_contrast       = reply.readInt32();
+    Data.PictureModeData.dynamic_contrast     = reply.readInt32();
+    Data.PictureModeData.super_resolution     = reply.readInt32();
+    Data.PictureModeData.color_temperature    = reply.readInt32();
+    Data.PictureModeData.hue                  = reply.readInt32();
+    Data.PictureModeData.eye_protection       = reply.readInt32();
+    Data.PictureModeData.hdr_tone_mapping     = reply.readInt32();
+    Data.PictureModeData.color_gamut          = reply.readInt32();
+    Data.PictureModeData.display_mode         = reply.readInt32();
+    Data.PictureModeData.noise_reduction      = reply.readInt32();
+    Data.PictureModeData.MPEG_noise_reduction = reply.readInt32();
+    Data.PictureModeData.smooth_plus          = reply.readInt32();
+
+    //wb params
+    int i = 0;
+    for (i = 0; i < GetWBGammaPointNum(GammaMode); ++i) {
+        Data.WBGammaData.R_OFFSET[i] = reply.readInt32();
+        Data.WBGammaData.G_OFFSET[i] = reply.readInt32();
+        Data.WBGammaData.B_OFFSET[i] = reply.readInt32();
+    }
+    for (; i < MAX_WB_GAMMA_POINT; ++i) {
+        Data.WBGammaData.R_OFFSET[i] = 0;
+        Data.WBGammaData.G_OFFSET[i] = 0;
+        Data.WBGammaData.B_OFFSET[i] = 0;
+    }
+
+    //color tuner
+    for (int j = 0; j < VPP_COLOR_9_MAX; j++) {
+        Data.color_tune.data[j].sat  = reply.readInt32();
+        Data.color_tune.data[j].hue  = reply.readInt32();
+        Data.color_tune.data[j].luma = reply.readInt32();
+    }
+
+    return Data;
+}
+
+int PqClient::CopyValuesFromPqMode(int pq_mode)
+{
+    int ret = -1;
+    Parcel send, reply;
+    send.writeInt32(pq_mode);
+    if (mpqServicebinder->transact(CMD_PQ_COPY_VALUES_FROM_PICTURE_MODE, send, &reply) != 0) {
+        LOGD("%s CMD_PQ_COPY_VALUES_FROM_PICTURE_MODE mode = %d fail\n", __FUNCTION__, pq_mode);
+        return -1;
+    }
+
+    ret = reply.readInt32();
+
+    LOGE("PqClient: ret %d.\n", ret);
+    return ret;
+}
+
+int PqClient::ApplyUserSettingsToAllSources(void)
+{
+    int ret = -1;
+    Parcel send, reply;
+    if (mpqServicebinder->transact(CMD_PQ_COPY_PICTURE_MODE_PARAM_TO_ALL_SOURCE, send, &reply) != 0) {
+        LOGD("%s CMD_PQ_COPY_PICTURE_MODE_PARAM_TO_ALL_SOURCE fail\n", __FUNCTION__);
+        return -1;
+    }
+
+    ret = reply.readInt32();
+
+    LOGE("PqClient: ret %d.\n", ret);
+    return ret;
+}
+
+int PqClient::GetWBGammaPointNum(int mode)
+{
+    int PointNum = 0;
+    if (PointNum > WB_GAMMA_MODE_MAX || PointNum < WB_GAMMA_MODE_2POINT) {
+        PointNum = WB_GAMMA_MODE_11POINT;
+    }
+
+    switch (mode) {
+        case WB_GAMMA_MODE_2POINT:
+            PointNum = 4;
+        break;
+        case WB_GAMMA_MODE_10POINT:
+            PointNum = 11;
+        break;
+        case WB_GAMMA_MODE_11POINT:
+            PointNum = 12;
+        break;
+        case WB_GAMMA_MODE_20POINT:
+            PointNum = 21;
+        break;
+        default:
+            PointNum = 12;
+        break;
+    }
+
+    return PointNum;
 }
 
 status_t PqClient::onTransact(uint32_t code,

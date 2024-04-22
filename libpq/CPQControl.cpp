@@ -3448,7 +3448,7 @@ int CPQControl::GetWBGammaData(int level, GAMMA_TABLE *pData)
     if (FactoryGetWhitebalanceGammaData(&Param.WB_GAMMA_DATA, level)) {
         LOGD("%s, get Data fro CRI DATA\n", __FUNCTION__);
     } else {
-        LOGE("%s, Have no %d point Whitebalance Gamma\n", __FUNCTION__);
+        LOGE("%s, Have no point Whitebalance Gamma\n", __FUNCTION__);
         return 0;
     }
 
@@ -10519,6 +10519,176 @@ int CPQControl::GetHdmiColorRangeMode(int pq_type)
     return ret;
 }
 
+int CPQControl::FactoryResetPictureModeData(void)
+{
+    int ret = 0;
+
+    if (!ResetPictureModeData())
+        ret = -1;
+
+    return ret;
+}
+
+int CPQControl::FactoryResetAllPictureModeData(void)
+{
+    int ret = 0;
+
+    if (!ResetPictureModeDataAll())
+        ret = -1;
+
+    return ret;
+}
+
+int CPQControl::FactoryGetPictureModeData(pq_mode_parameters *params)
+{
+    vpp_pictur_mode_para_t Data;
+    if (!GetPictureModeData(&Data, (vpp_picture_mode_t)GetPQMode())) {
+        LOGE("%s GetPictureModeData fail\n", __FUNCTION__);
+        return -1;
+    }
+
+    params->backlight            = Data.Backlight;
+    params->brightness           = Data.Brightness;
+    params->contrast             = Data.Contrast;
+    params->saturation           = Data.Saturation;
+    params->sharpness            = Data.Sharpness;
+    params->gamma                = Data.GammaMidLuminance;
+    params->dynamic_backlight    = GetDynamicBacklight();
+    params->local_contrast       = Data.LocalContrast;
+    params->dynamic_contrast     = Data.DynamicContrast;
+    params->super_resolution     = Data.SuperResolution;
+    params->color_temperature    = Data.ColorTemperature;
+    params->hue                  = Data.Hue;
+    params->eye_protection       = GetEyeProtectionMode(SOURCE_INVALID);
+    params->hdr_tone_mapping     = Data.HdrTmo;
+    params->color_gamut          = Data.ColorGamut;
+    params->display_mode         = GetDisplayMode();
+    params->noise_reduction      = Data.Nr;
+    params->MPEG_noise_reduction = Data.MpegNr;
+    params->smooth_plus          = GetSmoothPlusMode();
+
+    return 0;
+}
+
+int CPQControl::FactoryGetDefaultPictureModeData(pq_mode_parameters *params)
+{
+    vpp_picture_mode_t picture = (vpp_picture_mode_t)GetPQMode();
+    vpp_pictur_mode_para_t Data;
+    if (mPQdb->PQ_GetPictureModeParams(CurSource, CurTimming, picture, &Data) != 0) {
+       if (mPQdb->PQ_GetPictureModeParams(PQ_SRC_DEFAULT, PQ_FMT_DEFAULT, picture, &Data) != 0) {
+           LOGE("[%s] mPQdb->PQ_GetPictureModeParams src:%d, timing:%d  mode %d failed", __FUNCTION__, CurSource, CurTimming, picture);
+           return -1;
+       }
+    }
+
+    params->backlight            = Data.Backlight;
+    params->brightness           = Data.Brightness;
+    params->contrast             = Data.Contrast;
+    params->saturation           = Data.Saturation;
+    params->sharpness            = Data.Sharpness;
+    params->gamma                = Data.GammaMidLuminance;
+    params->dynamic_backlight    = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_DYNAMICBACKLIGHT_DEF, DYNAMIC_BACKLIGHT_OFF);
+    params->local_contrast       = Data.LocalContrast;
+    params->dynamic_contrast     = Data.DynamicContrast;
+    params->super_resolution     = Data.SuperResolution;
+    params->color_temperature    = Data.ColorTemperature;
+    params->hue                  = Data.Hue;
+    params->eye_protection       = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_EYEPROJECTMODE_DEF, 0);
+    params->hdr_tone_mapping     = Data.HdrTmo;
+    params->color_gamut          = Data.ColorGamut;
+    params->display_mode         = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_DISPLAYMODE_DEF, VPP_DISPLAY_MODE_NORMAL);
+    params->noise_reduction      = Data.Nr;
+    params->MPEG_noise_reduction = Data.MpegNr;
+    params->smooth_plus          = VPP_SMOOTH_PLUS_MODE_OFF;
+
+    return 0;
+}
+
+int CPQControl::FactoryGetDefaultAllPQData(all_pq_parameters *params)
+{
+    //default pqmode params
+    vpp_picture_mode_t picture = (vpp_picture_mode_t)GetPQMode();
+    vpp_pictur_mode_para_t Data;
+    if (mPQdb->PQ_GetPictureModeParams(CurSource, CurTimming, picture, &Data) != 0) {
+       if (mPQdb->PQ_GetPictureModeParams(PQ_SRC_DEFAULT, PQ_FMT_DEFAULT, picture, &Data) != 0) {
+           LOGE("[%s] mPQdb->PQ_GetPictureModeParams src:%d, timing:%d  mode %d failed", __FUNCTION__, CurSource, CurTimming, picture);
+           return -1;
+       }
+    }
+
+    params->PictureModeData.backlight            = Data.Backlight;
+    params->PictureModeData.brightness           = Data.Brightness;
+    params->PictureModeData.contrast             = Data.Contrast;
+    params->PictureModeData.saturation           = Data.Saturation;
+    params->PictureModeData.sharpness            = Data.Sharpness;
+    params->PictureModeData.gamma                = Data.GammaMidLuminance;
+    params->PictureModeData.dynamic_backlight    = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_DYNAMICBACKLIGHT_DEF, DYNAMIC_BACKLIGHT_OFF);
+    params->PictureModeData.local_contrast       = Data.LocalContrast;
+    params->PictureModeData.dynamic_contrast     = Data.DynamicContrast;
+    params->PictureModeData.super_resolution     = Data.SuperResolution;
+    params->PictureModeData.color_temperature    = Data.ColorTemperature;
+    params->PictureModeData.hue                  = Data.Hue;
+    params->PictureModeData.eye_protection       = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_EYEPROJECTMODE_DEF, 0);
+    params->PictureModeData.hdr_tone_mapping     = Data.HdrTmo;
+    params->PictureModeData.color_gamut          = Data.ColorGamut;
+    params->PictureModeData.display_mode         = mPQConfigFile->GetInt(CFG_SECTION_PQ, CFG_DISPLAYMODE_DEF, VPP_DISPLAY_MODE_NORMAL);
+    params->PictureModeData.noise_reduction      = Data.Nr;
+    params->PictureModeData.MPEG_noise_reduction = Data.MpegNr;
+    params->PictureModeData.smooth_plus          = VPP_SMOOTH_PLUS_MODE_OFF;
+
+    //default wb gamma
+    memset(&params->WBGammaData, 0, sizeof(WB_GAMMA_TABLE_DATA));
+
+    //default cms
+    memset(&params->color_tune, 0, sizeof(vpp_cms_cm_param_t));
+
+    return 0;
+}
+
+int CPQControl::FactoryCopyPictureModeDataFromPQMode(int picmode)
+{
+    vpp_pictur_mode_para_t pData;
+    if (!GetPictureModeData(&pData, (vpp_picture_mode_t)picmode)) {
+        LOGE("%s, GetPictureModeData fail pq mode %d params\n", __FUNCTION__, picmode);
+        return -1;
+    }
+
+    if (!SetPictureModeData(&pData, (vpp_picture_mode_t)GetPQMode())) {
+        LOGE("%s, SetPictureModeData fail pq mode %d params\n", __FUNCTION__, picmode);
+        return -1;
+    }
+
+    if (SetPQPictureMode((vpp_picture_mode_t)picmode) < 0) {
+        LOGE("%s, SetPQPictureMode fail pq mode %d params\n", __FUNCTION__, picmode);
+        return -1;
+    }
+
+    return 0;
+}
+
+int CPQControl::FactoryCopyPictureModeDataToAllSource(void)
+{
+    vpp_picture_mode_t picmode = (vpp_picture_mode_t)GetPQMode();
+    vpp_pictur_mode_para_t pData;
+    if (!GetPictureModeData(&pData, picmode)) {
+        LOGE("%s, GetPictureModeData fail pq mode %d params\n", __FUNCTION__, picmode);
+        return -1;
+    }
+
+    vpp_pictur_mode_para_t param;
+    for (int i = PQ_SRC_DEFAULT; i < PQ_FMT_MAX; i++) {
+        if (i != CurSource) {
+            if (mSSMAction->GetPictureModeData(&param, i, (int)CurTimming, picmode)) {
+                if (!mSSMAction->SetPictureModeData(&pData, i, (int)CurTimming, picmode)) {
+                     LOGE("[%s] mDataBase->SetPictureModeData src:%d, timing:%d  mode %d failed", __FUNCTION__, i, CurTimming, picmode);
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
 //database
 bool CPQControl::SetPictureMode(vpp_picture_mode_t PictureMode)
 {
@@ -10726,23 +10896,19 @@ bool CPQControl::ResetPictureModeData(void)
         return false;
     }
 
-    int ret = -1;
+    vpp_picture_mode_t pqmode = (vpp_picture_mode_t)GetPQMode();
     vpp_pictur_mode_para_t params;
-    for (int k = VPP_PICTURE_MODE_STANDARD; k < VPP_PICTURE_MODE_MAX; k++) {
-        ret = 0;
-        if (mSSMAction->GetPictureModeData(&params, (int)CurSource, (int)CurTimming, k)) {
-            if (mPQdb->PQ_GetPictureModeParams(CurSource, CurTimming, vpp_picture_mode_t(k), &params) != 0) {
-               if (mPQdb->PQ_GetPictureModeParams(PQ_SRC_DEFAULT, PQ_FMT_DEFAULT, vpp_picture_mode_t(k), &params) != 0) {
-                   LOGE("[%s] GetDefaultPictureModeData src:%d, timing:%d  mode %d failed", __FUNCTION__, CurSource, CurTimming, k);
-                   ret = -1;
-               }
-            }
+    if (mSSMAction->GetPictureModeData(&params, (int)CurSource, (int)CurTimming, (int)pqmode)) {
+        if (mPQdb->PQ_GetPictureModeParams(CurSource, CurTimming, pqmode, &params) != 0) {
+           if (mPQdb->PQ_GetPictureModeParams(PQ_SRC_DEFAULT, PQ_FMT_DEFAULT, pqmode, &params) != 0) {
+               LOGE("[%s] mPQdb->GetDefaultPictureModeData src:%d, timing:%d  mode %d failed", __FUNCTION__, CurSource, CurTimming, pqmode);
+               return false;
+           }
+        }
 
-            if (ret == 0) {
-                if (!mSSMAction->SetPictureModeData(&params, (int)CurSource, (int)CurTimming, k)) {
-                     LOGE("[%s] mDataBase->SetPictureModeData src:%d, timing:%d  mode %d failed", __FUNCTION__, CurSource, CurTimming, k);
-                }
-            }
+        if (!mSSMAction->SetPictureModeData(&params, (int)CurSource, (int)CurTimming, (int)pqmode)) {
+            LOGE("[%s] mSSMAction->SetPictureModeData src:%d, timing:%d  mode %d failed", __FUNCTION__, CurSource, CurTimming, pqmode);
+            return false;
         }
     }
 

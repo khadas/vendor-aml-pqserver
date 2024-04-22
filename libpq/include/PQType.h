@@ -723,6 +723,34 @@ typedef enum _CHANNEL_TYPE {
     MAX_CH,
 } CHANNEL_TYPE;
 
+typedef struct _pq_mode_parameters {
+    int backlight;
+    int brightness;
+    int contrast;
+    int saturation;
+    int sharpness;
+    int gamma;
+    int dynamic_backlight;
+    int local_contrast;
+    int dynamic_contrast;
+    int super_resolution;
+    int color_temperature;
+    int hue;
+    int eye_protection;
+    int hdr_tone_mapping;
+    int color_gamut;
+    int display_mode;
+    int noise_reduction;
+    int MPEG_noise_reduction;
+    int smooth_plus;
+}pq_mode_parameters;
+
+typedef struct _all_pq_parameters {
+    pq_mode_parameters PictureModeData;
+    WB_GAMMA_TABLE_DATA WBGammaData;
+    vpp_cms_cm_param_t color_tune;
+} all_pq_parameters;
+
 typedef enum vpp_SuperResolution_Level_e {
     VPP_SUPER_RESOLUTION_OFF,
     VPP_SUPER_RESOLUTION_MID,

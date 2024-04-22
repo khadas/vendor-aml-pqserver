@@ -572,6 +572,13 @@ public:
     int FactorySetWhitebalanceGamma(int colortemp, int channel, int point, int offset);
     int FactoryGetWhitebalanceGamma(int colortemp, int channel, int point);
 
+    int FactoryResetPictureModeData(void);
+    int FactoryResetAllPictureModeData(void);
+    int FactoryGetPictureModeData(pq_mode_parameters *params);
+    int FactoryGetDefaultPictureModeData(pq_mode_parameters *params);
+    int FactoryGetDefaultAllPQData(all_pq_parameters *params);
+    int FactoryCopyPictureModeDataFromPQMode(int pqmode);
+    int FactoryCopyPictureModeDataToAllSource(void);
 private:
     int VPPOpenModule(void);
     int VPPCloseModule(void );

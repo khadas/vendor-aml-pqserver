@@ -9,6 +9,8 @@
 #ifndef __COMMON_H__
 #define __COMMON_H__
 
+#define MAX_WB_GAMMA_POINT                (21)
+
 #ifndef __TV_SOURCE_INPUT__
 #define __TV_SOURCE_INPUT__
 typedef enum tv_source_input_e {
@@ -417,4 +419,64 @@ typedef struct tvpq_databaseinfo_s {
     char version[32];
 }tvpq_databaseinfo_t;
 #endif
+
+typedef struct _pq_mode_parameters {
+    int backlight;
+    int brightness;
+    int contrast;
+    int saturation;
+    int sharpness;
+    int gamma;
+    int dynamic_backlight;
+    int local_contrast;
+    int dynamic_contrast;
+    int super_resolution;
+    int color_temperature;
+    int hue;
+    int eye_protection;
+    int hdr_tone_mapping;
+    int color_gamut;
+    int display_mode;
+    int noise_reduction;
+    int MPEG_noise_reduction;
+    int smooth_plus;
+}pq_mode_parameters;
+
+typedef enum _WB_GAMMA_MODE {
+    WB_GAMMA_MODE_2POINT,
+    WB_GAMMA_MODE_10POINT,
+    WB_GAMMA_MODE_11POINT,
+    WB_GAMMA_MODE_20POINT,
+    WB_GAMMA_MODE_MAX,
+} WB_GAMMA_MODE;
+
+typedef struct _WB_GAMMA_TABLE_DATA {
+    int R_OFFSET[MAX_WB_GAMMA_POINT];
+    int G_OFFSET[MAX_WB_GAMMA_POINT];
+    int B_OFFSET[MAX_WB_GAMMA_POINT];
+} WB_GAMMA_TABLE_DATA;
+
+typedef enum vpp_cms_color_e {
+    VPP_COLOR_9_PURPLE = 0,
+    VPP_COLOR_9_RED,
+    VPP_COLOR_9_SKIN,
+    VPP_COLOR_9_YELLOW,
+    VPP_COLOR_9_YELLOW_GREEN,
+    VPP_COLOR_9_GREEN,
+    VPP_COLOR_9_BLUE_GREEN,
+    VPP_COLOR_9_CYAN,
+    VPP_COLOR_9_BLUE,
+    VPP_COLOR_9_MAX,
+} vpp_cms_color_t;
+
+typedef struct vpp_cms_cm_param_e {
+    vpp_single_color_param_cm_t data[VPP_COLOR_9_MAX];
+} vpp_cms_cm_param_t;
+
+typedef struct _all_pq_parameters {
+    pq_mode_parameters PictureModeData;
+    WB_GAMMA_TABLE_DATA WBGammaData;
+    vpp_cms_cm_param_t color_tune;
+}all_pq_parameters;
+
 #endif

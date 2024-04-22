@@ -540,6 +540,123 @@ public:
         return 0;
     }
 
+    int SendCmdExt(int index)
+    {
+        int ret = 0;
+        int i = 0;
+        switch (index) {
+            case 900:
+                tvpq_rgb_ogo_t RGBOGO;
+                memset(&RGBOGO, 0, sizeof(tvpq_rgb_ogo_t));
+                RGBOGO.en            = setValue[0];
+                RGBOGO.r_gain        = setValue[1];
+                RGBOGO.g_gain        = setValue[2];
+                RGBOGO.b_gain        = setValue[3];
+                RGBOGO.r_post_offset = setValue[4];
+                RGBOGO.g_post_offset = setValue[5];
+                RGBOGO.b_post_offset = setValue[6];
+                ret = mpPqClient->SetColorTemperatureUserParam(&RGBOGO);
+                break;
+
+            case 901:
+                tvpq_rgb_ogo_t RGBOGO1;
+                memset(&RGBOGO1, 0, sizeof(tvpq_rgb_ogo_t));
+                RGBOGO1 = mpPqClient->GetColorTemperatureUserParam();
+                printf("%s: en:%d, rgain:%d,ggain:%d,bgain:%d,roffset:%d,goffset:%d,boffset:%d\n", __FUNCTION__,
+                    RGBOGO1.en, RGBOGO1.r_gain,RGBOGO1.g_gain, RGBOGO1.b_gain, RGBOGO1.r_post_offset, RGBOGO1.g_post_offset, RGBOGO1.b_post_offset);
+                break;
+
+            case 902:
+                ret = mpPqClient->ResetCurrentPictureMode();
+                break;
+
+            case 903:
+                ret = mpPqClient->ResetAllPictureSettings();
+                break;
+
+            case 904:
+                pq_mode_parameters CurrentParams;
+                memset(&CurrentParams, 0, sizeof(pq_mode_parameters));
+                CurrentParams = mpPqClient->GetCurrentParameterValues(setValue[0]);
+                printf("%s:\n"
+                       "backlight        %3d, brightness           %3d, contrast          %3d, saturation     %3d,\n"
+                       "sharpness        %3d  gamma                %3d, dynamic_backlight %3d, local_contrast %3d,\n"
+                       "super_resolution %3d, color_temperature    %3d, hue               %3d, eye_protection %3d,\n"
+                       "dynamic_contrast %3d, hdr_tone_mapping     %3d, color_gamut       %3d, display_mode   %3d,\n"
+                       "noise_reduction  %3d, MPEG_noise_reduction %3d, smooth_plus       %3d,\n",
+                       __FUNCTION__,
+                       CurrentParams.backlight, CurrentParams.brightness, CurrentParams.contrast, CurrentParams.saturation,
+                       CurrentParams.sharpness, CurrentParams.gamma, CurrentParams.dynamic_backlight,CurrentParams.local_contrast,
+                       CurrentParams.super_resolution, CurrentParams.color_temperature, CurrentParams.hue, CurrentParams.eye_protection,
+                       CurrentParams.dynamic_contrast, CurrentParams.hdr_tone_mapping, CurrentParams.color_gamut, CurrentParams.display_mode,
+                       CurrentParams.noise_reduction, CurrentParams.MPEG_noise_reduction, CurrentParams.smooth_plus);
+                break;
+
+            case 905:
+                pq_mode_parameters DefaultParams;
+                memset(&DefaultParams, 0, sizeof(pq_mode_parameters));
+                DefaultParams = mpPqClient->GetDefaultParameterValues(setValue[0]);
+                printf("%s:\n"
+                       "backlight        %3d, brightness           %3d, contrast          %3d, saturation     %3d,\n"
+                       "sharpness        %3d  gamma                %3d, dynamic_backlight %3d, local_contrast %3d,\n"
+                       "super_resolution %3d, color_temperature    %3d, hue               %3d, eye_protection %3d,\n"
+                       "dynamic_contrast %3d, hdr_tone_mapping     %3d, color_gamut       %3d, display_mode   %3d,\n"
+                       "noise_reduction  %3d, MPEG_noise_reduction %3d, smooth_plus       %3d,\n",
+                       __FUNCTION__,
+                       DefaultParams.backlight, DefaultParams.brightness, DefaultParams.contrast,DefaultParams.saturation,
+                       DefaultParams.sharpness, DefaultParams.gamma, DefaultParams.dynamic_backlight,DefaultParams.local_contrast,
+                       DefaultParams.super_resolution, DefaultParams.color_temperature, DefaultParams.hue, DefaultParams.eye_protection,
+                       DefaultParams.dynamic_contrast, DefaultParams.hdr_tone_mapping, DefaultParams.color_gamut, DefaultParams.display_mode,
+                       DefaultParams.noise_reduction, DefaultParams.MPEG_noise_reduction, DefaultParams.smooth_plus);
+                break;
+
+            case 906:
+                all_pq_parameters AllPqParams;
+                memset(&AllPqParams, 0, sizeof(all_pq_parameters));
+                AllPqParams = mpPqClient->GetALLDefaultPQParameterValues();
+                printf("%s: =========== PICTURE MODE PARAMS ===========\n", __FUNCTION__);
+                printf("%s:\n"
+                       "backlight        %3d, brightness           %3d, contrast          %3d, saturation     %3d,\n"
+                       "sharpness        %3d  gamma                %3d, dynamic_backlight %3d, local_contrast %3d,\n"
+                       "super_resolution %3d, color_temperature    %3d, hue               %3d, eye_protection %3d,\n"
+                       "dynamic_contrast %3d, hdr_tone_mapping     %3d, color_gamut       %3d, display_mode   %3d,\n"
+                       "noise_reduction  %3d, MPEG_noise_reduction %3d, smooth_plus       %3d,\n",
+                       __FUNCTION__,
+                       AllPqParams.PictureModeData.backlight, AllPqParams.PictureModeData.brightness, AllPqParams.PictureModeData.contrast, AllPqParams.PictureModeData.saturation,
+                       AllPqParams.PictureModeData.sharpness, AllPqParams.PictureModeData.gamma, AllPqParams.PictureModeData.dynamic_backlight, AllPqParams.PictureModeData.local_contrast,
+                       AllPqParams.PictureModeData.super_resolution, AllPqParams.PictureModeData.color_temperature, AllPqParams.PictureModeData.hue, AllPqParams.PictureModeData.eye_protection,
+                       AllPqParams.PictureModeData.dynamic_contrast, AllPqParams.PictureModeData.hdr_tone_mapping, AllPqParams.PictureModeData.color_gamut, AllPqParams.PictureModeData.display_mode,
+                       AllPqParams.PictureModeData.noise_reduction, AllPqParams.PictureModeData.MPEG_noise_reduction, AllPqParams.PictureModeData.smooth_plus);
+
+                printf("%s: =========== WB GAMMA PARAMS ===========\n", __FUNCTION__);
+                for (i = 0; i < MAX_WB_GAMMA_POINT; i++) {
+                    printf("%s: R[%d] = %d, G[%d] = %d, B[%d] = %d.\n", __FUNCTION__,
+                            i, AllPqParams.WBGammaData.R_OFFSET[i], i, AllPqParams.WBGammaData.G_OFFSET[i], i, AllPqParams.WBGammaData.B_OFFSET[i]);
+                }
+
+                printf("%s: =========== CMS PARAMS ===========\n", __FUNCTION__);
+                for (i = 0; i < VPP_COLOR_9_MAX; i++) {
+                    printf("%s: Sat[%d] = %d, hue[%d] = %d, luma[%d] = %d\n", __FUNCTION__,
+                            i, AllPqParams.color_tune.data[i].sat, i, AllPqParams.color_tune.data[i].hue, i, AllPqParams.color_tune.data[i].luma);
+                }
+
+                break;
+
+            case 907:
+                ret = mpPqClient->CopyValuesFromPqMode(setValue[0]);
+                break;
+
+            case 908:
+                ret = mpPqClient->ApplyUserSettingsToAllSources();
+                break;
+
+            default:
+                break;
+        }
+
+        return ret;
+    }
+
     PqClient *mpPqClient;
     pqcmd_t cmdID = PQ_MODULE_CMD_MAX;
     int setValue[10] = {0};
@@ -692,11 +809,22 @@ int main(int argc, char **argv) {
     printf("#### select 343 to set CRI Whitebalance Gamma ####\n");
     printf("#### select 344 to get CRI Whitebalance Gamma ####\n");
 
+    printf("#### below is Ext cmd####\n");
+    printf("#### select 900 to set COLORTEMPERATURE USER PARAM ####\n");
+    printf("#### select 901 to get COLORTEMPERATURE USER PARAM ####\n");
+    printf("#### select 902 to reset PICTURE MODE DATA ####\n");
+    printf("#### select 903 to reset ALL PICTURE MODE DATA ####\n");
+    printf("#### select 904 to get PICTURE MODE DATA ####\n");
+    printf("#### select 905 to get DEFAULT PICTURE MODE DATA ####\n");
+    printf("#### select 906 to get ALL PQ DEFAULT DATA ####\n");
+    printf("#### select 907 to get COPY PARAM FROM PQ MODE ####\n");
+    printf("#### select 908 to get COPY PICTURE MODE PARAM TO ALL SOURCE ####\n");
+
     printf("#### select 999 to exit####\n");
     printf("##########################\n");
     while (run) {
         char Command[10] = {'\0'};
-        int conmmand;
+        int command;
         int mode = 0, is_save = 0;
         int source = 0, sig_fmt = 0, fmt_3d = 0, pq_mode = 0;
         int colortemp_mode = 0;
@@ -708,10 +836,10 @@ int main(int argc, char **argv) {
         if (ret <= 0 ) {
            LOGE("scanf faile\n");
         }
-        conmmand = atoi(Command);
-        printf("#### Command: %s %d\n", Command, conmmand);
+        command = atoi(Command);
+        printf("#### Command: %s %d\n", Command, command);
 
-        switch (conmmand) {
+        switch (command) {
           case 299: {
             test->cmdID = PQ_MODULE_CMD_MAX;
             run = 0;
@@ -2246,6 +2374,90 @@ int main(int argc, char **argv) {
               test->cmdID = PQ_FACTORY_GET_WB_GAMMA_DATA;
             break;
           }
+
+          //EXT CMD
+          case 900: {
+              int enable = 0, r_gain = 0, g_gain = 0, b_gain = 0, r_offset = 0, g_offset = 0, b_offset = 0;
+              printf("CMD_PQ_SET_COLORTEMPERATURE_USER_PARAM\n");
+              printf("enable: 0 ~ 1\n");
+              scanf_ret = scanf("%d", &enable);
+              test->setValue[0] = enable;
+
+              printf("r_gain: 0 ~ 2047\n");
+              scanf_ret += scanf("%d", &r_gain);
+              test->setValue[1] = r_gain;
+
+              printf("g_gain: 0 ~ 2047\n");
+              scanf_ret += scanf("%d", &g_gain);
+              test->setValue[2] = g_gain;
+
+              printf("b_gain: 0 ~ 2047\n");
+              scanf_ret += scanf("%d", &b_gain);
+              test->setValue[3] = b_gain;
+
+              printf("r_offset: -1023 ~ 1024\n");
+              scanf_ret += scanf("%d", &r_offset);
+              test->setValue[4] = r_offset;
+
+              printf("g_offset: -1023 ~ 1024\n");
+              scanf_ret += scanf("%d", &g_offset);
+              test->setValue[5] = g_offset;
+
+              printf("b_offset: -1023 ~ 1024\n");
+              scanf_ret += scanf("%d", &b_offset);
+              test->setValue[6] = b_offset;
+
+              if (scanf_ret != 7) break;
+
+            break;
+          }
+          case 901: {
+              printf("CMD_PQ_GET_COLORTEMPERATURE_USER_PARAM\n");
+            break;
+          }
+          case 902: {
+              printf("CMD_PQ_RESET_PICTURE_MODE\n");
+            break;
+          }
+          case 903: {
+              printf("CMD_PQ_RESET_ALL_PICTURE_MODE\n");
+            break;
+          }
+          case 904: {
+              printf("CMD_PQ_GET_PICTURE_MODE_PARAM\n");
+              printf("pq_mode value: STANDARD(0), BRIGHT(1), SOFT(2), USER(3), MOVIE(4), COLORFUL(5), MONITOR(6), GAME(7), SPORTS(8), SONY(9), SAMSUNG(10), SHARP(11), DV_BRIGHT(12), DV_DARK(13)\n");
+              scanf_ret = scanf("%d", &mode);
+              test->setValue[0] = mode;
+              if (scanf_ret != 1) break;
+            break;
+          }
+          case 905: {
+              printf("CMD_PQ_GET_DEFAULT_PICTURE_MODE_PARAM\n");
+              printf("pq_mode value: STANDARD(0), BRIGHT(1), SOFT(2), USER(3), MOVIE(4), COLORFUL(5), MONITOR(6), GAME(7), SPORTS(8), SONY(9), SAMSUNG(10), SHARP(11), DV_BRIGHT(12), DV_DARK(13)\n");
+              scanf_ret = scanf("%d", &mode);
+              test->setValue[0] = mode;
+              if (scanf_ret != 1) break;
+
+            break;
+          }
+          case 906: {
+              printf("CMD_PQ_GET_DEFAULT_ALL_PQ_PARAM\n");
+            break;
+          }
+          case 907: {
+              printf("CMD_PQ_COPY_VALUES_FROM_PICTURE_MODE\n");
+              printf("pq_mode value: STANDARD(0), BRIGHT(1), SOFT(2), USER(3), MOVIE(4), COLORFUL(5), MONITOR(6), GAME(7), SPORTS(8), SONY(9), SAMSUNG(10), SHARP(11), DV_BRIGHT(12), DV_DARK(13)\n");
+              scanf_ret = scanf("%d", &mode);
+              test->setValue[0] = mode;
+              if (scanf_ret != 1) break;
+
+            break;
+          }
+          case 908: {
+              printf("CMD_PQ_COPY_PICTURE_MODE_PARAM_TO_ALL_SOURCE\n");
+            break;
+          }
+
           default: {
               test->cmdID = PQ_MODULE_CMD_MAX;
               run = 0;
@@ -2253,6 +2465,7 @@ int main(int argc, char **argv) {
           }
         }
 
+        test->SendCmdExt(command);
         test->SendCmd();
 
         printf("#### please input cmd again####\n");

@@ -850,6 +850,128 @@ status_t PqService::onTransact(uint32_t code,
             reply->writeInt32(pData.b_post_offset);
             break;
         }
+        case CMD_PQ_RESET_PICTURE_MODE: {
+            int ret = -1;
+            ret = mpPQcontrol->FactoryResetPictureModeData();
+            reply->writeInt32(ret);
+            break;
+        }
+        case CMD_PQ_RESET_ALL_PICTURE_MODE: {
+            int ret = -1;
+            ret = mpPQcontrol->FactoryResetAllPictureModeData();
+            reply->writeInt32(ret);
+            break;
+        }
+        case CMD_PQ_GET_PICTURE_MODE_PARAM: {
+            int ret = -1;
+            pq_mode_parameters pData;
+            memset(&pData, 0, sizeof(pq_mode_parameters));
+            ret = mpPQcontrol->FactoryGetPictureModeData(&pData);
+            reply->writeInt32(pData.backlight);
+            reply->writeInt32(pData.brightness);
+            reply->writeInt32(pData.contrast);
+            reply->writeInt32(pData.saturation);
+            reply->writeInt32(pData.sharpness);
+            reply->writeInt32(pData.gamma);
+            reply->writeInt32(pData.dynamic_backlight);
+            reply->writeInt32(pData.local_contrast);
+            reply->writeInt32(pData.dynamic_contrast);
+            reply->writeInt32(pData.super_resolution);
+            reply->writeInt32(pData.color_temperature);
+            reply->writeInt32(pData.hue);
+            reply->writeInt32(pData.eye_protection);
+            reply->writeInt32(pData.hdr_tone_mapping);
+            reply->writeInt32(pData.color_gamut);
+            reply->writeInt32(pData.display_mode);
+            reply->writeInt32(pData.noise_reduction);
+            reply->writeInt32(pData.MPEG_noise_reduction);
+            reply->writeInt32(pData.smooth_plus);
+
+            reply->writeInt32(ret);
+            break;
+        }
+        case CMD_PQ_GET_DEFAULT_PICTURE_MODE_PARAM: {
+            int ret = -1;
+            pq_mode_parameters pData;
+            memset(&pData, 0, sizeof(pq_mode_parameters));
+            ret = mpPQcontrol->FactoryGetDefaultPictureModeData(&pData);
+            reply->writeInt32(pData.backlight);
+            reply->writeInt32(pData.brightness);
+            reply->writeInt32(pData.contrast);
+            reply->writeInt32(pData.saturation);
+            reply->writeInt32(pData.sharpness);
+            reply->writeInt32(pData.gamma);
+            reply->writeInt32(pData.dynamic_backlight);
+            reply->writeInt32(pData.local_contrast);
+            reply->writeInt32(pData.dynamic_contrast);
+            reply->writeInt32(pData.super_resolution);
+            reply->writeInt32(pData.color_temperature);
+            reply->writeInt32(pData.hue);
+            reply->writeInt32(pData.eye_protection);
+            reply->writeInt32(pData.hdr_tone_mapping);
+            reply->writeInt32(pData.color_gamut);
+            reply->writeInt32(pData.display_mode);
+            reply->writeInt32(pData.noise_reduction);
+            reply->writeInt32(pData.MPEG_noise_reduction);
+            reply->writeInt32(pData.smooth_plus);
+
+            reply->writeInt32(ret);
+            break;
+        }
+        case CMD_PQ_GET_DEFAULT_ALL_PQ_PARAM: {
+            int ret = -1;
+            all_pq_parameters pData;
+            memset(&pData, 0, sizeof(all_pq_parameters));
+            ret = mpPQcontrol->FactoryGetDefaultAllPQData(&pData);
+            reply->writeInt32(pData.PictureModeData.backlight);
+            reply->writeInt32(pData.PictureModeData.brightness);
+            reply->writeInt32(pData.PictureModeData.contrast);
+            reply->writeInt32(pData.PictureModeData.saturation);
+            reply->writeInt32(pData.PictureModeData.sharpness);
+            reply->writeInt32(pData.PictureModeData.gamma);
+            reply->writeInt32(pData.PictureModeData.dynamic_backlight);
+            reply->writeInt32(pData.PictureModeData.local_contrast);
+            reply->writeInt32(pData.PictureModeData.dynamic_contrast);
+            reply->writeInt32(pData.PictureModeData.super_resolution);
+            reply->writeInt32(pData.PictureModeData.color_temperature);
+            reply->writeInt32(pData.PictureModeData.hue);
+            reply->writeInt32(pData.PictureModeData.eye_protection);
+            reply->writeInt32(pData.PictureModeData.hdr_tone_mapping);
+            reply->writeInt32(pData.PictureModeData.color_gamut);
+            reply->writeInt32(pData.PictureModeData.display_mode);
+            reply->writeInt32(pData.PictureModeData.noise_reduction);
+            reply->writeInt32(pData.PictureModeData.MPEG_noise_reduction);
+            reply->writeInt32(pData.PictureModeData.smooth_plus);
+
+            for (int i = 0; i < MAX_WB_GAMMA_POINT; i++) {
+                reply->writeInt32(pData.WBGammaData.R_OFFSET[i]);
+                reply->writeInt32(pData.WBGammaData.G_OFFSET[i]);
+                reply->writeInt32(pData.WBGammaData.B_OFFSET[i]);
+            }
+
+            for (int j = 0; j < VPP_COLOR_9_MAX; j++) {
+                reply->writeInt32(pData.color_tune.data[j].sat);
+                reply->writeInt32(pData.color_tune.data[j].hue);
+                reply->writeInt32(pData.color_tune.data[j].luma);
+            }
+
+            reply->writeInt32(ret);
+            break;
+        }
+        case CMD_PQ_COPY_VALUES_FROM_PICTURE_MODE: {
+            int ret = -1;
+            int PictureMode = data.readInt32();
+            ret = mpPQcontrol->FactoryCopyPictureModeDataFromPQMode(PictureMode);
+            reply->writeInt32(ret);
+            break;
+        }
+        case CMD_PQ_COPY_PICTURE_MODE_PARAM_TO_ALL_SOURCE: {
+            int ret = -1;
+            ret = mpPQcontrol->FactoryCopyPictureModeDataToAllSource();
+            reply->writeInt32(ret);
+            break;
+        }
+
         default:
             return BBinder::onTransact(code, data, reply, flags);
     }
