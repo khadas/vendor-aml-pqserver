@@ -24,6 +24,7 @@
 
 #include "CPQControl.h"
 
+
 #define PI 3.14159265358979
 CPQControl *CPQControl::mInstance = NULL;
 pthread_mutex_t PqControlMutex = PTHREAD_MUTEX_INITIALIZER;
@@ -135,14 +136,25 @@ void CPQControl::CPQControlInit()
         sprintf(filePath1, "%s/pq.db", config_value);
         sprintf(filePath2, "%s/overscan.db", config_value);
     }
-    int ret = mPQdb->openPqDB(filePath1);
-    if (ret != 0) {
-        mbDatabaseMatchChipStatus = false;
-        LOGE("open pq DB failed!\n");
-    } else {
-        LOGD("open pq DB success!\n");
-        mbDatabaseMatchChipStatus = isPqDatabaseMachChip();
+
+    #ifdef PRODUCT_SUPPORT_COMPRESS_DB
+        mPQConfigFile->GePqDbFilePath(filePath1);
+    #else
+        LOGD("%s: this chip not support db compress\n", __FUNCTION__);
+    #endif
+
+    int ret;
+    if (isFileExist(filePath1)) {
+        ret = mPQdb->openPqDB(filePath1);
+        if (ret != 0) {
+            mbDatabaseMatchChipStatus = false;
+            LOGE("open pq DB failed!\n");
+        } else {
+            LOGD("open pq DB success!\n");
+            mbDatabaseMatchChipStatus = isPqDatabaseMachChip();
+        }
     }
+
     //init source
     mCurrentSourceInputInfo.source_input = SOURCE_MPEG;
     mCurrentSourceInputInfo.trans_fmt    = TVIN_TFMT_2D;

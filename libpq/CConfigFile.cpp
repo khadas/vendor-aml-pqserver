@@ -18,6 +18,7 @@
 #include <sys/stat.h>
 #include "CPQLog.h"
 #include "CConfigFile.h"
+#include "Minizip.h"
 
 CConfigFile *CConfigFile::mInstance = NULL;
 CConfigFile *CConfigFile::GetInstance()
@@ -428,3 +429,41 @@ void CConfigFile::GetDvFilePath(char *bin_file_path, char *cfg_file_path)
     }
 }
 
+void CConfigFile::GePqDbFilePath(char *db_file_path)
+{
+    if (!isFileExist(db_file_path)) {
+        LOGD("%s there is no %s, decompress pq.bin to pq.db\n", __FUNCTION__, db_file_path);
+
+        char bin_file_path[128] = {0};
+        char ch = '.';
+        char *ptr = NULL;
+
+        ptr = strchr(db_file_path, ch);
+        if (ptr != NULL) {
+            strncpy(bin_file_path, db_file_path, ptr - db_file_path);
+            strcat(bin_file_path, ".bin\0");
+        } else {
+            LOGE("%s strchr failed\n", __FUNCTION__);
+        }
+        LOGD("%s bin_file_path is %s\n", __FUNCTION__, bin_file_path);
+
+        if (!isFileExist(bin_file_path)) {
+            LOGE("%s %s is not exit\n", __FUNCTION__, bin_file_path);
+        } else {
+            //decompress pq.bin to pq.db
+            Minizip *pMiniz   = NULL;
+            pMiniz = new Minizip();
+            if (pMiniz->CheckAndUpdateUncompressFile(db_file_path, bin_file_path) != 0) {
+                LOGE("%s decompress %s failed\n", __FUNCTION__, bin_file_path);
+            } else {
+                LOGD("%s decompress %s to %s success\n", __FUNCTION__, bin_file_path, db_file_path);
+            }
+
+            pMiniz->freeAll();
+            delete pMiniz;
+            pMiniz = NULL;
+        }
+    } else {
+        LOGD("%s there is %s, no need decompress pq.bin\n", __FUNCTION__, db_file_path);
+    };
+}
